@@ -10,18 +10,23 @@
       "type": "string",
       "description": "Nome do assinante"
     },
-    "is_active": {
-      "type": "boolean",
-      "default": true
-    },
     "plan": {
       "type": "string",
       "enum": [
-        "gratuito",
-        "premium_mensal",
-        "premium_anual"
+        "free",
+        "premium"
       ],
-      "default": "gratuito"
+      "default": "free",
+      "description": "Plano do assinante"
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se confirmou o email"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
     }
   },
   "required": [

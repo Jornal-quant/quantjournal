@@ -1,0 +1,38 @@
+{
+  "name": "RawNewsFeed",
+  "type": "object",
+  "properties": {
+    "source_url": {
+      "type": "string",
+      "description": "URL da fonte original"
+    },
+    "source_name": {
+      "type": "string",
+      "description": "Nome da fonte"
+    },
+    "raw_title": {
+      "type": "string",
+      "description": "T\u00edtulo original da not\u00edcia"
+    },
+    "raw_content": {
+      "type": "string",
+      "description": "Conte\u00fado bruto da not\u00edcia"
+    },
+    "fetched_at": {
+      "type": "string",
+      "description": "Data/hora em que foi recebida"
+    },
+    "processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se j\u00e1 foi processada e virou artigo"
+    },
+    "article_id": {
+      "type": "string",
+      "description": "ID do artigo gerado (FK para Article)"
+    }
+  },
+  "required": [
+    "raw_title"
+  ]
+}

@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import GenerateNewsDialog from '../../components/admin/GenerateNewsDialog';
+import ProcessingQueue from '../../components/admin/ProcessingQueue';
 
 const categoryLabels = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Dólar',
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
         <Tabs defaultValue="articles">
           <TabsList>
             <TabsTrigger value="articles">Artigos</TabsTrigger>
+            <TabsTrigger value="queue">Fila de Processamento</TabsTrigger>
             <TabsTrigger value="subscribers">Assinantes</TabsTrigger>
             <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
@@ -177,6 +179,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="queue" className="mt-4">
+            <ProcessingQueue />
           </TabsContent>
 
           <TabsContent value="subscribers" className="mt-4">
