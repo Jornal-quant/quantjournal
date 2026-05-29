@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,77 +6,102 @@
 
 @layer base {
   :root {
-    --font-inter: 'Inter', sans-serif;
-    --font-display: 'Playfair Display', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+    --font-serif: 'IBM Plex Serif', serif;
 
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    /* Neutral scale */
+    --gray-950: #111110;
+    --gray-900: #1C1C1A;
+    --gray-800: #2E2E2B;
+    --gray-700: #434340;
+    --gray-600: #5C5C58;
+    --gray-500: #7A7A75;
+    --gray-400: #9E9E98;
+    --gray-300: #C4C4BC;
+    --gray-200: #DDDDD6;
+    --gray-100: #F0F0E8;
+    --gray-50:  #F7F7F2;
+
+    /* Beige accent */
+    --beige-100: #EDE8DF;
+    --beige-200: #D9D2C5;
+    --beige-300: #C2B9A8;
+    --accent-color: #8C8478;
+    --accent-hover: #6E6860;
+    --accent-light: #EDE8DF;
+
+    /* Semantic */
+    --up:      #1A7A4A;
+    --up-bg:   #E8F5EE;
+    --down:    #C0392B;
+    --down-bg: #FDECEA;
+
+    /* Surfaces */
+    --surface:   #FAFAF8;
+    --surface-2: #F4F4EF;
+    --surface-3: #EEEEE8;
+
+    /* Shadcn token mapping */
+    --background: 50 14% 97%;        /* #FAFAF8 */
+    --foreground: 30 6% 10%;         /* #1C1C1A */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 30 6% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --popover-foreground: 30 6% 10%;
+    --primary: 30 6% 10%;            /* gray-900 — botões pretos */
+    --primary-foreground: 50 14% 97%;
+    --secondary: 45 10% 93%;         /* surface-2 */
+    --secondary-foreground: 30 6% 10%;
+    --muted: 45 10% 93%;
+    --muted-foreground: 30 5% 47%;   /* gray-500 */
+    --accent: 38 12% 55%;            /* accent-color */
+    --accent-foreground: 50 14% 97%;
+    --destructive: 4 65% 47%;        /* down */
     --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --chart-1: 221 83% 53%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 0 84% 60%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 262 83% 58%;
+    --border: 45 9% 88%;             /* #E2E2DA */
+    --input: 45 9% 88%;
+    --ring: 30 6% 10%;
     --radius: 0.625rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 221 83% 53%;
+
+    /* Chart */
+    --chart-1: 155 63% 29%;  /* up green */
+    --chart-2: 4 65% 47%;    /* down red */
+    --chart-3: 38 12% 55%;   /* beige */
+    --chart-4: 30 6% 36%;    /* gray-700 */
+    --chart-5: 30 6% 10%;    /* gray-900 */
+
+    /* Sidebar */
+    --sidebar-background: 50 14% 97%;
+    --sidebar-foreground: 30 6% 10%;
+    --sidebar-primary: 30 6% 10%;
+    --sidebar-primary-foreground: 50 14% 97%;
+    --sidebar-accent: 45 10% 93%;
+    --sidebar-accent-foreground: 30 6% 10%;
+    --sidebar-border: 45 9% 88%;
+    --sidebar-ring: 30 6% 10%;
   }
 
   .dark {
-    --background: 224 30% 8%;
-    --foreground: 210 40% 98%;
-    --card: 224 25% 12%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 25% 12%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 224 25% 16%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 224 25% 16%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 63% 31%;
+    --background: 30 6% 7%;
+    --foreground: 50 14% 97%;
+    --card: 30 6% 10%;
+    --card-foreground: 50 14% 97%;
+    --popover: 30 6% 10%;
+    --popover-foreground: 50 14% 97%;
+    --primary: 50 14% 97%;
+    --primary-foreground: 30 6% 10%;
+    --secondary: 30 6% 14%;
+    --secondary-foreground: 50 14% 97%;
+    --muted: 30 6% 14%;
+    --muted-foreground: 30 5% 65%;
+    --accent: 38 12% 55%;
+    --accent-foreground: 50 14% 97%;
+    --destructive: 4 65% 47%;
     --destructive-foreground: 0 0% 98%;
-    --border: 224 20% 20%;
-    --input: 224 20% 20%;
-    --ring: 217 91% 60%;
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 0 84% 60%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 262 83% 58%;
-    --sidebar-background: 224 25% 10%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 25% 16%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 224 20% 20%;
-    --sidebar-ring: 217 91% 60%;
+    --border: 30 6% 20%;
+    --input: 30 6% 20%;
+    --ring: 50 14% 97%;
   }
 }
 
@@ -85,6 +110,20 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
   }
+  h1, h2, h3, h4 {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .font-mono { font-family: var(--font-mono) !important; }
+  .font-sans { font-family: var(--font-sans) !important; }
+  .font-serif { font-family: var(--font-serif) !important; }
 }

@@ -1,81 +1,54 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Mail, CheckCircle2, ArrowRight } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function NewsletterForm({ compact = false }) {
   const [email, setEmail] = useState('');
+  const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    const existing = await base44.entities.NewsletterSubscriber.filter({ email });
-    if (existing.length > 0) {
-      toast.info('Este e-mail já está cadastrado.');
-      setLoading(false);
-      return;
+    const exists = await base44.entities.NewsletterSubscriber.filter({ email });
+    if (!exists.length) {
+      await base44.entities.NewsletterSubscriber.create({ email, confirmed: false, plan: 'free', is_active: true });
     }
-    await base44.entities.NewsletterSubscriber.create({ email, is_active: true, plan: 'free' });
-    setSubscribed(true);
+    setDone(true);
     setLoading(false);
-    toast.success('Cadastrado com sucesso!');
   };
 
-  if (subscribed) {
+  if (done) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-        <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
-        <p className="font-bold text-sm text-emerald-700">Você está na lista!</p>
-        <p className="text-xs text-emerald-600 mt-1">Receba o resumo do mercado todo dia.</p>
-      </div>
-    );
-  }
-
-  if (compact) {
-    return (
-      <div className="bg-foreground rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Mail className="w-4 h-4 text-background/60" />
-          <p className="text-sm font-bold text-background">Newsletter Diária</p>
-        </div>
-        <p className="text-xs text-background/50 mb-3">Resumo das principais notícias financeiras direto no seu e-mail.</p>
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input type="email" placeholder="seu@email.com" value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 bg-background/10 border-background/20 text-background placeholder:text-background/30 h-8 text-xs"
-            required />
-          <Button type="submit" disabled={loading} size="sm" className="h-8 bg-primary text-primary-foreground shrink-0">
-            {loading ? '...' : <ArrowRight className="w-3.5 h-3.5" />}
-          </Button>
-        </form>
+      <div className="border border-ds-border rounded-lg p-4 bg-ds-surface text-center">
+        <p className="font-mono text-[10px] uppercase tracking-widest text-ds-up font-semibold mb-1">✓ Inscrito!</p>
+        <p className="font-sans text-xs text-muted-foreground">Você receberá o briefing diário.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-foreground rounded-xl p-5">
-      <div className="flex items-center gap-2 mb-1">
-        <Mail className="w-4 h-4 text-background/60" />
-        <h3 className="font-bold text-background">Newsletter do Mercado</h3>
-      </div>
-      <p className="text-xs text-background/50 mb-4 leading-relaxed">
-        Análise das principais notícias financeiras. Toda manhã, antes do pregão.
+    <div className="border border-ds-border rounded-lg p-4 bg-ds-surface">
+      <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Morning Brief</p>
+      <p className="font-sans text-xs text-muted-foreground mb-3 leading-relaxed">
+        Receba o resumo do mercado antes da abertura.
       </p>
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input type="email" placeholder="seu@email.com" value={email}
+      <form onSubmit={submit} className="flex flex-col gap-2">
+        <input
+          type="email"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 bg-background/10 border-background/20 text-background placeholder:text-background/30 text-sm"
-          required />
-        <Button type="submit" disabled={loading} className="shrink-0 bg-primary text-primary-foreground">
-          {loading ? '...' : 'Assinar'}
-        </Button>
+          placeholder="seu@email.com"
+          className="w-full font-mono text-xs px-3 py-2.5 bg-ds-surface2 border border-ds-border rounded outline-none focus:border-foreground transition-colors placeholder:text-muted-foreground/50"
+          required
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full font-mono text-[11px] font-semibold uppercase tracking-wider bg-foreground text-background py-2.5 rounded hover:opacity-90 transition-opacity disabled:opacity-40">
+          {loading ? 'Aguarde...' : 'Inscrever-se →'}
+        </button>
       </form>
-      <p className="text-[10px] text-background/30 mt-2">Gratuito. Sem spam. Cancele quando quiser.</p>
     </div>
   );
 }
