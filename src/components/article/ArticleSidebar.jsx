@@ -5,11 +5,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const QUOTES = [
-  { label: 'IBOV', value: '128.450', change: '+0.84%', up: true },
-  { label: 'USD/BRL', value: 'R$ 5,21', change: '-0.32%', up: false },
-  { label: 'BTC', value: 'US$ 67.400', change: '+2.15%', up: true },
-  { label: 'SELIC', value: '10,50%', change: 'a.a.', up: null },
-  { label: 'Ouro', value: 'US$ 2.340', change: '+0.55%', up: true },
+  { label: 'IBOV', value: '137.248', change: '+0.6%', up: true },
+  { label: 'USD/BRL', value: 'R$ 5,68', change: '+0.4%', up: false },
+  { label: 'BTC', value: 'US$ 108.200', change: '+1.9%', up: true },
+  { label: 'SELIC', value: '13,25%', change: 'a.a.', up: null },
+  { label: 'Ouro', value: 'US$ 3.290', change: '+0.5%', up: true },
 ];
 
 export default function ArticleSidebar({ related = [] }) {

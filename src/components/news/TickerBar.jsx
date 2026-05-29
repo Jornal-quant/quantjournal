@@ -2,15 +2,16 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const mockTickers = [
-  { name: 'IBOV', value: '128.450', change: '+1.2%', up: true },
-  { name: 'S&P 500', value: '5.320', change: '+0.4%', up: true },
-  { name: 'USD/BRL', value: '5.12', change: '-0.3%', up: false },
-  { name: 'EUR/BRL', value: '5.58', change: '+0.1%', up: true },
-  { name: 'Bitcoin', value: '67.450', change: '+2.8%', up: true },
-  { name: 'Ethereum', value: '3.820', change: '+1.5%', up: true },
-  { name: 'Petróleo', value: '82.30', change: '-0.8%', up: false },
-  { name: 'Ouro', value: '2.340', change: '+0.2%', up: true },
-  { name: 'SELIC', value: '10.50%', change: '0.0%', up: null },
+  { name: 'IBOV', value: '137.248', change: '+0.6%', up: true },
+  { name: 'S&P 500', value: '5.912', change: '+0.3%', up: true },
+  { name: 'USD/BRL', value: '5.68', change: '+0.4%', up: false },
+  { name: 'EUR/BRL', value: '6.29', change: '+0.2%', up: true },
+  { name: 'Bitcoin', value: '108.200', change: '+1.9%', up: true },
+  { name: 'Ethereum', value: '2.620', change: '+2.3%', up: true },
+  { name: 'Petróleo', value: '64.80', change: '-1.1%', up: false },
+  { name: 'Ouro', value: '3.290', change: '+0.5%', up: true },
+  { name: 'SELIC', value: '13.25%', change: '0.0%', up: null },
+  { name: 'IFIX', value: '3.412', change: '+0.2%', up: true },
 ];
 
 export default function TickerBar() {
