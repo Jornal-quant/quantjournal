@@ -59,14 +59,18 @@ export default function Home() {
         {/* Featured */}
         {featured.length > 0 && (
           <section className="mb-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {featured.length === 1 ? (
               <ArticleCard article={featured[0]} variant="featured" />
-              <div className="grid grid-cols-1 gap-4">
-                {featured.slice(1, 3).map((a) => (
-                  <ArticleCard key={a.id} article={a} variant="default" />
-                ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ArticleCard article={featured[0]} variant="featured" />
+                <div className="grid grid-cols-1 gap-4">
+                  {featured.slice(1, 3).map((a) => (
+                    <ArticleCard key={a.id} article={a} variant="default" />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </section>
         )}
 
