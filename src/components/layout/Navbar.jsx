@@ -13,6 +13,8 @@ const categories = [
   { label: 'Empresas', path: '/categoria/empresas' },
   { label: 'Internacional', path: '/categoria/internacional' },
   { label: 'Renda Fixa', path: '/categoria/renda_fixa' },
+  { label: '⚡ Ativos', path: '/ativos' },
+  { label: '🤖 FinanceChat', path: '/chat' },
 ];
 
 export default function Navbar() {

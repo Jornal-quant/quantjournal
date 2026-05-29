@@ -18,6 +18,9 @@ import ArticlePage from './pages/ArticlePage';
 import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AssetPageView from './pages/AssetPageView';
+import AssetsIndex from './pages/AssetsIndex';
+import MarketChat from './pages/MarketChat';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,6 +55,9 @@ const AuthenticatedApp = () => {
         <Route path="/artigo/:id" element={<ArticlePage />} />
         <Route path="/categoria/:category" element={<CategoryPage />} />
         <Route path="/busca" element={<SearchPage />} />
+        <Route path="/ativos" element={<AssetsIndex />} />
+        <Route path="/ativo/:slug" element={<AssetPageView />} />
+        <Route path="/chat" element={<MarketChat />} />
       </Route>
 
       {/* Protected admin */}

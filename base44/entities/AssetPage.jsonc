@@ -1,0 +1,56 @@
+{
+  "name": "AssetPage",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "description": "URL slug, ex: petrobras"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome do ativo/empresa"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "empresa",
+        "indice",
+        "moeda",
+        "juros",
+        "cripto",
+        "commodity"
+      ],
+      "description": "Tipo do ativo"
+    },
+    "ticker": {
+      "type": "string",
+      "description": "Ticker principal, ex: PETR4"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o SEO do ativo"
+    },
+    "sector": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "related_keywords": {
+      "type": "string",
+      "description": "Keywords relacionadas, separadas por v\u00edrgula"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "slug",
+    "name",
+    "type"
+  ]
+}

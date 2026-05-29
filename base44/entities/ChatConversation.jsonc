@@ -1,0 +1,33 @@
+{
+  "name": "ChatConversation",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_messages": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "session_id"
+  ]
+}

@@ -6,7 +6,7 @@ import NewsletterForm from '../components/news/NewsletterForm';
 import TickerBar from '../components/news/TickerBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
-import { Flame, Clock, Zap } from 'lucide-react';
+import { Flame, Clock, Zap, Bot, Building2 } from 'lucide-react';
 
 const categoryLabels = {
   bolsa: 'Bolsa',
@@ -121,6 +121,39 @@ export default function Home() {
                     <ArticleCard article={a} variant="compact" />
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* FinanceChat promo */}
+            <Link to="/chat" className="group block bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4 hover:border-primary/40 transition-all">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">FinanceChat</h3>
+                  <span className="text-[10px] text-chart-2 font-medium">IA ao vivo</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Pergunte à IA sobre qualquer ativo, empresa ou notícia do mercado financeiro.
+              </p>
+              <span className="text-xs text-primary font-medium mt-2 block group-hover:underline">Acessar chat →</span>
+            </Link>
+
+            {/* Asset pages promo */}
+            <div className="bg-card border border-border rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 className="w-4 h-4 text-muted-foreground" />
+                <h3 className="font-semibold text-sm">Páginas de Ativos</h3>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {['petrobras','vale','itau','nubank','selic','dolar','bitcoin'].map(s => (
+                  <Link key={s} to={`/ativo/${s}`} className="text-[11px] px-2 py-1 bg-muted hover:bg-primary/10 hover:text-primary rounded-md transition-colors capitalize font-medium">
+                    {s}
+                  </Link>
+                ))}
+                <Link to="/ativos" className="text-[11px] px-2 py-1 text-primary hover:underline font-medium">ver todos →</Link>
               </div>
             </div>
 
