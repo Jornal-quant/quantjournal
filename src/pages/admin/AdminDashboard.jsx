@@ -20,6 +20,7 @@ import AdminSourcesTab from '../../components/admin/AdminSourcesTab';
 import AdminMarketTab from '../../components/admin/AdminMarketTab';
 import AdminNewsletterTab from '../../components/admin/AdminNewsletterTab';
 import BackfillPanel from '../../components/admin/BackfillPanel';
+import SocialPostGenerator from '../../components/admin/SocialPostGenerator';
 
 const categoryLabels = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Dólar',
@@ -180,6 +181,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="p-3 text-right">
                             <div className="flex items-center justify-end gap-1">
+                              <SocialPostGenerator article={a} />
                               <Button variant="ghost" size="icon" className="h-7 w-7"
                                 onClick={() => toggleFeatured.mutate({ id: a.id, is_featured: a.is_featured })}>
                                 <Star className={`w-3.5 h-3.5 ${a.is_featured ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Clock, Eye, ExternalLink, ChevronRight, Newspaper, Lightbulb, BarChart3, Building2, Search, CheckCircle } from 'lucide-react';
+import { Clock, Eye, ExternalLink, ChevronRight, Newspaper, Lightbulb, BarChart3, Building2, Search, CheckCircle, Shield, Brain, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useParams } from 'react-router-dom';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -210,7 +210,7 @@ export default function ArticlePage() {
               )}
 
               {/* Meta bar */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground mb-6 pb-6 border-b border-border">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground mb-4 pb-4 border-b border-border">
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{fullDate}</span>
                 <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{article.views || 0} leituras</span>
                 <span>{readTime} min de leitura</span>
@@ -222,6 +222,18 @@ export default function ArticlePage() {
                     </a>
                   ) : <span>Fonte: {article.source}</span>
                 )}
+                {article.ai_confidence > 0 && (
+                  <span className="flex items-center gap-1 ml-auto">
+                    <Brain className="w-3.5 h-3.5 text-violet-500" />
+                    <span className="font-semibold text-violet-600">Confiança IA: {article.ai_confidence}%</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Disclaimer */}
+              <div className="flex items-start gap-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/50 mb-6 text-[11px] text-muted-foreground">
+                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span>Conteúdo gerado por inteligência artificial com base em fontes públicas. Não constitui recomendação de investimento.</span>
               </div>
 
               {/* Hero Image */}
