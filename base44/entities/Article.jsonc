@@ -1,0 +1,121 @@
+{
+  "name": "Article",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo SEO do artigo"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL amig\u00e1vel"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Resumo executivo de at\u00e9 3 linhas"
+    },
+    "what_happened": {
+      "type": "string",
+      "description": "O que aconteceu"
+    },
+    "why_it_matters": {
+      "type": "string",
+      "description": "Por que isso importa"
+    },
+    "impacts": {
+      "type": "string",
+      "description": "Poss\u00edveis impactos em JSON string"
+    },
+    "affected_companies": {
+      "type": "string",
+      "description": "Empresas afetadas, separadas por v\u00edrgula"
+    },
+    "tickers": {
+      "type": "string",
+      "description": "Tickers relacionados, separados por v\u00edrgula"
+    },
+    "conclusion": {
+      "type": "string",
+      "description": "Conclus\u00e3o do artigo"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bolsa",
+        "renda_fixa",
+        "juros",
+        "dolar",
+        "economia",
+        "criptomoedas",
+        "commodities",
+        "empresas",
+        "internacional"
+      ],
+      "description": "Categoria principal"
+    },
+    "tags": {
+      "type": "string",
+      "description": "Tags SEO separadas por v\u00edrgula"
+    },
+    "source": {
+      "type": "string",
+      "description": "Fonte original da not\u00edcia"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "URL da fonte"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "URL da imagem de capa"
+    },
+    "meta_title": {
+      "type": "string",
+      "description": "Meta title para SEO"
+    },
+    "meta_description": {
+      "type": "string",
+      "description": "Meta description para SEO"
+    },
+    "relevance": {
+      "type": "string",
+      "enum": [
+        "baixa",
+        "media",
+        "alta",
+        "urgente"
+      ],
+      "default": "media"
+    },
+    "country": {
+      "type": "string",
+      "description": "Pa\u00eds principal relacionado"
+    },
+    "sector": {
+      "type": "string",
+      "description": "Setor econ\u00f4mico"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "publicado",
+        "arquivado"
+      ],
+      "default": "publicado"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Destaque na homepage"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}

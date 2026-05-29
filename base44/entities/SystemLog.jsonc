@@ -1,0 +1,31 @@
+{
+  "name": "SystemLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "A\u00e7\u00e3o executada"
+    },
+    "details": {
+      "type": "string",
+      "description": "Detalhes da a\u00e7\u00e3o"
+    },
+    "log_type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "success"
+      ],
+      "default": "info"
+    },
+    "source": {
+      "type": "string",
+      "description": "Fonte do log"
+    }
+  },
+  "required": [
+    "action"
+  ]
+}

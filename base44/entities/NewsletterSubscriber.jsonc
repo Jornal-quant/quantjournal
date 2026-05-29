@@ -1,0 +1,30 @@
+{
+  "name": "NewsletterSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Email do assinante"
+    },
+    "name": {
+      "type": "string",
+      "description": "Nome do assinante"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "gratuito",
+        "premium_mensal",
+        "premium_anual"
+      ],
+      "default": "gratuito"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}
