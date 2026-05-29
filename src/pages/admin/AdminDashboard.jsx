@@ -19,6 +19,7 @@ import AdminQueueTab from '../../components/admin/AdminQueueTab';
 import AdminSourcesTab from '../../components/admin/AdminSourcesTab';
 import AdminMarketTab from '../../components/admin/AdminMarketTab';
 import AdminNewsletterTab from '../../components/admin/AdminNewsletterTab';
+import BackfillPanel from '../../components/admin/BackfillPanel';
 
 const categoryLabels = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Dólar',
@@ -130,6 +131,9 @@ export default function AdminDashboard() {
             </Card>
           ))}
         </div>
+
+        {/* Backfill / Content Management Panel */}
+        <BackfillPanel />
 
         <Tabs defaultValue="articles">
           <TabsList className="flex-wrap h-auto gap-1">
