@@ -1,35 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 const COMPANIES = [
-  { name: 'Petrobras',       ticker: 'PETR4', slug: 'petrobras', sector: 'Energia' },
-  { name: 'Vale',            ticker: 'VALE3', slug: 'vale',       sector: 'Mineração' },
-  { name: 'Itaú',            ticker: 'ITUB4', slug: 'itau',       sector: 'Financeiro' },
-  { name: 'Nubank',          ticker: 'NU',    slug: 'nubank',     sector: 'Fintech' },
-  { name: 'Ambev',           ticker: 'ABEV3', slug: 'ambev',      sector: 'Consumo' },
-  { name: 'Bradesco',        ticker: 'BBDC4', slug: 'bradesco',   sector: 'Financeiro' },
-  { name: 'WEG',             ticker: 'WEGE3', slug: 'weg',        sector: 'Industrial' },
-  { name: 'Magazine Luiza',  ticker: 'MGLU3', slug: 'magalu',     sector: 'Varejo' },
+  { name: 'Petrobras',  ticker: 'PETR4',  slug: 'petrobras',  sector: 'Energia' },
+  { name: 'Vale',       ticker: 'VALE3',  slug: 'vale',       sector: 'Mineração' },
+  { name: 'Itaú',       ticker: 'ITUB4',  slug: 'itau',       sector: 'Bancos' },
+  { name: 'Ambev',      ticker: 'ABEV3',  slug: 'ambev',      sector: 'Consumo' },
+  { name: 'Bradesco',   ticker: 'BBDC4',  slug: 'bradesco',   sector: 'Bancos' },
+  { name: 'WEG',        ticker: 'WEGE3',  slug: 'weg',        sector: 'Indústria' },
 ];
 
 export default function CompaniesInFocus() {
   return (
-    <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
-      <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2 flex items-center justify-between">
-        <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Empresas em Foco</h3>
-        <Link to="/ativos" className="font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors">ver todos →</Link>
+    <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
+      <div className="px-4 py-2.5 border-b border-white/6 bg-white/3 flex items-center justify-between">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/35">Empresas em foco</span>
+        <Link to="/ativos" className="font-mono text-[9px] text-white/20 hover:text-white/50 transition-colors duration-150">ver todas →</Link>
       </div>
-      <div className="p-2 grid grid-cols-2 gap-px">
+      <div className="grid grid-cols-2 divide-x divide-y divide-white/5">
         {COMPANIES.map((c) => (
-          <Link key={c.ticker} to={`/ativo/${c.slug}`}
-            className="group flex items-center gap-2.5 px-3 py-2.5 rounded hover:bg-ds-surface2 transition-colors">
-            <div className="w-7 h-7 bg-foreground rounded flex items-center justify-center flex-shrink-0">
-              <span className="font-mono text-[8px] font-semibold text-white/70 leading-none">{c.ticker.slice(0, 3)}</span>
-            </div>
-            <div className="min-w-0">
-              <p className="font-mono text-[11px] font-semibold leading-none truncate group-hover:text-ds-beige transition-colors">{c.name}</p>
-              <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{c.ticker}</p>
-            </div>
+          <Link key={c.slug} to={`/ativo/${c.slug}`}
+            className="group flex flex-col px-3 py-2.5 hover:bg-white/4 transition-colors duration-150">
+            <span className="font-mono text-[11px] font-semibold text-white/60 group-hover:text-white/90 transition-colors duration-150 tabular-nums">{c.ticker}</span>
+            <span className="font-sans text-[11px] text-white/25 truncate">{c.name}</span>
           </Link>
         ))}
       </div>

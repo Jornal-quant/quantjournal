@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
 
 const CAT_LABEL = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Câmbio',
@@ -9,101 +10,141 @@ const CAT_LABEL = {
   empresas: 'Empresas', internacional: 'Internacional',
 };
 
-const CAT_BG = {
-  bolsa: 'from-slate-900 to-slate-800',
-  economia: 'from-stone-900 to-stone-800',
-  dolar: 'from-stone-800 to-stone-700',
-  juros: 'from-zinc-900 to-zinc-800',
-  criptomoedas: 'from-neutral-900 to-neutral-800',
-  commodities: 'from-stone-900 to-stone-800',
-  empresas: 'from-gray-900 to-gray-800',
-  internacional: 'from-slate-800 to-slate-700',
-  renda_fixa: 'from-zinc-800 to-zinc-700',
+const IMPACT_CONFIG = {
+  critico: { label: 'Crítico', bg: 'bg-red-500/15 text-red-400 border-red-500/20' },
+  alto:    { label: 'Alto',    bg: 'bg-orange-500/15 text-orange-400 border-orange-500/20' },
+  medio:   { label: 'Médio',   bg: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20' },
+  baixo:   { label: 'Baixo',   bg: 'bg-slate-500/15 text-slate-400 border-slate-500/20' },
 };
 
-function Placeholder({ category, large = false }) {
-  const bg = CAT_BG[category] || 'from-gray-900 to-gray-800';
-  const label = CAT_LABEL[category] || category || '';
-  return (
-    <div className={`w-full h-full bg-gradient-to-br ${bg} flex items-center justify-center`}>
-      <span className={`font-mono font-semibold uppercase tracking-widest text-white/10 ${large ? 'text-xs' : 'text-[9px]'}`}>
-        {label}
-      </span>
-    </div>
-  );
-}
+const SENTIMENT_CONFIG = {
+  positivo: { icon: TrendingUp,   color: 'text-emerald-400', label: 'Positivo' },
+  negativo: { icon: TrendingDown, color: 'text-red-400',     label: 'Negativo' },
+  neutro:   { icon: Minus,        color: 'text-slate-400',   label: 'Neutro' },
+  misto:    { icon: Minus,        color: 'text-yellow-400',  label: 'Misto' },
+};
 
 function timeAgo(date) {
   if (!date) return '';
   return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
 }
 
-export default function ArticleCard({ article, variant = 'default' }) {
+function CategoryDot({ category }) {
+  const colors = {
+    bolsa: '#3B82F6', dolar: '#8B5CF6', juros: '#06B6D4', criptomoedas: '#F59E0B',
+    commodities: '#10B981', empresas: '#6366F1', internacional: '#EC4899',
+    economia: '#84CC16', renda_fixa: '#14B8A6',
+  };
+  return <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[category] || '#6B7280' }} />;
+}
+
+// Compact list card variant
+function CompactCard({ article }) {
   const cat = CAT_LABEL[article.category] || article.category;
   const ago = timeAgo(article.created_date);
-  const isUrgent = article.relevance === 'urgente';
-
-  if (variant === 'compact') {
-    return (
-      <Link to={`/artigo/${article.id}`} className="group flex gap-3 p-2.5 rounded hover:bg-ds-surface2 transition-colors">
-        <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-ds-surface3">
-          {article.image_url
-            ? <img src={article.image_url} alt="" className="w-full h-full object-cover" />
-            : <Placeholder category={article.category} />}
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{cat}</span>
-          <p className="font-serif text-[13px] font-semibold leading-snug group-hover:text-ds-beige transition-colors line-clamp-2 mt-0.5">{article.title}</p>
-          <span className="font-mono text-[10px] text-muted-foreground mt-0.5 block">{ago}</span>
-        </div>
-      </Link>
-    );
-  }
+  const sentiment = SENTIMENT_CONFIG[article.sentiment];
+  const SentimentIcon = sentiment?.icon;
 
   return (
-    <Link to={`/artigo/${article.id}`} className="group block">
-      <div className="rounded-lg overflow-hidden bg-ds-surface border border-ds-border hover:shadow-md hover:-translate-y-px transition-all duration-200 h-full flex flex-col">
-        {/* Image */}
-        <div className="aspect-video overflow-hidden flex-shrink-0 bg-ds-surface3">
-          {article.image_url
-            ? <img src={article.image_url} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            : <Placeholder category={article.category} large />}
-        </div>
-
-        {/* Body */}
-        <div className="p-4 flex flex-col flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {cat}
-            </span>
-            {isUrgent && (
-              <span className="font-mono text-[9px] bg-ds-dn text-white px-1.5 py-0.5 rounded-sm font-semibold uppercase tracking-wider">
-                Urgente
-              </span>
-            )}
-            {article.sentiment === 'positivo' && <span className="font-mono text-[9px] text-ds-up">↑</span>}
-            {article.sentiment === 'negativo' && <span className="font-mono text-[9px] text-ds-dn">↓</span>}
-          </div>
-
-          <h3 className="font-serif text-[15px] font-semibold leading-snug text-foreground mb-1.5 flex-1 line-clamp-2 group-hover:text-ds-beige transition-colors">
-            {article.title}
-          </h3>
-
-          {article.summary && (
-            <p className="font-sans text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{article.summary}</p>
+    <Link to={`/artigo/${article.id}`}
+      className="group flex items-start gap-3 p-3 rounded-lg hover:bg-white/4 transition-colors duration-150 border border-transparent hover:border-white/8 cursor-pointer">
+      <CategoryDot category={article.category} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">{cat}</span>
+          {article.relevance === 'urgente' && (
+            <span className="font-mono text-[8px] font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-sm">Urgente</span>
           )}
-
-          <div className="flex items-center justify-between pt-2.5 border-t border-ds-border mt-auto">
-            <span className="font-mono text-[10px] text-muted-foreground">{ago}</span>
-            <div className="flex items-center gap-2">
-              {article.source && <span className="font-mono text-[10px] text-muted-foreground/50 truncate max-w-[80px]">{article.source}</span>}
-              {article.ai_confidence > 0 && (
-                <span className="font-mono text-[9px] text-white/50 bg-foreground/80 px-1.5 py-0.5 rounded-sm">⬡ {article.ai_confidence}%</span>
-              )}
-            </div>
-          </div>
+        </div>
+        <p className="font-mono text-[13px] font-medium leading-snug text-white/80 group-hover:text-white transition-colors duration-150 line-clamp-2">{article.title}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          {SentimentIcon && <SentimentIcon className={`w-3 h-3 ${sentiment.color}`} />}
+          <span className="font-mono text-[10px] text-white/25">{ago}</span>
+          {article.source && <span className="font-mono text-[10px] text-white/15 truncate max-w-[80px]">· {article.source}</span>}
         </div>
       </div>
     </Link>
   );
+}
+
+// Full card variant
+function DefaultCard({ article }) {
+  const cat = CAT_LABEL[article.category] || article.category;
+  const ago = timeAgo(article.created_date);
+  const impact = IMPACT_CONFIG[article.impact_level];
+  const sentiment = SENTIMENT_CONFIG[article.sentiment];
+  const SentimentIcon = sentiment?.icon;
+
+  return (
+    <Link to={`/artigo/${article.id}`}
+      className="group flex flex-col bg-white/3 hover:bg-white/6 border border-white/8 hover:border-white/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
+      {/* Image or gradient header */}
+      <div className="relative h-40 flex-shrink-0 overflow-hidden bg-white/4">
+        {article.image_url ? (
+          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity duration-300" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-end p-3 bg-gradient-to-br from-white/6 to-transparent">
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/15">{cat}</span>
+          </div>
+        )}
+        {/* Overlays */}
+        {article.is_breaking && (
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-md">
+            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+            <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-white">Urgente</span>
+          </div>
+        )}
+        {article.ai_confidence > 0 && (
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md">
+            <Zap className="w-2.5 h-2.5 text-white/40" />
+            <span className="font-mono text-[9px] text-white/50">{article.ai_confidence}%</span>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col flex-1 p-4">
+        {/* Category + sentiment row */}
+        <div className="flex items-center gap-2 mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <CategoryDot category={article.category} />
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">{cat}</span>
+          </div>
+          {SentimentIcon && (
+            <span className={`flex items-center gap-0.5 font-mono text-[9px] ${sentiment.color}`}>
+              <SentimentIcon className="w-3 h-3" />
+            </span>
+          )}
+          {impact && (
+            <span className={`font-mono text-[8px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 rounded-sm ml-auto ${impact.bg}`}>
+              {impact.label}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className="font-mono text-[14px] font-semibold leading-snug text-white/85 group-hover:text-white transition-colors duration-150 line-clamp-2 flex-1 mb-2">
+          {article.title}
+        </h3>
+
+        {/* Summary */}
+        {article.summary && (
+          <p className="font-sans text-[12px] text-white/35 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-white/6 mt-auto">
+          <span className="font-mono text-[10px] text-white/25 tabular-nums">{ago}</span>
+          {article.source && (
+            <span className="font-mono text-[10px] text-white/20 truncate max-w-[100px]">{article.source}</span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function ArticleCard({ article, variant = 'default' }) {
+  if (variant === 'compact') return <CompactCard article={article} />;
+  return <DefaultCard article={article} />;
 }

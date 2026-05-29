@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { format } from 'date-fns';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const FALLBACK = [
   { symbol: 'IBOV',    name: 'Ibovespa',     price: 137248, change_percent: 0.62,  market_type: 'index' },
@@ -14,11 +14,11 @@ const FALLBACK = [
 
 function formatPrice(s) {
   if (s.price == null) return '—';
-  if (s.market_type === 'rate') return `${s.price.toFixed(2)}%`;
-  if (s.market_type === 'fx') return `R$ ${s.price.toFixed(2)}`;
-  if (s.market_type === 'index') return s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-  if (s.price > 50000) return `US$ ${(s.price / 1000).toFixed(1)}k`;
-  if (s.price > 1000) return `US$ ${s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+  if (s.market_type === 'rate')   return `${s.price.toFixed(2)}%`;
+  if (s.market_type === 'fx')     return `R$ ${s.price.toFixed(2)}`;
+  if (s.market_type === 'index')  return s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  if (s.price > 50000)            return `US$ ${(s.price / 1000).toFixed(1)}k`;
+  if (s.price > 1000)             return `US$ ${s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
   return `US$ ${s.price.toFixed(2)}`;
 }
 
@@ -32,42 +32,37 @@ export default function MarketRadar() {
   const isLive = snapshots.length > 0;
   const data = isLive ? snapshots.slice(0, 6) : FALLBACK;
 
-  const lastUpdated = (() => {
-    if (!isLive) return null;
-    const ts = snapshots.find((s) => s.updated_at)?.updated_at;
-    if (!ts) return null;
-    try { return format(new Date(ts), 'HH:mm'); } catch { return null; }
-  })();
-
   return (
-    <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
+    <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
       {/* Header */}
-      <div className="px-4 py-2 bg-foreground flex items-center justify-between">
+      <div className="px-4 py-2.5 border-b border-white/6 flex items-center justify-between bg-white/3">
         <div className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-ds-up animate-pulse' : 'bg-white/20'}`} />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">Mercados</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-white/15'}`} />
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/40">Mercados</span>
         </div>
-        <span className="font-mono text-[10px] text-white/25">
-          {isLive ? (lastUpdated ? `Atualizado às ${lastUpdated}` : 'Dados ao vivo') : 'Dados simulados'}
+        <span className="font-mono text-[10px] text-white/20">
+          {isLive ? 'Dados ao vivo' : 'Dados ilustrativos'}
         </span>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-6">
-        {data.map((s, i) => {
+      {/* Asset grid */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-white/6">
+        {data.map((s) => {
           const up = s.change_percent > 0;
           const dn = s.change_percent < 0;
+          const Icon = up ? TrendingUp : dn ? TrendingDown : null;
           return (
-            <div key={s.symbol}
-              className={`px-3 py-3 hover:bg-ds-surface2 transition-colors flex flex-col gap-0.5
-                ${i < data.length - 1 ? 'border-r border-b sm:border-b-0 border-ds-border' : ''}`}>
-              <p className="font-mono text-[10px] font-semibold text-muted-foreground uppercase tracking-wide truncate">{s.symbol}</p>
-              <p className="font-mono text-sm font-semibold text-foreground leading-none">{formatPrice(s)}</p>
-              <p className={`font-mono text-[11px] font-medium mt-0.5 ${
-                dn ? 'text-ds-dn' : up ? 'text-ds-up' : 'text-muted-foreground'
-              }`}>
-                {s.change_percent != null ? `${up ? '+' : ''}${s.change_percent.toFixed(2)}%` : '—'}
-              </p>
+            <div key={s.symbol} className="px-3.5 py-3 hover:bg-white/4 transition-colors duration-150 group">
+              <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30 mb-1.5">{s.symbol}</p>
+              <p className="font-mono text-[15px] font-semibold text-white/85 tabular-nums leading-none mb-1">{formatPrice(s)}</p>
+              <div className="flex items-center gap-1">
+                {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-400' : 'text-red-400'}`} />}
+                <p className={`font-mono text-[11px] font-medium tabular-nums ${
+                  dn ? 'text-red-400' : up ? 'text-emerald-400' : 'text-white/25'
+                }`}>
+                  {s.change_percent != null ? `${up ? '+' : ''}${s.change_percent.toFixed(2)}%` : '—'}
+                </p>
+              </div>
             </div>
           );
         })}
