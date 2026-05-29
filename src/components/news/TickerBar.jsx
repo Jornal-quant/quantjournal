@@ -22,7 +22,7 @@ function fmt(s) {
 }
 
 export default function TickerBar() {
-  const { data: snaps = [] } = useQuery({
+  const { data: snaps = [], } = useQuery({
     queryKey: ['ticker-snapshots'],
     queryFn: () => base44.entities.MarketSnapshot.list(),
     staleTime: 5 * 60 * 1000,
@@ -41,16 +41,26 @@ export default function TickerBar() {
 
   return (
     <div className="bg-foreground overflow-hidden border-b border-white/5">
-      <div className="flex animate-ticker">
-        {doubled.map((t, i) => (
-          <div key={i} className="flex items-center gap-2.5 px-5 py-1.5 border-r border-white/5 whitespace-nowrap flex-shrink-0">
-            <span className="font-mono text-[10px] font-semibold text-white/50 tracking-wider uppercase">{t.name}</span>
-            <span className="font-mono text-[11px] font-medium text-white">{t.value}</span>
-            <span className={`font-mono text-[10px] font-semibold ${
-              t.up === true ? 'text-ds-up' : t.up === false ? 'text-ds-dn' : 'text-white/25'
-            }`}>{t.change}</span>
-          </div>
-        ))}
+      <div className="flex">
+        {/* Label fixo */}
+        <div className="flex items-center gap-1.5 px-4 border-r border-white/10 flex-shrink-0 bg-foreground z-10">
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${snaps.length > 0 ? 'bg-ds-up animate-pulse' : 'bg-white/15'}`} />
+          <span className="font-mono text-[9px] text-white/20 uppercase tracking-wider whitespace-nowrap">
+            {snaps.length > 0 ? 'Ao vivo' : 'Ilustrativo'}
+          </span>
+        </div>
+        {/* Ticker animado */}
+        <div className="flex animate-ticker overflow-hidden">
+          {doubled.map((t, i) => (
+            <div key={i} className="flex items-center gap-2.5 px-5 py-1.5 border-r border-white/5 whitespace-nowrap flex-shrink-0">
+              <span className="font-mono text-[10px] font-semibold text-white/50 tracking-wider uppercase">{t.name}</span>
+              <span className="font-mono text-[11px] font-medium text-white">{t.value}</span>
+              <span className={`font-mono text-[10px] font-semibold ${
+                t.up === true ? 'text-ds-up' : t.up === false ? 'text-ds-dn' : 'text-white/25'
+              }`}>{t.change}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

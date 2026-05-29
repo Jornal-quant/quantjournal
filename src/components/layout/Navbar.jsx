@@ -5,13 +5,13 @@ import { Search, Menu, X } from 'lucide-react';
 const NAV = [
   { label: 'Início',        path: '/' },
   { label: 'Bolsa',         path: '/categoria/bolsa' },
-  { label: 'Economia',      path: '/categoria/economia' },
-  { label: 'Dólar',         path: '/categoria/dolar' },
+  { label: 'Câmbio',        path: '/categoria/dolar' },
   { label: 'Juros',         path: '/categoria/juros' },
   { label: 'Cripto',        path: '/categoria/criptomoedas' },
   { label: 'Commodities',   path: '/categoria/commodities' },
   { label: 'Empresas',      path: '/categoria/empresas' },
   { label: 'Internacional', path: '/categoria/internacional' },
+  { label: 'Economia',      path: '/categoria/economia' },
   { label: 'Renda Fixa',    path: '/categoria/renda_fixa' },
   { label: 'Ativos',        path: '/ativos' },
   { label: '⬡ IA Chat',    path: '/chat' },
@@ -33,6 +33,7 @@ export default function Navbar() {
               <span className="w-1.5 h-1.5 bg-ds-up rounded-full animate-pulse" />
               IA ativa · atualização contínua
             </span>
+            <Link to="/metodologia" className="hover:text-white/60 transition-colors">Metodologia</Link>
             <Link to="/admin" className="hover:text-white/60 transition-colors">Admin</Link>
           </div>
         </div>

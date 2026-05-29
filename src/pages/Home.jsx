@@ -65,40 +65,74 @@ function SectionHeader({ label, href, counter }) {
   );
 }
 
+const VALUE_PROPS = [
+  'Monitoramento de fontes financeiras globais',
+  'Análises estruturadas por IA, não por templates',
+  'Fontes rastreáveis em cada artigo',
+  'Sentimento e impacto identificados automaticamente',
+  'Atualização contínua — artigos evoluem com o mercado',
+  'Sem linguagem de recomendação financeira',
+];
+
 function LandingHero({ articles }) {
   const hasArticles = articles.length > 0;
   return (
     <section className="border-b border-ds-border bg-foreground text-background">
       <div className="max-w-7xl mx-auto px-6 py-14 md:py-20">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-2 mb-5">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">FinAI Pulse · Plataforma de Análise Financeira</span>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-12 items-start">
+          <div>
+            <div className="flex items-center gap-2 mb-5">
+              <span className="w-1.5 h-1.5 bg-ds-up rounded-full animate-pulse" />
+              <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">
+                Plataforma de análise financeira · impulsionada por IA
+              </span>
+            </div>
+            <h1 className="font-mono text-3xl md:text-5xl font-semibold leading-tight tracking-tight text-white mb-5">
+              Entenda o mercado<br />
+              <span style={{ color: '#8C8478' }}>antes de todo mundo</span>
+            </h1>
+            <p className="font-sans text-base text-white/45 leading-relaxed mb-3 max-w-xl">
+              O FinAI Pulse monitora notícias globais, identifica eventos relevantes e transforma informações financeiras complexas em análises claras, rápidas e rastreáveis — para investidores que precisam entender o mercado, não apenas acompanhá-lo.
+            </p>
+            <p className="font-sans text-sm text-white/25 leading-relaxed mb-8 max-w-xl">
+              Para investidores individuais, analistas e profissionais do mercado financeiro que precisam de contexto e velocidade, sem ruído e sem viés editorial.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {hasArticles ? (
+                <>
+                  <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-sm font-semibold bg-white text-foreground px-5 py-2.5 rounded hover:opacity-90 transition-opacity">
+                    Explorar análises <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-sm font-medium border border-white/20 text-white px-5 py-2.5 rounded hover:border-white/40 transition-colors">
+                    Ver ativos
+                  </Link>
+                  <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-sm font-medium border border-white/20 text-white px-5 py-2.5 rounded hover:border-white/40 transition-colors">
+                    ⬡ Market Chat
+                  </Link>
+                </>
+              ) : (
+                <Link to="/admin" className="inline-flex items-center gap-2 font-mono text-sm font-semibold bg-white text-foreground px-5 py-2.5 rounded hover:opacity-90 transition-opacity">
+                  Acessar Admin → Gerar conteúdo
+                </Link>
+              )}
+            </div>
           </div>
-          <h1 className="font-mono text-3xl md:text-5xl font-semibold leading-tight tracking-tight text-white mb-4">
-            Inteligência financeira<br />
-            <span style={{ color: '#8C8478' }}>em tempo real</span>, impulsionada por IA
-          </h1>
-          <p className="font-sans text-base md:text-lg text-white/45 leading-relaxed mb-8 max-w-2xl">
-            O FinAI Pulse monitora notícias globais, identifica eventos relevantes de mercado e transforma informações complexas em análises claras, rápidas e rastreáveis.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {hasArticles ? (
-              <>
-                <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-sm font-semibold bg-white text-foreground px-5 py-2.5 rounded hover:opacity-90 transition-opacity">
-                  Explorar notícias <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-sm font-medium border border-white/20 text-white px-5 py-2.5 rounded hover:border-white/40 transition-colors">
-                  Ver ativos
-                </Link>
-                <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-sm font-medium border border-white/20 text-white px-5 py-2.5 rounded hover:border-white/40 transition-colors">
-                  Testar Market Chat
-                </Link>
-              </>
-            ) : (
-              <Link to="/admin" className="inline-flex items-center gap-2 font-mono text-sm font-semibold bg-white text-foreground px-5 py-2.5 rounded hover:opacity-90 transition-opacity">
-                Acessar Admin → Gerar conteúdo
-              </Link>
-            )}
+
+          {/* Value props card */}
+          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-2.5">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/30 mb-3">O que o FinAI Pulse faz</p>
+            {VALUE_PROPS.map((v) => (
+              <div key={v} className="flex items-start gap-2.5">
+                <span className="w-1 h-1 bg-ds-up rounded-full flex-shrink-0 mt-2" />
+                <p className="font-sans text-sm text-white/50 leading-snug">{v}</p>
+              </div>
+            ))}
+            <div className="pt-3 border-t border-white/10 mt-3">
+              <p className="font-sans text-[11px] text-white/20 leading-relaxed">
+                Conteúdo informativo. Não constitui recomendação de investimento.{' '}
+                <Link to="/metodologia" className="underline hover:text-white/40 transition-colors">Ver metodologia</Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

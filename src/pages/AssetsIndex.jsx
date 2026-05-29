@@ -1,116 +1,135 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, TrendingUp, ChevronRight, Coins, DollarSign, BarChart3 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Search, ArrowRight } from 'lucide-react';
 
-const FEATURED_ASSETS = [
-  { slug: 'petrobras', name: 'Petrobras', ticker: 'PETR4', type: 'empresa', sector: 'Energia' },
-  { slug: 'vale', name: 'Vale', ticker: 'VALE3', type: 'empresa', sector: 'Mineração' },
-  { slug: 'itau', name: 'Itaú Unibanco', ticker: 'ITUB4', type: 'empresa', sector: 'Financeiro' },
-  { slug: 'bradesco', name: 'Bradesco', ticker: 'BBDC4', type: 'empresa', sector: 'Financeiro' },
-  { slug: 'nubank', name: 'Nubank', ticker: 'NUBR33', type: 'empresa', sector: 'Fintech' },
-  { slug: 'wege', name: 'WEG', ticker: 'WEGE3', type: 'empresa', sector: 'Indústria' },
-  { slug: 'b3', name: 'B3', ticker: 'B3SA3', type: 'empresa', sector: 'Financeiro' },
-  { slug: 'magazine-luiza', name: 'Magazine Luiza', ticker: 'MGLU3', type: 'empresa', sector: 'Varejo' },
-  { slug: 'selic', name: 'Taxa Selic', ticker: null, type: 'juros', sector: 'Política Monetária' },
-  { slug: 'dolar', name: 'Dólar (USD/BRL)', ticker: null, type: 'moeda', sector: 'Câmbio' },
-  { slug: 'ibovespa', name: 'Ibovespa', ticker: 'IBOV', type: 'indice', sector: 'Índices' },
-  { slug: 'bitcoin', name: 'Bitcoin', ticker: 'BTC', type: 'cripto', sector: 'Criptomoedas' },
-  { slug: 'ethereum', name: 'Ethereum', ticker: 'ETH', type: 'cripto', sector: 'Criptomoedas' },
-  { slug: 'petroleo', name: 'Petróleo (Brent)', ticker: null, type: 'commodity', sector: 'Energia' },
-  { slug: 'ouro', name: 'Ouro', ticker: null, type: 'commodity', sector: 'Metais' },
-  { slug: 'amazon', name: 'Amazon', ticker: 'AMZN', type: 'empresa', sector: 'Tecnologia' },
-  { slug: 'apple', name: 'Apple', ticker: 'AAPL', type: 'empresa', sector: 'Tecnologia' },
-  { slug: 'nvidia', name: 'Nvidia', ticker: 'NVDA', type: 'empresa', sector: 'Tecnologia' },
-  { slug: 'inter', name: 'Inter', ticker: 'INBR32', type: 'empresa', sector: 'Fintech' },
-  { slug: 'fed', name: 'Federal Reserve', ticker: null, type: 'juros', sector: 'Política Monetária' },
+const ASSETS = [
+  // Empresas BR
+  { slug: 'petrobras',      name: 'Petrobras',         ticker: 'PETR4',   type: 'empresa',   sector: 'Energia',          country: '🇧🇷' },
+  { slug: 'vale',           name: 'Vale',              ticker: 'VALE3',   type: 'empresa',   sector: 'Mineração',        country: '🇧🇷' },
+  { slug: 'itau',           name: 'Itaú Unibanco',     ticker: 'ITUB4',   type: 'empresa',   sector: 'Financeiro',       country: '🇧🇷' },
+  { slug: 'bradesco',       name: 'Bradesco',          ticker: 'BBDC4',   type: 'empresa',   sector: 'Financeiro',       country: '🇧🇷' },
+  { slug: 'nubank',         name: 'Nubank',            ticker: 'NUBR33',  type: 'empresa',   sector: 'Fintech',          country: '🇧🇷' },
+  { slug: 'wege',           name: 'WEG',               ticker: 'WEGE3',   type: 'empresa',   sector: 'Industrial',       country: '🇧🇷' },
+  { slug: 'b3',             name: 'B3',                ticker: 'B3SA3',   type: 'empresa',   sector: 'Financeiro',       country: '🇧🇷' },
+  { slug: 'magazine-luiza', name: 'Magazine Luiza',    ticker: 'MGLU3',   type: 'empresa',   sector: 'Varejo',           country: '🇧🇷' },
+  { slug: 'inter',          name: 'Banco Inter',       ticker: 'INBR32',  type: 'empresa',   sector: 'Fintech',          country: '🇧🇷' },
+  // Empresas INT
+  { slug: 'nvidia',         name: 'Nvidia',            ticker: 'NVDA',    type: 'empresa',   sector: 'Tecnologia',       country: '🇺🇸' },
+  { slug: 'apple',          name: 'Apple',             ticker: 'AAPL',    type: 'empresa',   sector: 'Tecnologia',       country: '🇺🇸' },
+  { slug: 'amazon',         name: 'Amazon',            ticker: 'AMZN',    type: 'empresa',   sector: 'Tecnologia',       country: '🇺🇸' },
+  // Índices
+  { slug: 'ibovespa',       name: 'Ibovespa',          ticker: 'IBOV',    type: 'indice',    sector: 'Índice BR',        country: '🇧🇷' },
+  { slug: 'sp500',          name: 'S&P 500',           ticker: 'SPX',     type: 'indice',    sector: 'Índice EUA',       country: '🇺🇸' },
+  // Moedas
+  { slug: 'dolar',          name: 'Dólar (USD/BRL)',   ticker: 'USD/BRL', type: 'moeda',     sector: 'Câmbio',           country: '🌐' },
+  { slug: 'euro',           name: 'Euro (EUR/BRL)',    ticker: 'EUR/BRL', type: 'moeda',     sector: 'Câmbio',           country: '🌐' },
+  // Juros
+  { slug: 'selic',          name: 'Taxa Selic',        ticker: 'SELIC',   type: 'juros',     sector: 'Política Monetária', country: '🇧🇷' },
+  { slug: 'fed',            name: 'Federal Reserve',   ticker: 'FED',     type: 'juros',     sector: 'Política Monetária', country: '🇺🇸' },
+  // Cripto
+  { slug: 'bitcoin',        name: 'Bitcoin',           ticker: 'BTC',     type: 'cripto',    sector: 'Criptomoedas',     country: '🌐' },
+  { slug: 'ethereum',       name: 'Ethereum',          ticker: 'ETH',     type: 'cripto',    sector: 'Criptomoedas',     country: '🌐' },
+  // Commodities
+  { slug: 'petroleo',       name: 'Petróleo (Brent)',  ticker: 'BRENT',   type: 'commodity', sector: 'Energia',          country: '🌐' },
+  { slug: 'ouro',           name: 'Ouro',              ticker: 'GOLD',    type: 'commodity', sector: 'Metais',           country: '🌐' },
 ];
 
-const typeIcons = {
-  empresa: Building2,
-  indice: BarChart3,
-  moeda: DollarSign,
-  juros: TrendingUp,
-  cripto: Coins,
-  commodity: TrendingUp,
+const TYPE_LABELS = {
+  empresa: 'Empresas', indice: 'Índices', moeda: 'Moedas e Câmbio',
+  juros: 'Juros & Bancos Centrais', cripto: 'Criptomoedas', commodity: 'Commodities',
 };
 
-const typeColors = {
-  empresa: 'bg-primary/10 text-primary border-primary/20',
-  indice: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
-  moeda: 'bg-accent/10 text-accent border-accent/20',
-  juros: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
-  cripto: 'bg-chart-3/10 text-chart-3 border-chart-3/20',
-  commodity: 'bg-chart-4/10 text-chart-4 border-chart-4/20',
-};
+const TYPE_ORDER = ['empresa', 'indice', 'juros', 'moeda', 'cripto', 'commodity'];
 
 export default function AssetsIndex() {
+  const [query, setQuery] = useState('');
+
+  const filtered = query
+    ? ASSETS.filter((a) =>
+        a.name.toLowerCase().includes(query.toLowerCase()) ||
+        a.ticker?.toLowerCase().includes(query.toLowerCase()) ||
+        a.sector.toLowerCase().includes(query.toLowerCase())
+      )
+    : null;
+
   const grouped = {};
-  FEATURED_ASSETS.forEach((a) => {
+  (filtered || ASSETS).forEach((a) => {
     if (!grouped[a.type]) grouped[a.type] = [];
     grouped[a.type].push(a);
   });
 
-  const typeLabels = {
-    empresa: 'Empresas',
-    indice: 'Índices',
-    moeda: 'Moedas',
-    juros: 'Juros & Política Monetária',
-    cripto: 'Criptomoedas',
-    commodity: 'Commodities',
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-display mb-2">Páginas de Ativos</h1>
-        <p className="text-muted-foreground">
-          Acompanhe notícias, análises e impactos de IA para cada ativo, empresa ou indicador.
+        <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Cobertura</p>
+        <h1 className="font-mono text-2xl font-semibold mb-2">Ativos monitorados</h1>
+        <p className="font-sans text-sm text-muted-foreground max-w-2xl leading-relaxed">
+          Acompanhe notícias, análises de IA e sentimento de mercado para empresas, índices, moedas, juros e commodities. Clique em um ativo para ver a análise completa.
         </p>
       </div>
 
-      <div className="space-y-8">
-        {Object.entries(grouped).map(([type, assets]) => {
-          const Icon = typeIcons[type] || TrendingUp;
-          return (
+      {/* Search */}
+      <div className="relative mb-8 max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar ativo ou ticker..."
+          className="w-full font-mono text-sm pl-9 pr-4 py-2.5 bg-ds-surface border border-ds-border rounded outline-none focus:border-foreground transition-colors placeholder:text-muted-foreground/50"
+        />
+      </div>
+
+      {/* Results */}
+      {filtered && filtered.length === 0 ? (
+        <div className="text-center py-16 space-y-2">
+          <p className="font-mono text-sm text-muted-foreground">Nenhum ativo encontrado para "{query}"</p>
+          <button onClick={() => setQuery('')} className="font-mono text-[11px] text-muted-foreground hover:text-foreground transition-colors underline">
+            Limpar busca
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-10">
+          {TYPE_ORDER.filter((t) => grouped[t]).map((type) => (
             <section key={type}>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon className="w-5 h-5 text-muted-foreground" />
-                <h2 className="text-lg font-bold">{typeLabels[type] || type}</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-0.5 h-4 bg-foreground/20 rounded-full" />
+                <h2 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{TYPE_LABELS[type]}</h2>
+                <span className="font-mono text-[9px] text-muted-foreground/40">{grouped[type].length}</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {assets.map((asset) => {
-                  const AssetIcon = typeIcons[asset.type] || TrendingUp;
-                  return (
-                    <Link
-                      key={asset.slug}
-                      to={`/ativo/${asset.slug}`}
-                      className="group bg-card border border-border rounded-xl p-4 hover:border-primary/40 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="w-9 h-9 bg-muted rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                          <AssetIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                {grouped[type].map((asset) => (
+                  <Link key={asset.slug} to={`/ativo/${asset.slug}`}
+                    className="group flex items-center justify-between bg-ds-surface border border-ds-border rounded-lg px-4 py-3.5 hover:border-foreground/20 hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center flex-shrink-0">
+                        <span className="font-mono text-[8px] font-semibold text-white/50 leading-none">
+                          {asset.ticker ? asset.ticker.slice(0, 3) : asset.name.slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-mono text-xs font-semibold leading-none truncate group-hover:text-ds-beige transition-colors">{asset.name}</p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          {asset.ticker && <span className="font-mono text-[10px] text-muted-foreground">{asset.ticker}</span>}
+                          <span className="text-sm">{asset.country}</span>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
                       </div>
-                      <h3 className="font-semibold text-sm leading-tight mb-1 group-hover:text-primary transition-colors">
-                        {asset.name}
-                      </h3>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {asset.ticker && (
-                          <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0">{asset.ticker}</Badge>
-                        )}
-                        <Badge className={`text-[10px] border ${typeColors[asset.type]}`}>
-                          {asset.sector}
-                        </Badge>
-                      </div>
-                    </Link>
-                  );
-                })}
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-muted-foreground flex-shrink-0 ml-2 transition-colors" />
+                  </Link>
+                ))}
               </div>
             </section>
-          );
-        })}
+          ))}
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      <div className="mt-12 pt-6 border-t border-ds-border">
+        <p className="font-sans text-[11px] text-muted-foreground/50 leading-relaxed text-center max-w-3xl mx-auto">
+          As análises e informações exibidas são geradas por inteligência artificial com base em fontes públicas. Não constituem recomendação de investimento.
+          Preços e variações podem estar desatualizados. Consulte fontes oficiais antes de tomar decisões financeiras.
+        </p>
       </div>
     </div>
   );
