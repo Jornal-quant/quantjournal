@@ -2,16 +2,70 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import {
-  ArrowLeft, TrendingUp, Building2, Newspaper,
-  Sparkles, Loader2, RefreshCw, ChevronRight
-} from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, MessageSquare, ExternalLink } from 'lucide-react';
 import ArticleCard from '../components/news/ArticleCard';
-import { toast } from 'sonner';
+
+const OTHER_ASSETS = [
+  { slug: 'petrobras', name: 'Petrobras', ticker: 'PETR4' },
+  { slug: 'vale', name: 'Vale', ticker: 'VALE3' },
+  { slug: 'itau', name: 'Itaú', ticker: 'ITUB4' },
+  { slug: 'nubank', name: 'Nubank', ticker: 'NU' },
+  { slug: 'selic', name: 'Taxa SELIC', ticker: 'SELIC' },
+  { slug: 'dolar', name: 'Dólar', ticker: 'USD/BRL' },
+  { slug: 'bitcoin', name: 'Bitcoin', ticker: 'BTC' },
+  { slug: 'ibovespa', name: 'Ibovespa', ticker: 'IBOV' },
+];
+
+function SentimentIcon({ s }) {
+  if (s === 'positivo') return <TrendingUp className="w-4 h-4 text-ds-up" />;
+  if (s === 'negativo') return <TrendingDown className="w-4 h-4 text-ds-dn" />;
+  return <Minus className="w-4 h-4 text-muted-foreground" />;
+}
+
+function AISummaryPanel({ summary, name }) {
+  if (!summary) return null;
+  const perspClasses = {
+    positiva: 'text-ds-up bg-ds-up-bg border border-ds-up/20',
+    negativa: 'text-ds-dn bg-ds-dn-bg border border-ds-dn/20',
+    neutra: 'text-muted-foreground bg-ds-surface3 border border-ds-border',
+  };
+  const cls = perspClasses[summary.perspectiva] || perspClasses.neutra;
+
+  const rows = [
+    { label: 'Cenário atual',  value: summary.cenario_atual },
+    { label: 'Favorece',       value: summary.quem_ganha },
+    { label: 'Pressiona',      value: summary.quem_perde },
+    { label: 'Impacto bolsa',  value: summary.impacto_bolsa },
+    { label: 'Impacto câmbio', value: summary.impacto_dolar },
+    { label: 'Impacto juros',  value: summary.impacto_selic },
+    { label: 'O que monitorar', value: summary.o_que_observar },
+  ].filter((r) => r.value);
+
+  return (
+    <div className="border border-ds-border rounded-lg overflow-hidden mb-8">
+      <div className="flex items-center justify-between px-4 py-3 bg-foreground">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">⬡ Análise IA · {name}</span>
+        </div>
+        <span className={`font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${cls}`}>
+          Perspectiva {summary.perspectiva}
+        </span>
+      </div>
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-ds-surface">
+        {rows.map((r) => (
+          <div key={r.label} className="bg-ds-surface2 border border-ds-border rounded p-3">
+            <p className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{r.label}</p>
+            <p className="font-sans text-sm text-foreground/80 leading-relaxed">{r.value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="px-4 py-2.5 border-t border-ds-border bg-ds-surface2">
+        <p className="font-sans text-[11px] text-muted-foreground">⚠️ Análise informativa gerada por IA. Não constitui recomendação de investimento.</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AssetPageView() {
   const { slug } = useParams();
@@ -29,46 +83,61 @@ export default function AssetPageView() {
     queryFn: async () => {
       const articles = await base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 100);
       const kw = slug.toLowerCase();
+      const name = asset?.name?.toLowerCase() || kw;
+      const ticker = asset?.ticker?.toLowerCase() || '';
       return articles.filter((a) =>
         a.title?.toLowerCase().includes(kw) ||
+        a.title?.toLowerCase().includes(name) ||
         a.summary?.toLowerCase().includes(kw) ||
         a.affected_companies?.toLowerCase().includes(kw) ||
-        a.tickers?.toLowerCase().includes(kw) ||
+        a.affected_companies?.toLowerCase().includes(name) ||
+        a.tickers?.toLowerCase().includes(ticker || kw) ||
         a.tags?.toLowerCase().includes(kw)
       );
     },
+    enabled: true,
   });
 
-  const generateAISummary = async () => {
+  const { data: snapshots = [] } = useQuery({
+    queryKey: ['snapshots-asset'],
+    queryFn: () => base44.entities.MarketSnapshot.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const snapshot = snapshots.find((s) =>
+    s.symbol?.toLowerCase() === (asset?.ticker?.toLowerCase() || slug) ||
+    s.name?.toLowerCase().includes(slug)
+  );
+
+  const generateAI = async () => {
+    if (loadingAI) return;
     setLoadingAI(true);
-    const recentTitles = allArticles.slice(0, 5).map((a) => `- ${a.title}: ${a.summary}`).join('\n');
+    const context = allArticles.slice(0, 6).map((a) => `- ${a.title}: ${a.summary || ''}`).join('\n');
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é um analista financeiro sênior. Com base nas notícias recentes sobre "${asset?.name || slug}", gere uma análise executiva respondendo:
+      prompt: `Você é analista financeiro sênior do FinAI Pulse. Analise o ativo "${asset?.name || slug}" com base nas notícias recentes.
 
 Notícias recentes:
-${recentTitles || 'Sem notícias recentes disponíveis.'}
+${context || 'Sem notícias recentes sobre este ativo.'}
 
 Responda em JSON com:
-- cenario_atual: resumo do cenário atual (2-3 frases)
-- quem_ganha: quem se beneficia neste cenário (investidores, setores)
-- quem_perde: quem é impactado negativamente
-- impacto_bolsa: impacto para a bolsa/ações
-- impacto_dolar: relação com o câmbio
-- impacto_selic: relação com os juros
-- o_que_observar: o que investidores devem monitorar nos próximos dias
-- perspectiva: "positiva", "negativa" ou "neutra"`,
+- cenario_atual: resumo do cenário atual (2-3 frases analíticas)
+- quem_ganha: quem pode se beneficiar neste cenário
+- quem_perde: quem pode ser pressionado
+- impacto_bolsa: impacto para bolsa/ações relacionadas
+- impacto_dolar: relação com câmbio
+- impacto_selic: relação com juros/renda fixa
+- o_que_observar: eventos e dados para monitorar
+- perspectiva: "positiva", "negativa" ou "neutra"
+
+Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair", "garantido".`,
       add_context_from_internet: true,
       response_json_schema: {
         type: 'object',
         properties: {
-          cenario_atual: { type: 'string' },
-          quem_ganha: { type: 'string' },
-          quem_perde: { type: 'string' },
-          impacto_bolsa: { type: 'string' },
-          impacto_dolar: { type: 'string' },
-          impacto_selic: { type: 'string' },
-          o_que_observar: { type: 'string' },
-          perspectiva: { type: 'string' },
+          cenario_atual: { type: 'string' }, quem_ganha: { type: 'string' },
+          quem_perde: { type: 'string' }, impacto_bolsa: { type: 'string' },
+          impacto_dolar: { type: 'string' }, impacto_selic: { type: 'string' },
+          o_que_observar: { type: 'string' }, perspectiva: { type: 'string' },
         },
       },
     });
@@ -76,141 +145,140 @@ Responda em JSON com:
     setLoadingAI(false);
   };
 
-  const displayName = asset?.name || slug.charAt(0).toUpperCase() + slug.slice(1);
+  const displayName = asset?.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
   const displayTicker = asset?.ticker;
 
+  function fmtPrice(s) {
+    if (!s?.price) return null;
+    if (s.market_type === 'rate') return `${s.price.toFixed(2)}%`;
+    if (s.market_type === 'fx') return `R$ ${s.price.toFixed(2)}`;
+    if (s.market_type === 'index') return s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+    if (s.price > 50000) return `US$ ${(s.price / 1000).toFixed(1)}k`;
+    return `US$ ${s.price.toFixed(2)}`;
+  }
+
+  const up = snapshot?.change_percent > 0;
+  const dn = snapshot?.change_percent < 0;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
-      <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Voltar
+    <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
+      <Link to="/ativos" className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground hover:text-foreground mb-6 transition-colors">
+        <ArrowLeft className="w-3.5 h-3.5" /> Ativos
       </Link>
 
       {/* Hero */}
-      <div className="bg-card border border-border rounded-xl p-6 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border border-ds-border rounded-lg p-6 mb-6 bg-ds-surface">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Building2 className="w-7 h-7 text-primary" />
+            <div className="w-14 h-14 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="font-mono text-sm font-semibold text-white/50">
+                {displayTicker?.slice(0, 3) || displayName.slice(0, 2).toUpperCase()}
+              </span>
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-bold font-display">{displayName}</h1>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h1 className="font-mono text-xl font-semibold">{displayName}</h1>
                 {displayTicker && (
-                  <Badge className="font-mono text-xs bg-primary/10 text-primary border border-primary/20">
-                    {displayTicker}
-                  </Badge>
+                  <span className="font-mono text-[11px] font-semibold bg-foreground text-background px-2 py-0.5 rounded-sm">{displayTicker}</span>
                 )}
                 {asset?.type && (
-                  <Badge variant="outline" className="text-xs capitalize">{asset.type}</Badge>
+                  <span className="font-mono text-[10px] text-muted-foreground border border-ds-border px-2 py-0.5 rounded capitalize">{asset.type}</span>
                 )}
               </div>
-              {asset?.description && (
-                <p className="text-sm text-muted-foreground mt-1 max-w-xl">{asset.description}</p>
-              )}
+              {asset?.description && <p className="font-sans text-sm text-muted-foreground max-w-xl">{asset.description}</p>}
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={generateAISummary}
+
+          <div className="flex items-center gap-4 flex-shrink-0">
+            {snapshot && (
+              <div className="text-right">
+                <p className="font-mono text-2xl font-semibold">{fmtPrice(snapshot)}</p>
+                <p className={`font-mono text-sm font-semibold flex items-center gap-1 justify-end ${dn ? 'text-ds-dn' : up ? 'text-ds-up' : 'text-muted-foreground'}`}>
+                  {dn ? <TrendingDown className="w-4 h-4" /> : up ? <TrendingUp className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                  {snapshot.change_percent != null ? `${up ? '+' : ''}${snapshot.change_percent.toFixed(2)}%` : '—'}
+                </p>
+              </div>
+            )}
+            <button
+              onClick={generateAI}
               disabled={loadingAI}
-              className="gap-2"
-            >
-              {loadingAI ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Analisando...</>
-              ) : (
-                <><Sparkles className="w-4 h-4" /> Análise IA</>
-              )}
-            </Button>
+              className="flex items-center gap-1.5 font-mono text-[11px] font-semibold bg-foreground text-background px-4 py-2.5 rounded hover:opacity-90 transition-opacity disabled:opacity-40">
+              {loadingAI ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analisando...</> : <><Sparkles className="w-3.5 h-3.5" /> Análise IA</>}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* AI Analysis Panel */}
-      {aiSummary && (
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              <h2 className="font-bold text-lg">Análise de IA</h2>
-            </div>
-            <Badge className={
-              aiSummary.perspectiva === 'positiva' ? 'bg-chart-2/10 text-chart-2 border-chart-2/20' :
-              aiSummary.perspectiva === 'negativa' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-              'bg-muted text-muted-foreground'
-            }>
-              Perspectiva: {aiSummary.perspectiva}
-            </Badge>
-          </div>
+      <AISummaryPanel summary={aiSummary} name={displayName} />
 
-          {aiSummary.cenario_atual && (
-            <p className="text-foreground/80 mb-4 leading-relaxed">{aiSummary.cenario_atual}</p>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {[
-              { label: '✅ Quem ganha', value: aiSummary.quem_ganha, color: 'border-chart-2/30 bg-chart-2/5' },
-              { label: '❌ Quem perde', value: aiSummary.quem_perde, color: 'border-destructive/30 bg-destructive/5' },
-              { label: '📈 Impacto Bolsa', value: aiSummary.impacto_bolsa, color: 'border-primary/30 bg-primary/5' },
-              { label: '💵 Impacto Dólar', value: aiSummary.impacto_dolar, color: 'border-accent/30 bg-accent/5' },
-              { label: '🏦 Impacto Selic', value: aiSummary.impacto_selic, color: 'border-chart-5/30 bg-chart-5/5' },
-              { label: '👁 O que observar', value: aiSummary.o_que_observar, color: 'border-border bg-muted/50' },
-            ].filter(i => i.value).map((item) => (
-              <div key={item.label} className={`rounded-lg p-3 border ${item.color}`}>
-                <span className="text-xs font-semibold text-muted-foreground block mb-1">{item.label}</span>
-                <p className="text-sm">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <Newspaper className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold font-display">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_256px] gap-8">
+        <div>
+          {/* Notícias */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-0.5 h-4 bg-foreground/20 rounded-full" />
+            <h2 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Notícias sobre {displayName}
             </h2>
-            <Badge variant="outline" className="text-xs">{allArticles.length}</Badge>
+            <span className="font-mono text-[9px] text-muted-foreground/40">{allArticles.length}</span>
           </div>
 
           {loadingArticles ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Array(4).fill(0).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-video rounded-xl" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              ))}
+              {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
             </div>
           ) : allArticles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {allArticles.map((a) => (
-                <ArticleCard key={a.id} article={a} />
-              ))}
+              {allArticles.map((a) => <ArticleCard key={a.id} article={a} />)}
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <Newspaper className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>Nenhuma notícia encontrada sobre {displayName}.</p>
-              <Button className="mt-4 gap-2" variant="outline" onClick={generateAISummary} disabled={loadingAI}>
-                <Sparkles className="w-4 h-4" /> Gerar análise mesmo assim
-              </Button>
+            <div className="text-center py-14 border border-ds-border rounded-lg space-y-3">
+              <div className="font-mono text-3xl text-muted-foreground/10">⬡</div>
+              <p className="font-mono text-sm text-muted-foreground">Nenhuma notícia encontrada sobre {displayName}.</p>
+              <button onClick={generateAI} disabled={loadingAI}
+                className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold bg-foreground text-background px-4 py-2 rounded hover:opacity-90 transition-opacity disabled:opacity-40">
+                <Sparkles className="w-3.5 h-3.5" /> Gerar análise IA mesmo assim
+              </button>
             </div>
           )}
         </div>
 
         {/* Sidebar */}
         <aside className="space-y-4">
-          <div className="bg-card border border-border rounded-xl p-4">
-            <h3 className="font-semibold mb-3 text-sm">Outros ativos</h3>
-            {['petrobras', 'vale', 'itau', 'nubank', 'selic', 'dolar', 'bitcoin'].filter(s => s !== slug).map((s) => (
-              <Link key={s} to={`/ativo/${s}`} className="flex items-center justify-between py-2 text-sm text-muted-foreground hover:text-foreground border-b border-border/50 last:border-0 group">
-                <span className="capitalize font-medium group-hover:text-primary transition-colors">{s}</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            ))}
+          {/* Chat CTA */}
+          <Link to={`/chat`}
+            className="group block bg-foreground rounded-lg p-4 hover:opacity-95 transition-opacity">
+            <div className="flex items-center gap-2 mb-2">
+              <MessageSquare className="w-4 h-4 text-white/40" />
+              <p className="font-mono text-[11px] font-semibold text-white">Pergunte sobre {displayName}</p>
+            </div>
+            <p className="font-sans text-xs text-white/30">Use o Market Chat para análises interativas sobre este ativo.</p>
+            <span className="font-mono text-[11px] text-white/30 group-hover:text-white/60 mt-2 block transition-colors">Abrir Market Chat →</span>
+          </Link>
+
+          {/* Outros ativos */}
+          <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
+            <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2">
+              <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Outros ativos</h3>
+            </div>
+            <div className="divide-y divide-ds-border">
+              {OTHER_ASSETS.filter((a) => a.slug !== slug).slice(0, 6).map((a) => (
+                <Link key={a.slug} to={`/ativo/${a.slug}`}
+                  className="flex items-center justify-between px-4 py-2.5 hover:bg-ds-surface2 transition-colors group">
+                  <div>
+                    <p className="font-mono text-xs font-semibold group-hover:text-ds-beige transition-colors">{a.name}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground">{a.ticker}</p>
+                  </div>
+                  <span className="font-mono text-[10px] text-muted-foreground">→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="bg-ds-surface2 border border-ds-border rounded-lg p-3">
+            <p className="font-sans text-[11px] text-muted-foreground leading-relaxed">
+              As informações e análises do FinAI Pulse são de caráter informativo e educacional. Não constituem recomendação de investimento, oferta de compra ou venda de ativos.
+            </p>
           </div>
         </aside>
       </div>

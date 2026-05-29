@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const LINKS = [
   { label: 'Mercados',  items: [['Bolsa', '/categoria/bolsa'], ['Câmbio', '/categoria/dolar'], ['Juros', '/categoria/juros'], ['Cripto', '/categoria/criptomoedas'], ['Commodities', '/categoria/commodities']] },
   { label: 'Análises',  items: [['Economia', '/categoria/economia'], ['Empresas', '/categoria/empresas'], ['Internacional', '/categoria/internacional'], ['Renda Fixa', '/categoria/renda_fixa'], ['Ativos', '/ativos']] },
-  { label: 'Ferramentas', items: [['⬡ IA Chat', '/chat'], ['Busca de Notícias', '/busca'], ['Painel Admin', '/admin']] },
+  { label: 'Ferramentas', items: [['⬡ IA Chat', '/chat'], ['Busca de Notícias', '/busca'], ['Metodologia', '/metodologia'], ['Painel Admin', '/admin']] },
 ];
 
 export default function Footer() {
@@ -40,7 +40,10 @@ export default function Footer() {
 
         <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-mono text-[10px] text-white/20">© {new Date().getFullYear()} FinAI Pulse · IBM Plex · Base44</p>
-          <p className="font-mono text-[10px] text-white/20">Não constitui recomendação de investimento.</p>
+          <div className="flex items-center gap-4">
+            <Link to="/metodologia" className="font-mono text-[10px] text-white/20 hover:text-white/40 transition-colors">Metodologia</Link>
+            <p className="font-mono text-[10px] text-white/20">Não constitui recomendação de investimento.</p>
+          </div>
         </div>
       </div>
     </footer>

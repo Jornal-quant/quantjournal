@@ -1,62 +1,82 @@
 import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Clock, Eye, ExternalLink, ChevronRight, Newspaper, Lightbulb, BarChart3, Building2, Search, CheckCircle, Shield, Brain, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Link, useParams } from 'react-router-dom';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Clock, Eye, ExternalLink, ChevronRight, AlertTriangle, TrendingUp, TrendingDown, Minus, Share2 } from 'lucide-react';
 import ArticleCard from '../components/news/ArticleCard';
 import ArticleSEO from '../components/article/ArticleSEO';
-import ImpactsTable from '../components/article/ImpactsTable';
-import ShareButtons from '../components/article/ShareButtons';
 import ArticleSidebar from '../components/article/ArticleSidebar';
-import InvestorSummaryBox from '../components/article/InvestorSummaryBox';
 
-const categoryLabels = {
-  bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Dólar',
+const CAT_LABEL = {
+  bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Câmbio',
   economia: 'Economia', criptomoedas: 'Cripto', commodities: 'Commodities',
   empresas: 'Empresas', internacional: 'Internacional',
 };
 
-const categoryColors = {
-  bolsa: 'bg-primary/10 text-primary border-primary/20',
-  dolar: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
-  juros: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
-  criptomoedas: 'bg-accent/10 text-accent border-accent/20',
-  commodities: 'bg-chart-4/10 text-chart-4 border-chart-4/20',
-  economia: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
-  empresas: 'bg-primary/10 text-primary border-primary/20',
-  internacional: 'bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20',
-  renda_fixa: 'bg-chart-2/10 text-chart-2 border-chart-2/20',
-};
+function cleanText(text) {
+  if (!text) return '';
+  return text.replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g, '$1').replace(/https?:\/\/\S+/g, '').trim();
+}
 
 function estimateReadingTime(article) {
   const text = [article.what_happened, article.why_it_matters, article.conclusion].filter(Boolean).join(' ');
   return Math.max(1, Math.round(text.split(/\s+/).length / 200));
 }
 
-// Clean raw markdown links from AI text: [text](url) → text
-function cleanText(text) {
-  if (!text) return '';
-  return text
-    .replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g, '$1')
-    .replace(/https?:\/\/\S+/g, '')
-    .trim();
+function SentimentBadge({ sentiment }) {
+  if (!sentiment) return null;
+  const map = {
+    positivo: { label: 'Sentimento positivo', cls: 'text-ds-up bg-ds-up-bg border border-ds-up/20', icon: TrendingUp },
+    negativo: { label: 'Sentimento negativo', cls: 'text-ds-dn bg-ds-dn-bg border border-ds-dn/20', icon: TrendingDown },
+    neutro:   { label: 'Sentimento neutro',   cls: 'text-muted-foreground bg-ds-surface3 border border-ds-border', icon: Minus },
+    misto:    { label: 'Sentimento misto',    cls: 'text-amber-700 bg-amber-50 border border-amber-200', icon: Minus },
+  };
+  const cfg = map[sentiment];
+  if (!cfg) return null;
+  const Icon = cfg.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${cfg.cls}`}>
+      <Icon className="w-3 h-3" />{cfg.label}
+    </span>
+  );
 }
 
-function ArticleSection({ icon: Icon, title, color, children }) {
+function ImpactBadge({ impact }) {
+  if (!impact) return null;
+  const map = {
+    critico: 'text-ds-dn bg-ds-dn-bg border border-ds-dn/20',
+    alto:    'text-amber-700 bg-amber-50 border border-amber-200',
+    medio:   'text-foreground bg-ds-surface3 border border-ds-border',
+    baixo:   'text-muted-foreground bg-ds-surface3 border border-ds-border',
+  };
+  return (
+    <span className={`font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${map[impact] || ''}`}>
+      Impacto {impact}
+    </span>
+  );
+}
+
+function ArticleBodySection({ title, children }) {
   return (
     <section className="space-y-3">
-      <div className="flex items-center gap-2">
-        <div className={`w-0.5 h-5 rounded-full ${color.replace('text-', 'bg-')}`} />
-        <h2 className="text-base font-bold uppercase tracking-wide text-foreground/50 text-xs">{title}</h2>
+      <div className="flex items-center gap-3">
+        <div className="w-0.5 h-4 bg-foreground/15 rounded-full flex-shrink-0" />
+        <h2 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{title}</h2>
       </div>
       {children}
     </section>
+  );
+}
+
+function Disclaimer() {
+  return (
+    <div className="flex items-start gap-2.5 px-4 py-3 bg-ds-surface2 border border-ds-border rounded font-sans text-[11px] text-muted-foreground leading-relaxed">
+      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-muted-foreground/50" />
+      <span>Conteúdo gerado por inteligência artificial com base em fontes públicas. As informações são de caráter informativo e educacional. <strong className="text-foreground/60">Não constitui recomendação de investimento.</strong> Verifique as fontes antes de tomar qualquer decisão financeira.</span>
+    </div>
   );
 }
 
@@ -66,8 +86,8 @@ export default function ArticlePage() {
   const { data: article, isLoading } = useQuery({
     queryKey: ['article', id],
     queryFn: async () => {
-      const articles = await base44.entities.Article.filter({ id });
-      return articles[0];
+      const arr = await base44.entities.Article.filter({ id });
+      return arr[0];
     },
   });
 
@@ -91,22 +111,19 @@ export default function ArticlePage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10">
-          <div className="space-y-5">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_288px] gap-10">
+          <div className="space-y-4">
             <Skeleton className="h-3 w-40" />
             <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-3/4" />
-            <Skeleton className="h-5 w-full" />
-            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-3 w-48" />
-            <Skeleton className="aspect-video rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="aspect-video rounded-lg" />
             <Skeleton className="h-40 w-full" />
           </div>
           <div className="space-y-4">
-            <Skeleton className="h-48 rounded-xl" />
-            <Skeleton className="h-64 rounded-xl" />
+            <Skeleton className="h-48 rounded-lg" />
+            <Skeleton className="h-64 rounded-lg" />
           </div>
         </div>
       </div>
@@ -115,145 +132,104 @@ export default function ArticlePage() {
 
   if (!article) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <p className="text-muted-foreground mb-4">Artigo não encontrado.</p>
-        <Link to="/"><Button>Voltar à Home</Button></Link>
+      <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+        <p className="font-mono text-sm text-muted-foreground mb-4">Artigo não encontrado.</p>
+        <Link to="/" className="font-mono text-sm font-semibold text-foreground hover:opacity-70 transition-opacity">← Voltar à Home</Link>
       </div>
     );
   }
 
-  const fullDate = article.created_date
-    ? format(new Date(article.created_date), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })
-    : '';
+  const pubDate = article.created_date ? format(new Date(article.created_date), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR }) : '';
+  const updDate = article.updated_date ? format(new Date(article.updated_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : null;
   const readTime = estimateReadingTime(article);
-
-  let impacts = null;
-  if (article.impacts) {
-    try { impacts = JSON.parse(article.impacts); } catch { impacts = null; }
-  }
+  const cat = CAT_LABEL[article.category] || article.category;
 
   let sourceLinks = [];
-  if (article.source_links) {
-    try { sourceLinks = JSON.parse(article.source_links); } catch { sourceLinks = []; }
-  }
+  if (article.source_links) { try { sourceLinks = JSON.parse(article.source_links); } catch {} }
 
-  const companies = article.affected_companies
-    ? article.affected_companies.split(',').map((c) => c.trim()).filter(Boolean)
-    : [];
-  const tickers = article.tickers
-    ? article.tickers.split(',').map((t) => t.trim()).filter(Boolean)
-    : [];
-  const tags = article.tags
-    ? article.tags.split(',').map((t) => t.trim()).filter(Boolean)
-    : [];
-  const keyTakeaways = article.key_takeaways
-    ? article.key_takeaways.split('|').map((k) => k.trim()).filter(Boolean)
-    : [];
-  const assetsToWatch = article.assets_to_watch
-    ? article.assets_to_watch.split(',').map((a) => a.trim()).filter(Boolean)
-    : tickers.slice(0, 5);
+  const tickers = article.tickers ? article.tickers.split(',').map((t) => t.trim()).filter(Boolean) : [];
+  const companies = article.affected_companies ? article.affected_companies.split(',').map((c) => c.trim()).filter(Boolean) : [];
+  const keyTakeaways = article.key_takeaways ? article.key_takeaways.split('|').map((k) => k.trim()).filter(Boolean) : [];
+  const assetsToWatch = article.assets_to_watch ? article.assets_to_watch.split(',').map((a) => a.trim()).filter(Boolean) : tickers.slice(0, 5);
+  const tags = article.tags ? article.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
 
   const relatedFiltered = related.filter((r) => r.id !== article.id);
   const suggestedArticles = moreArticles.filter((a) => a.id !== article.id).slice(0, 4);
-  const catColor = categoryColors[article.category] || '';
-  const canonicalUrl = window.location.href;
 
   return (
     <>
       <ArticleSEO article={article} />
 
-      <div className="max-w-7xl mx-auto px-4 py-5 md:py-8">
+      <div className="max-w-7xl mx-auto px-6 py-6 md:py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6 flex-wrap">
+        <nav className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground mb-6 flex-wrap">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <ChevronRight className="w-3 h-3" />
-          <Link to={`/categoria/${article.category}`} className="hover:text-foreground transition-colors capitalize">
-            {categoryLabels[article.category] || article.category}
-          </Link>
+          <Link to={`/categoria/${article.category}`} className="hover:text-foreground transition-colors">{cat}</Link>
           <ChevronRight className="w-3 h-3" />
-          <span className="text-foreground/50 line-clamp-1 max-w-xs">{article.title?.slice(0, 55)}…</span>
+          <span className="text-muted-foreground/50 line-clamp-1 max-w-xs">{article.title?.slice(0, 50)}…</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10">
-          {/* Main */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_288px] gap-10">
           <main className="min-w-0">
             <article>
-              {/* Category + Urgency */}
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <Badge className={`text-[10px] uppercase tracking-widest font-bold border px-2.5 ${catColor}`}>
-                  {categoryLabels[article.category] || article.category}
-                </Badge>
-                {article.relevance === 'urgente' && (
-                  <Badge className="bg-red-600 text-white text-[10px] animate-pulse">🚨 Urgente</Badge>
-                )}
-                {article.relevance === 'alta' && (
-                  <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px]">⚡ Alta relevância</Badge>
-                )}
-                {article.sentiment === 'positivo' && (
-                  <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px]">↑ Positivo</Badge>
-                )}
-                {article.sentiment === 'negativo' && (
-                  <Badge className="bg-red-500/10 text-red-600 border border-red-500/20 text-[10px]">↓ Negativo</Badge>
+              {/* Category + badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className="font-mono text-[9px] font-semibold uppercase tracking-widest bg-foreground text-background px-2.5 py-1.5 rounded-sm">{cat}</span>
+                {article.relevance === 'urgente' && <span className="font-mono text-[9px] font-semibold uppercase tracking-wider bg-ds-dn text-white px-2 py-1 rounded-sm animate-pulse">🚨 Urgente</span>}
+                {article.relevance === 'alta' && <span className="font-mono text-[9px] font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-700 border border-amber-200 px-2 py-1 rounded-sm">Alta relevância</span>}
+                {article.is_breaking && <span className="font-mono text-[9px] font-semibold uppercase tracking-wider bg-ds-dn text-white px-2 py-1 rounded-sm">Breaking</span>}
+                <SentimentBadge sentiment={article.sentiment} />
+                <ImpactBadge impact={article.impact_level} />
+                {article.ai_confidence > 0 && (
+                  <span className="font-mono text-[9px] text-white/60 bg-foreground/80 px-2 py-1 rounded-sm">⬡ IA {article.ai_confidence}%</span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl md:text-[2.15rem] font-bold leading-tight mb-4 font-display tracking-tight">
+              <h1 className="font-serif text-2xl md:text-[2rem] font-semibold leading-tight mb-4 tracking-tight">
                 {article.title}
               </h1>
 
-              {/* Lede / Summary */}
+              {/* Summary lede */}
               {article.summary && (
-                <p className="text-lg md:text-xl text-foreground/70 leading-relaxed mb-5 border-l-4 border-primary/30 pl-4 font-inter">
+                <p className="font-sans text-lg text-muted-foreground leading-relaxed mb-5 border-l-2 border-ds-border pl-4">
                   {cleanText(article.summary)}
                 </p>
               )}
 
               {/* Meta bar */}
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground mb-4 pb-4 border-b border-border">
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{fullDate}</span>
-                <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{article.views || 0} leituras</span>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[10px] text-muted-foreground mb-4 pb-4 border-b border-ds-border">
+                <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" />{pubDate}</span>
+                {updDate && <span className="flex items-center gap-1.5 text-ds-up"><RefreshCwIcon /> Atualizado {updDate}</span>}
+                <span className="flex items-center gap-1.5"><Eye className="w-3 h-3" />{article.views || 0} leituras</span>
                 <span>{readTime} min de leitura</span>
                 {article.source && (
-                  article.source_url ? (
-                    <a href={article.source_url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1 hover:text-primary transition-colors">
-                      <ExternalLink className="w-3.5 h-3.5" />Fonte: {article.source}
-                    </a>
-                  ) : <span>Fonte: {article.source}</span>
-                )}
-                {article.ai_confidence > 0 && (
-                  <span className="flex items-center gap-1 ml-auto">
-                    <Brain className="w-3.5 h-3.5 text-violet-500" />
-                    <span className="font-semibold text-violet-600">Confiança IA: {article.ai_confidence}%</span>
+                  <span className="flex items-center gap-1.5 ml-auto">
+                    Fonte: {article.source_url
+                      ? <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1 transition-colors">{article.source} <ExternalLink className="w-3 h-3" /></a>
+                      : article.source}
                   </span>
                 )}
               </div>
 
-              {/* Disclaimer */}
-              <div className="flex items-start gap-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/50 mb-6 text-[11px] text-muted-foreground">
-                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                <span>Conteúdo gerado por inteligência artificial com base em fontes públicas. Não constitui recomendação de investimento.</span>
-              </div>
+              <Disclaimer />
 
-              {/* Hero Image */}
+              {/* Hero image */}
               {article.image_url && (
-                <div className="rounded-2xl overflow-hidden mb-8 bg-muted">
+                <div className="rounded-lg overflow-hidden my-6 bg-ds-surface3">
                   <img src={article.image_url} alt={article.title} className="w-full object-cover max-h-[460px]" />
                 </div>
               )}
 
-              {/* ⭐ Investor Summary Box */}
-              <InvestorSummaryBox article={article} />
-
-              {/* Key Takeaways */}
+              {/* Key takeaways — Resumo rápido */}
               {keyTakeaways.length > 0 && (
-                <div className="bg-muted/40 border border-border rounded-xl p-4 mb-8">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Pontos-chave</p>
-                  <ul className="space-y-2">
+                <div className="bg-ds-surface2 border border-ds-border rounded-lg p-4 mb-8">
+                  <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Resumo rápido</p>
+                  <ul className="space-y-2.5">
                     {keyTakeaways.map((k, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                        <span className="w-4 h-4 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                      <li key={i} className="flex items-start gap-3 font-sans text-sm text-foreground/80 leading-relaxed">
+                        <span className="font-mono text-[10px] font-semibold text-muted-foreground/40 w-4 flex-shrink-0 mt-0.5">{String(i + 1).padStart(2, '0')}</span>
                         {k}
                       </li>
                     ))}
@@ -261,135 +237,127 @@ export default function ArticlePage() {
                 </div>
               )}
 
-              {/* Article Body */}
-              <div className="space-y-10 prose-article">
-                {/* O que aconteceu */}
+              {/* Body */}
+              <div className="space-y-10">
                 {article.what_happened && (
-                  <ArticleSection icon={Newspaper} title="O que aconteceu" color="text-primary">
-                    <div className="text-[15px] text-foreground/80 leading-[1.8] space-y-4 font-inter">
-                      {cleanText(article.what_happened).split('\n').filter(Boolean).map((p, i) => (
-                        <p key={i}>{p}</p>
-                      ))}
+                  <ArticleBodySection title="O que aconteceu">
+                    <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                      {cleanText(article.what_happened).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
-                  </ArticleSection>
+                  </ArticleBodySection>
                 )}
 
-                {/* Por que importa */}
                 {article.why_it_matters && (
-                  <ArticleSection icon={Lightbulb} title="Por que isso importa" color="text-accent">
-                    <div className="text-[15px] text-foreground/80 leading-[1.8] space-y-4 font-inter">
-                      {cleanText(article.why_it_matters).split('\n').filter(Boolean).map((p, i) => (
-                        <p key={i}>{p}</p>
-                      ))}
+                  <ArticleBodySection title="Contexto de mercado">
+                    <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                      {cleanText(article.why_it_matters).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
-                  </ArticleSection>
+                  </ArticleBodySection>
                 )}
 
-                {/* Impactos */}
-                {impacts && Object.keys(impacts).length > 0 && (
-                  <ArticleSection icon={BarChart3} title="Impacto por classe de ativo" color="text-chart-2">
-                    <ImpactsTable impacts={impacts} />
-                  </ArticleSection>
-                )}
-
-                {/* Empresas + Tickers */}
+                {/* Ativos impactados */}
                 {(companies.length > 0 || tickers.length > 0) && (
-                  <ArticleSection icon={Building2} title="Empresas e ativos afetados" color="text-primary">
+                  <ArticleBodySection title="Ativos impactados">
                     <div className="flex flex-wrap gap-2">
-                      {companies.length > 0 ? companies.map((c, i) => (
-                        <div key={c} className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-3 py-1.5 text-sm">
-                          {tickers[i] && (
-                            <span className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">{tickers[i]}</span>
-                          )}
-                          <span className="font-medium">{c}</span>
+                      {tickers.map((t, i) => (
+                        <div key={t} className="flex items-center gap-1.5 bg-ds-surface2 border border-ds-border rounded px-3 py-2">
+                          <span className="font-mono text-xs font-semibold">{t}</span>
+                          {companies[i] && <span className="font-sans text-xs text-muted-foreground">· {companies[i]}</span>}
                         </div>
-                      )) : tickers.map((t) => (
-                        <span key={t} className="text-xs font-mono font-bold text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20">{t}</span>
+                      ))}
+                      {companies.length > tickers.length && companies.slice(tickers.length).map((c) => (
+                        <div key={c} className="bg-ds-surface2 border border-ds-border rounded px-3 py-2">
+                          <span className="font-sans text-xs text-foreground/80">{c}</span>
+                        </div>
                       ))}
                     </div>
-                  </ArticleSection>
+                  </ArticleBodySection>
                 )}
 
-                {/* O que observar */}
-                {assetsToWatch.length > 0 && (
-                  <ArticleSection icon={Search} title="Ativos a monitorar" color="text-chart-4">
-                    <div className="flex flex-wrap gap-2">
-                      {assetsToWatch.map((a) => (
-                        <span key={a} className="px-3 py-1.5 bg-chart-4/10 text-chart-4 border border-chart-4/20 rounded-lg text-xs font-mono font-bold">
-                          {a}
-                        </span>
-                      ))}
-                    </div>
-                  </ArticleSection>
-                )}
-
-                {/* Conclusão */}
                 {article.conclusion && (
-                  <ArticleSection icon={CheckCircle} title="Perspectiva para o investidor" color="text-chart-2">
-                    <div className="bg-foreground/[0.03] border-l-4 border-chart-2/50 pl-5 py-1">
-                      <div className="text-[15px] text-foreground/80 leading-[1.8] space-y-4 font-inter">
-                        {cleanText(article.conclusion).split('\n').filter(Boolean).map((p, i) => (
-                          <p key={i}>{p}</p>
-                        ))}
+                  <ArticleBodySection title="Possível impacto">
+                    <div className="bg-ds-surface2 border-l-2 border-foreground/20 pl-4 py-1">
+                      <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                        {cleanText(article.conclusion).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
                       </div>
                     </div>
-                  </ArticleSection>
+                  </ArticleBodySection>
                 )}
 
-                {/* Fontes consultadas */}
+                {/* Ativos a monitorar */}
+                {assetsToWatch.length > 0 && (
+                  <ArticleBodySection title="Ativos a monitorar">
+                    <div className="flex flex-wrap gap-2">
+                      {assetsToWatch.map((a) => (
+                        <span key={a} className="font-mono text-xs font-semibold px-3 py-1.5 bg-foreground/5 border border-ds-border rounded">{a}</span>
+                      ))}
+                    </div>
+                  </ArticleBodySection>
+                )}
+
+                {/* Fontes */}
                 {(sourceLinks.length > 0 || article.source) && (
-                  <section className="border-t border-border pt-6">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Fontes consultadas</p>
-                    <ul className="space-y-1.5">
+                  <section className="border-t border-ds-border pt-6">
+                    <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Fontes consultadas</p>
+                    <ul className="space-y-2">
                       {sourceLinks.length > 0 ? sourceLinks.map((s, i) => (
-                        <li key={i} className="flex items-center gap-2 text-sm">
-                          <span className="w-1 h-1 bg-muted-foreground/40 rounded-full" />
+                        <li key={i} className="flex items-center gap-2 font-sans text-sm">
+                          <span className="w-1 h-1 bg-ds-border rounded-full" />
                           {s.url ? (
-                            <a href={s.url} target="_blank" rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center gap-1">
+                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground flex items-center gap-1 transition-colors">
                               {s.name} <ExternalLink className="w-3 h-3" />
                             </a>
                           ) : <span className="text-muted-foreground">{s.name}</span>}
                         </li>
-                      )) : article.source ? (
-                        <li className="flex items-center gap-2 text-sm">
-                          <span className="w-1 h-1 bg-muted-foreground/40 rounded-full" />
-                          {article.source_url ? (
-                            <a href={article.source_url} target="_blank" rel="noopener noreferrer"
-                              className="text-primary hover:underline flex items-center gap-1">
-                              {article.source} <ExternalLink className="w-3 h-3" />
-                            </a>
-                          ) : <span className="text-muted-foreground">{article.source}</span>}
+                      )) : article.source && (
+                        <li className="flex items-center gap-2 font-sans text-sm">
+                          <span className="w-1 h-1 bg-ds-border rounded-full" />
+                          {article.source_url
+                            ? <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground flex items-center gap-1">{article.source} <ExternalLink className="w-3 h-3" /></a>
+                            : <span className="text-muted-foreground">{article.source}</span>}
                         </li>
-                      ) : null}
+                      )}
                     </ul>
                   </section>
                 )}
-              </div>
 
-              <Separator className="my-8" />
-              <ShareButtons title={article.title} url={canonicalUrl} />
+                {/* Tags */}
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {tags.map((tag) => (
+                      <Link key={tag} to={`/busca?q=${encodeURIComponent(tag)}`}
+                        className="font-mono text-[10px] text-muted-foreground border border-ds-border px-2.5 py-1 rounded hover:bg-ds-surface2 transition-colors">
+                        #{tag}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
-              {/* Tags */}
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-5">
-                  {tags.map((tag) => (
-                    <Link key={tag} to={`/busca?q=${encodeURIComponent(tag)}`}>
-                      <Badge variant="outline" className="text-xs hover:bg-muted cursor-pointer">#{tag}</Badge>
-                    </Link>
-                  ))}
+                {/* Share */}
+                <div className="flex items-center gap-3 pt-4 border-t border-ds-border">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Compartilhar</span>
+                  <button
+                    onClick={() => { navigator.clipboard?.writeText(window.location.href); }}
+                    className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-ds-border px-3 py-1.5 rounded hover:bg-ds-surface2">
+                    <Share2 className="w-3 h-3" /> Copiar link
+                  </button>
                 </div>
-              )}
+
+                {/* Bottom disclaimer */}
+                <div className="bg-ds-surface2 border border-ds-border rounded-lg p-4">
+                  <p className="font-sans text-[11px] text-muted-foreground leading-relaxed">
+                    <strong className="font-semibold text-foreground/60">Aviso importante:</strong> O conteúdo do FinAI Pulse é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
+                  </p>
+                </div>
+              </div>
             </article>
 
-            {/* Você também pode gostar */}
+            {/* Leia também */}
             {suggestedArticles.length > 0 && (
-              <section className="mt-12 pt-8 border-t border-border">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-5">Leia também</h2>
+              <section className="mt-12 pt-8 border-t border-ds-border">
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-5">Leia também</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {suggestedArticles.map((a) => (
-                    <ArticleCard key={a.id} article={a} />
-                  ))}
+                  {suggestedArticles.map((a) => <ArticleCard key={a.id} article={a} />)}
                 </div>
               </section>
             )}
@@ -402,5 +370,14 @@ export default function ArticlePage() {
         </div>
       </div>
     </>
+  );
+}
+
+// inline mini icon to avoid extra import
+function RefreshCwIcon() {
+  return (
+    <svg className="w-3 h-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+    </svg>
   );
 }

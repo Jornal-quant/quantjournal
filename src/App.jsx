@@ -21,6 +21,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AssetPageView from './pages/AssetPageView';
 import AssetsIndex from './pages/AssetsIndex';
 import MarketChat from './pages/MarketChat';
+import Metodologia from './pages/Metodologia';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +59,7 @@ const AuthenticatedApp = () => {
         <Route path="/ativos" element={<AssetsIndex />} />
         <Route path="/ativo/:slug" element={<AssetPageView />} />
         <Route path="/chat" element={<MarketChat />} />
+        <Route path="/metodologia" element={<Metodologia />} />
       </Route>
 
       {/* Protected admin */}
