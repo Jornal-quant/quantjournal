@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
+
+const moodConfig = {
+  otimista: { cls: 'text-emerald-600 bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
+  cauteloso: { cls: 'text-amber-700 bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  pessimista: { cls: 'text-red-600 bg-red-50 border-red-200', dot: 'bg-red-500' },
+};
+
+const bulletIcons = ['📌', '👁️', '📅'];
+const bulletLabels = ['Principal movimento', 'Ativos em atenção', 'Evento para monitorar'];
 
 export default function DailySummaryBar({ articles = [] }) {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
 
-  const generateSummary = async () => {
-    if (summary) { setOpen(!open); return; }
+  const generate = async () => {
+    if (articles.length === 0) return;
     setLoading(true);
-    setOpen(true);
-    const titles = articles.slice(0, 8).map((a) => `- ${a.title}`).join('\n');
+    const context = articles.slice(0, 10).map((a) =>
+      `- ${a.title}${a.tickers ? ` [${a.tickers}]` : ''}`
+    ).join('\n');
+
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é um analista financeiro sênior. Com base nas notícias de hoje abaixo, escreva um resumo executivo do dia para investidores brasileiros em exatamente 3 bullets curtos e assertivos (máx 25 palavras cada). Não use URLs. Foco: o que importa para quem investe.\n\nNotícias:\n${titles}`,
+      prompt: `Você é analista financeiro sênior. Analise as notícias do dia e escreva exatamente 3 bullets executivos para investidores brasileiros.
+
+Bullet 1 — Principal movimento do mercado hoje (max 20 palavras)
+Bullet 2 — Ativos que merecem atenção e por quê (max 20 palavras, mencione tickers)
+Bullet 3 — Evento mais importante para monitorar nos próximos dias (max 20 palavras)
+
+Notícias:
+${context}
+
+Seja assertivo, concreto e não genérico. Sem URLs.`,
       response_json_schema: {
         type: 'object',
         properties: {
           bullets: { type: 'array', items: { type: 'string' } },
-          mood: { type: 'string', description: 'otimista, cauteloso ou pessimista' },
+          mood: { type: 'string' },
         },
       },
     });
@@ -27,52 +45,72 @@ export default function DailySummaryBar({ articles = [] }) {
     setLoading(false);
   };
 
-  const moodColor = {
-    otimista: 'text-emerald-600 bg-emerald-50 border-emerald-200',
-    cauteloso: 'text-amber-600 bg-amber-50 border-amber-200',
-    pessimista: 'text-red-600 bg-red-50 border-red-200',
-  };
+  // Auto-generate on mount when articles are available
+  useEffect(() => {
+    if (articles.length >= 3 && !summary && !loading) {
+      generate();
+    }
+  }, [articles.length]);
+
+  const mood = summary?.mood;
+  const moodCfg = moodConfig[mood] || null;
 
   return (
-    <div className="bg-primary/5 border border-primary/15 rounded-xl overflow-hidden">
-      <button
-        onClick={generateSummary}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-primary/8 transition-colors"
-      >
+    <div className="border border-border rounded-xl overflow-hidden bg-card">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-foreground/[0.03] border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
+          <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <div className="text-left">
-            <p className="text-sm font-bold text-foreground">Resumo IA do Dia</p>
-            <p className="text-[11px] text-muted-foreground">3 pontos-chave para o investidor</p>
+          <div>
+            <p className="text-sm font-bold">Resumo IA do Dia</p>
+            <p className="text-[10px] text-muted-foreground">Análise automática para investidores</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {loading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
-          {!loading && (open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />)}
-        </div>
-      </button>
-
-      {open && summary && (
-        <div className="px-4 pb-4 border-t border-primary/10">
-          {summary.mood && (
-            <div className="mt-3 mb-3">
-              <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border ${moodColor[summary.mood] || 'text-muted-foreground bg-muted border-border'}`}>
-                Sentimento do dia: {summary.mood}
-              </span>
-            </div>
+          {mood && moodCfg && (
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border flex items-center gap-1 ${moodCfg.cls}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${moodCfg.dot}`} />
+              {mood}
+            </span>
           )}
-          <ul className="space-y-2 mt-3">
-            {(summary.bullets || []).map((b, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-foreground/80">
-                <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
-                {b}
-              </li>
-            ))}
-          </ul>
+          {!loading && summary && (
+            <button onClick={generate} className="text-muted-foreground hover:text-foreground transition-colors">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {loading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
         </div>
-      )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {loading && !summary && (
+          <div className="flex items-center gap-3 py-4 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin text-primary flex-shrink-0" />
+            Analisando as principais notícias do dia...
+          </div>
+        )}
+
+        {!loading && !summary && articles.length < 3 && (
+          <p className="text-sm text-muted-foreground py-2">Aguardando mais notícias para gerar o resumo do dia.</p>
+        )}
+
+        {summary?.bullets && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {summary.bullets.slice(0, 3).map((b, i) => (
+              <div key={i} className="flex flex-col gap-1.5 p-3 rounded-lg bg-muted/40 border border-border/50">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">{bulletIcons[i]}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{bulletLabels[i]}</span>
+                </div>
+                <p className="text-sm font-medium text-foreground leading-snug">{b}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
