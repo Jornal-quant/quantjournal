@@ -157,53 +157,56 @@ Deno.serve(async (req) => {
     for (const topicObj of batch) {
       try {
         const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `Você é um jornalista financeiro sênior do portal FinanceNews AI. Gere um artigo completo, detalhado e informativo sobre: "${topicObj.topic}".
+          prompt: `Você é editor-chefe de um portal financeiro no nível Bloomberg/Valor Econômico. Escreva como jornalista financeiro sênior.
 
-Use informações reais e atuais. O artigo deve ser profissional, objetivo e útil para investidores brasileiros.
+REGRAS OBRIGATÓRIAS:
+1. NUNCA insira URLs, links ou endereços web no corpo do texto
+2. Cite fontes naturalmente: "segundo o Banco Central", "conforme dados da B3", "de acordo com o Fed"
+3. Use números e dados específicos — sem frases vagas
+4. Separe FATOS de INTERPRETAÇÃO
+5. Escreva para investidores profissionais
 
-IMPORTANTE: Gere conteúdo original e detalhado, não genérico. Use dados e informações específicas.
+Tema: "${topicObj.topic}"
 
 Retorne JSON com:
-- title: título SEO atrativo em português (máx 80 chars)
-- slug: URL amigável
-- summary: resumo executivo em 2-3 frases objetivas e informativas
-- what_happened: o que aconteceu — 2-3 parágrafos detalhados com fatos específicos
-- why_it_matters: por que importa para investidores brasileiros — 1-2 parágrafos concretos
-- impacts: objeto com chaves "Bolsa", "Dólar", "Juros", "Cripto", "Commodities" — cada valor é uma frase de impacto
-- affected_companies: empresas afetadas separadas por vírgula (só se aplicável)
-- tickers: tickers B3/NYSE/NASDAQ relacionados separados por vírgula
-- conclusion: conclusão prática com perspectiva para investidores
+- title: título editorial impactante (máx 80 chars, sem clickbait)
+- slug: URL amigável sem acentos
+- summary: lede jornalístico — responda o mais importante em 2-3 frases
+- what_happened: 3 parágrafos factuais e densos. SEM URLs. Cite fontes no texto naturalmente.
+- why_it_matters: análise para o investidor — quem ganha, quem perde, por quê agora
+- impacts: objeto com "Bolsa", "Dólar", "Juros", "Cripto", "Commodities" — cada valor é 1 frase assertiva
+- affected_companies: empresas separadas por vírgula
+- tickers: tickers B3/NYSE separados por vírgula
+- conclusion: perspectiva prática — o que fazer, o que monitorar
+- investor_summary: 3 bullets por | — (1) Impacto principal (2) Ativos afetados (3) O que observar
+- key_takeaways: 3-4 pontos-chave separados por | (frases curtas e assertivas)
+- assets_to_watch: 3-6 tickers a monitorar, separados por vírgula
+- source_links: array JSON [{name, url}] com fontes consultadas
 - tags: 5-8 keywords SEO separadas por vírgula
-- meta_title: meta title SEO (máx 60 chars)
-- meta_description: meta description (máx 160 chars)
-- social_summary: resumo curto para Twitter/Telegram (máx 280 chars, inclua emojis e hashtags)
-- relevance: "baixa", "media", "alta" ou "urgente"
+- meta_title: (máx 60 chars)
+- meta_description: (máx 160 chars)
+- social_summary: Twitter/Telegram (máx 280 chars, emojis + hashtags)
+- sentiment: positivo|negativo|neutro|misto
+- impact_level: baixo|medio|alto|critico
+- relevance: baixa|media|alta|urgente
 - country: país principal
 - sector: setor econômico
-- source: fonte de referência (Yahoo Finance, Reuters, Valor Econômico, etc)
-- ai_confidence: número de 70 a 95 (sua confiança na qualidade do artigo)`,
+- source: nome da fonte principal
+- ai_confidence: número 70-95`,
           add_context_from_internet: true,
           response_json_schema: {
             type: 'object',
             properties: {
-              title: { type: 'string' },
-              slug: { type: 'string' },
-              summary: { type: 'string' },
-              what_happened: { type: 'string' },
-              why_it_matters: { type: 'string' },
-              impacts: { type: 'object' },
-              affected_companies: { type: 'string' },
-              tickers: { type: 'string' },
-              conclusion: { type: 'string' },
-              tags: { type: 'string' },
-              meta_title: { type: 'string' },
-              meta_description: { type: 'string' },
-              social_summary: { type: 'string' },
-              relevance: { type: 'string' },
-              country: { type: 'string' },
-              sector: { type: 'string' },
-              source: { type: 'string' },
-              ai_confidence: { type: 'number' },
+              title: { type: 'string' }, slug: { type: 'string' }, summary: { type: 'string' },
+              what_happened: { type: 'string' }, why_it_matters: { type: 'string' },
+              impacts: { type: 'object' }, affected_companies: { type: 'string' }, tickers: { type: 'string' },
+              conclusion: { type: 'string' }, investor_summary: { type: 'string' },
+              key_takeaways: { type: 'string' }, assets_to_watch: { type: 'string' },
+              source_links: { type: 'array', items: { type: 'object' } },
+              tags: { type: 'string' }, meta_title: { type: 'string' }, meta_description: { type: 'string' },
+              social_summary: { type: 'string' }, sentiment: { type: 'string' }, impact_level: { type: 'string' },
+              relevance: { type: 'string' }, country: { type: 'string' }, sector: { type: 'string' },
+              source: { type: 'string' }, ai_confidence: { type: 'number' },
             },
           },
         });
@@ -219,6 +222,7 @@ Retorne JSON com:
         const article = await base44.asServiceRole.entities.Article.create({
           ...result,
           impacts: JSON.stringify(result.impacts || {}),
+          source_links: JSON.stringify(result.source_links || []),
           category: topicObj.category,
           status: 'publicado',
           is_featured: result.relevance === 'urgente' || result.relevance === 'alta',

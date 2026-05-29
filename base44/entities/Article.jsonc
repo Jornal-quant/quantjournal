@@ -3,40 +3,66 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string",
-      "description": "T\u00edtulo SEO do artigo"
+      "type": "string"
     },
     "slug": {
-      "type": "string",
-      "description": "URL amig\u00e1vel"
+      "type": "string"
     },
     "summary": {
-      "type": "string",
-      "description": "Resumo executivo de at\u00e9 3 linhas"
+      "type": "string"
     },
     "what_happened": {
-      "type": "string",
-      "description": "O que aconteceu"
+      "type": "string"
     },
     "why_it_matters": {
-      "type": "string",
-      "description": "Por que isso importa"
+      "type": "string"
     },
     "impacts": {
       "type": "string",
-      "description": "Poss\u00edveis impactos em JSON string"
+      "description": "JSON string de impactos por classe de ativo"
     },
     "affected_companies": {
-      "type": "string",
-      "description": "Empresas afetadas, separadas por v\u00edrgula"
+      "type": "string"
     },
     "tickers": {
-      "type": "string",
-      "description": "Tickers relacionados, separados por v\u00edrgula"
+      "type": "string"
     },
     "conclusion": {
+      "type": "string"
+    },
+    "investor_summary": {
       "type": "string",
-      "description": "Conclus\u00e3o do artigo"
+      "description": "Resumo r\u00e1pido para o investidor: impacto, ativos, o que observar \u2014 separados por |"
+    },
+    "assets_to_watch": {
+      "type": "string",
+      "description": "Ativos/tickers a monitorar, separados por v\u00edrgula"
+    },
+    "source_links": {
+      "type": "string",
+      "description": "JSON array: [{name, url}] de fontes consultadas"
+    },
+    "key_takeaways": {
+      "type": "string",
+      "description": "3-5 pontos-chave separados por |"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positivo",
+        "negativo",
+        "neutro",
+        "misto"
+      ]
+    },
+    "impact_level": {
+      "type": "string",
+      "enum": [
+        "baixo",
+        "medio",
+        "alto",
+        "critico"
+      ]
     },
     "category": {
       "type": "string",
@@ -50,32 +76,41 @@
         "commodities",
         "empresas",
         "internacional"
-      ],
-      "description": "Categoria principal"
+      ]
     },
     "tags": {
-      "type": "string",
-      "description": "Tags SEO separadas por v\u00edrgula"
+      "type": "string"
     },
     "source": {
-      "type": "string",
-      "description": "Fonte original da not\u00edcia"
+      "type": "string"
     },
     "source_url": {
-      "type": "string",
-      "description": "URL da fonte"
+      "type": "string"
     },
     "image_url": {
-      "type": "string",
-      "description": "URL da imagem de capa"
+      "type": "string"
     },
     "meta_title": {
-      "type": "string",
-      "description": "Meta title para SEO"
+      "type": "string"
     },
     "meta_description": {
+      "type": "string"
+    },
+    "social_summary": {
+      "type": "string"
+    },
+    "ai_confidence": {
+      "type": "number",
+      "default": 0
+    },
+    "source_quality": {
       "type": "string",
-      "description": "Meta description para SEO"
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
     },
     "relevance": {
       "type": "string",
@@ -88,26 +123,32 @@
       "default": "media"
     },
     "country": {
-      "type": "string",
-      "description": "Pa\u00eds principal relacionado"
+      "type": "string"
     },
     "sector": {
-      "type": "string",
-      "description": "Setor econ\u00f4mico"
+      "type": "string"
     },
     "status": {
       "type": "string",
       "enum": [
         "rascunho",
         "publicado",
-        "arquivado"
+        "arquivado",
+        "revisao"
       ],
       "default": "publicado"
     },
     "is_featured": {
       "type": "boolean",
-      "default": false,
-      "description": "Destaque na homepage"
+      "default": false
+    },
+    "is_breaking": {
+      "type": "boolean",
+      "default": false
+    },
+    "premium_only": {
+      "type": "boolean",
+      "default": false
     },
     "views": {
       "type": "number",

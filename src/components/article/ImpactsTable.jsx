@@ -1,69 +1,88 @@
 import React from 'react';
+import { TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
 
 const ASSET_CLASSES = [
-  { key: 'Bolsa', label: 'Bolsa', emoji: '📈' },
-  { key: 'Dólar', label: 'Dólar', emoji: '💵' },
-  { key: 'Juros', label: 'Juros', emoji: '🏦' },
-  { key: 'Criptomoedas', label: 'Criptomoedas', emoji: '🪙' },
-  { key: 'Commodities', label: 'Commodities', emoji: '🛢️' },
+  { key: 'Bolsa', emoji: '📈', keys: ['Bolsa', 'bolsa', 'Ibovespa', 'Ações'] },
+  { key: 'Dólar', emoji: '💵', keys: ['Dólar', 'dolar', 'Câmbio', 'USD'] },
+  { key: 'Juros', emoji: '🏦', keys: ['Juros', 'juros', 'Selic', 'Renda Fixa', 'Taxa'] },
+  { key: 'Cripto', emoji: '🪙', keys: ['Cripto', 'Criptomoedas', 'cripto', 'Bitcoin', 'BTC'] },
+  { key: 'Commodities', emoji: '🛢️', keys: ['Commodities', 'commodities', 'Petróleo', 'Ouro', 'Minério'] },
 ];
 
-const IMPACT_MAP = {
-  positivo: { icon: '🟢', label: 'Positivo', cls: 'text-chart-2 bg-chart-2/5' },
-  negativo: { icon: '🔴', label: 'Negativo', cls: 'text-destructive bg-destructive/5' },
-  neutro: { icon: '🟡', label: 'Neutro', cls: 'text-accent bg-accent/5' },
+const SENTIMENT = {
+  positivo: {
+    icon: TrendingUp,
+    label: 'Positivo',
+    textCls: 'text-emerald-600',
+    bgCls: 'bg-emerald-50 border-emerald-200',
+    barCls: 'bg-emerald-500',
+  },
+  negativo: {
+    icon: TrendingDown,
+    label: 'Negativo',
+    textCls: 'text-red-600',
+    bgCls: 'bg-red-50 border-red-200',
+    barCls: 'bg-red-500',
+  },
+  atencao: {
+    icon: AlertCircle,
+    label: 'Atenção',
+    textCls: 'text-amber-600',
+    bgCls: 'bg-amber-50 border-amber-200',
+    barCls: 'bg-amber-500',
+  },
+  neutro: {
+    icon: Minus,
+    label: 'Neutro',
+    textCls: 'text-muted-foreground',
+    bgCls: 'bg-muted/50 border-border',
+    barCls: 'bg-muted-foreground/40',
+  },
 };
 
 function detectSentiment(text) {
   if (!text) return 'neutro';
-  const lower = text.toLowerCase();
-  if (/(positivo|alta|sobe|beneficia|favoráv|cresci|ganho|recupera)/i.test(lower)) return 'positivo';
-  if (/(negativo|queda|cai|pressiona|impacto neg|perda|deteriora|risco)/i.test(lower)) return 'negativo';
+  const t = text.toLowerCase();
+  if (/(positivo|alta|sobe|beneficia|favoráv|cresci|ganho|recupera|impulsa|valoriza)/i.test(t)) return 'positivo';
+  if (/(negativo|queda|cai|pressiona|perda|deteriora|risco|sofre|recua|contrai)/i.test(t)) return 'negativo';
+  if (/(atenção|cautela|volátil|incert|monitorar|acompanhar|pressão)/i.test(t)) return 'atencao';
   return 'neutro';
 }
 
+function findValue(impacts, asset) {
+  for (const k of asset.keys) {
+    if (impacts[k]) return impacts[k];
+  }
+  return null;
+}
+
 export default function ImpactsTable({ impacts }) {
+  const available = ASSET_CLASSES.filter((a) => findValue(impacts, a));
+  if (available.length === 0) return null;
+
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-muted/50 border-b border-border">
-            <th className="text-left p-3 font-semibold text-muted-foreground w-32">Classe</th>
-            <th className="text-left p-3 font-semibold text-muted-foreground w-28">Impacto</th>
-            <th className="text-left p-3 font-semibold text-muted-foreground">Explicação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ASSET_CLASSES.map((asset, i) => {
-            // Try to find the value with different key formats
-            const value =
-              impacts[asset.key] ||
-              impacts[asset.key.toLowerCase()] ||
-              impacts[asset.label] ||
-              null;
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {available.map((asset) => {
+        const value = findValue(impacts, asset);
+        const s = SENTIMENT[detectSentiment(value)];
+        const Icon = s.icon;
 
-            const sentiment = detectSentiment(value);
-            const impact = IMPACT_MAP[sentiment];
-
-            return (
-              <tr key={asset.key} className={`border-b border-border/50 ${i % 2 === 0 ? '' : 'bg-muted/20'}`}>
-                <td className="p-3 font-medium">
-                  <span className="mr-1.5">{asset.emoji}</span>
-                  {asset.label}
-                </td>
-                <td className="p-3">
-                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${impact.cls}`}>
-                    {impact.icon} {impact.label}
-                  </span>
-                </td>
-                <td className="p-3 text-muted-foreground leading-relaxed">
-                  {value || <span className="italic text-muted-foreground/50">Sem dados</span>}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        return (
+          <div key={asset.key} className={`rounded-xl border p-4 ${s.bgCls}`}>
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">{asset.emoji}</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-foreground/70">{asset.key}</span>
+              </div>
+              <div className={`flex items-center gap-1 text-xs font-semibold ${s.textCls}`}>
+                <Icon className="w-3.5 h-3.5" />
+                {s.label}
+              </div>
+            </div>
+            <p className="text-sm text-foreground/80 leading-relaxed">{value}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }
