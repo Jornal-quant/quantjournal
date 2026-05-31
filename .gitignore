@@ -32,3 +32,4 @@ dist-ssr
 
 # Data exports can contain subscribers, logs, and article drafts.
 exports/
+.vercel

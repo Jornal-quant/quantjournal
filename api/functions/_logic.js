@@ -32,6 +32,34 @@ const CATEGORIES = new Set([
   'internacional',
 ]);
 
+const SENTIMENTS = new Set(['positivo', 'negativo', 'neutro', 'misto']);
+const IMPACT_LEVELS = new Set(['baixo', 'medio', 'alto', 'critico']);
+const SOURCE_QUALITIES = new Set(['low', 'medium', 'high']);
+const RELEVANCES = new Set(['baixa', 'media', 'alta', 'urgente']);
+
+function normalizeEnum(value, allowed, fallback, aliases = {}) {
+  const normalized = String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9_ ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (allowed.has(normalized)) return normalized;
+  if (aliases[normalized]) return aliases[normalized];
+
+  for (const item of allowed) {
+    if (normalized.includes(item)) return item;
+  }
+
+  for (const [alias, target] of Object.entries(aliases)) {
+    if (normalized.includes(alias)) return target;
+  }
+
+  return fallback;
+}
+
 function decodeHtml(value = '') {
   return String(value)
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
@@ -97,6 +125,31 @@ export function normalizeGeneratedArticle(article = {}) {
   return {
     ...article,
     category,
+    sentiment: normalizeEnum(article.sentiment, SENTIMENTS, 'neutro'),
+    impact_level: normalizeEnum(article.impact_level, IMPACT_LEVELS, 'medio', {
+      medio: 'medio',
+      medio_impacto: 'medio',
+      moderate: 'medio',
+      medium: 'medio',
+      high: 'alto',
+      critical: 'critico',
+      baixo_impacto: 'baixo',
+      low: 'baixo',
+    }),
+    relevance: normalizeEnum(article.relevance, RELEVANCES, 'media', {
+      medio: 'media',
+      relevante: 'media',
+      important: 'alta',
+      high: 'alta',
+      breaking: 'urgente',
+      urgent: 'urgente',
+      low: 'baixa',
+    }),
+    source_quality: normalizeEnum(article.source_quality, SOURCE_QUALITIES, 'medium', {
+      confiavel: 'medium',
+      alta: 'high',
+      baixa: 'low',
+    }),
     title: cleanArticleText(article.title || 'Análise de mercado'),
     summary: cleanArticleText(article.summary || ''),
     what_happened: cleanArticleText(article.what_happened || ''),

@@ -68,3 +68,19 @@ test('toArticleRow serializes JSON fields for Neon inserts', () => {
   assert.deepEqual(row.source_links, [{ name: 'Fed', url: 'https://fed.example' }]);
   assert.equal(row.source_url, 'https://source.example');
 });
+
+test('toArticleRow normalizes AI enum fields for database constraints', () => {
+  const row = toArticleRow({
+    title: 'Mercado reage',
+    category: 'bolsa',
+    sentiment: 'positivo para ações',
+    impact_level: 'médio',
+    relevance: 'relevante',
+    source_quality: 'confiável',
+  });
+
+  assert.equal(row.sentiment, 'positivo');
+  assert.equal(row.impact_level, 'medio');
+  assert.equal(row.relevance, 'media');
+  assert.equal(row.source_quality, 'medium');
+});
