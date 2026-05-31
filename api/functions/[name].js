@@ -41,8 +41,48 @@ async function insertRow(sql, table, payload) {
   return normalizeRow(result[0]);
 }
 
+const TITLE_STOPWORDS = new Set(['para', 'pelo', 'pela', 'com', 'que', 'dos', 'das', 'uma', 'ent', 'ano', 'hoje', 'sobre', 'apos', 'mais', 'menos', 'entre', 'como', 'pode', 'tem']);
+
+function titleKeywords(title) {
+  return new Set(
+    String(title || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9 ]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !TITLE_STOPWORDS.has(w)),
+  );
+}
+
+// Detecta matérias quase iguais (mesma categoria, últimas 36h) por sobreposição
+// de palavras-chave do título — pega variações como "alívio externo e cautela
+// fiscal" vs "alívio fiscal e cautela externa" que o dedup exato não pegava.
+async function isDuplicatePublished(sql, row) {
+  const kw = titleKeywords(row.title);
+  if (kw.size < 3) return false;
+  const recent = await sql.query(
+    `select title from qj_articles where status = 'publicado' and category = $1 and created_date > now() - interval '36 hours' order by created_date desc limit 40`,
+    [row.category],
+  );
+  for (const other of recent) {
+    const otherKw = titleKeywords(other.title);
+    if (otherKw.size === 0) continue;
+    let inter = 0;
+    for (const w of kw) if (otherKw.has(w)) inter += 1;
+    if (inter / Math.min(kw.size, otherKw.size) >= 0.6) return true;
+  }
+  return false;
+}
+
 async function insertArticle(sql, payload, seed = '') {
   const row = { ...payload };
+  // Evita publicar duplicata recente no feed: mantém para revisão em vez de publicar.
+  if (row.status === 'publicado' && (await isDuplicatePublished(sql, row).catch(() => false))) {
+    row.status = 'revisao';
+    row.is_featured = false;
+    row.is_breaking = false;
+  }
   const slugSource = row.slug || row.title || 'analise-mercado';
   const baseSlug = String(slugSource)
     .toLowerCase()
@@ -863,6 +903,24 @@ async function handleBackfillImages(sql, body) {
   return { success: true, scanned: rows.length, updated };
 }
 
+// Login do admin: valida e-mail/senha contra as envs do servidor (não ficam no
+// bundle do front) e devolve o token de sessão.
+async function handleAdminLogin(sql, body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  const password = String(body.password || '');
+  const allowedEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const allowedPassword = process.env.ADMIN_PASSWORD || '';
+  const token = process.env.ADMIN_TOKEN || '';
+
+  if (!allowedEmail || !allowedPassword || !token) {
+    throw new Error('Autenticação de admin não configurada no servidor.');
+  }
+  if (email !== allowedEmail || password !== allowedPassword) {
+    return { success: false, error: 'E-mail ou senha inválidos.' };
+  }
+  return { success: true, token };
+}
+
 const handlers = {
   processRawNews: handleProcessRawNews,
   collectLatestNews: handleCollectLatestNews,
@@ -874,6 +932,7 @@ const handlers = {
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
   autoPublishNews: handleAutoPublishNews,
+  adminLogin: handleAdminLogin,
 };
 
 export default async function handler(req, res) {

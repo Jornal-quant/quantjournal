@@ -1,12 +1,12 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import ScrollToTop from '@/components/ScrollToTop';
+import AdminGate from '@/components/AdminGate';
 
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -63,10 +63,8 @@ const AuthenticatedApp = () => {
         <Route path="/metodologia" element={<Metodologia />} />
       </Route>
 
-      {/* Protected admin */}
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/admin" element={<AdminDashboard />} />
-      </Route>
+      {/* Admin — protegido por login validado no servidor (AdminGate) */}
+      <Route path="/admin" element={<AdminGate><AdminDashboard /></AdminGate>} />
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
