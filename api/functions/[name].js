@@ -127,11 +127,21 @@ async function fetchFinnhubNews() {
   })).filter((item) => item.title && item.link);
 }
 
+// Busca por termos de mercado em vez de category=business: o "business" do
+// GNews no Brasil traz muita loteria/notícia popular. A busca devolve só o que
+// casa com a query financeira (o filtro isMarketRelevant ainda atua depois).
+const GNEWS_FINANCE_QUERY = [
+  'bolsa', 'ações', 'Ibovespa', '"mercado financeiro"', 'dólar', 'Selic', 'juros',
+  'inflação', 'economia', 'investimento', 'Petrobras', 'Vale', 'dividendos',
+  '"renda fixa"', 'câmbio', 'commodities', 'bitcoin', 'PIB', 'Copom', 'B3',
+].join(' OR ');
+
 async function fetchGNewsBrazil() {
   const token = process.env.GNEWS_API_KEY;
   if (!token) return [];
+  const query = encodeURIComponent(GNEWS_FINANCE_QUERY);
   const data = await fetchJson(
-    `https://gnews.io/api/v4/top-headlines?category=business&lang=pt&country=br&max=25&apikey=${token}`,
+    `https://gnews.io/api/v4/search?q=${query}&lang=pt&country=br&max=25&sortby=publishedAt&in=title,description&apikey=${token}`,
   );
   return (data?.articles || []).map((item) => ({
     title: item.title,
