@@ -84,3 +84,14 @@ test('toArticleRow normalizes AI enum fields for database constraints', () => {
   assert.equal(row.relevance, 'media');
   assert.equal(row.source_quality, 'medium');
 });
+
+test('toArticleRow scales fractional AI confidence and auto-publishes strong articles', () => {
+  const row = toArticleRow({
+    title: 'Banco Central sinaliza juros estáveis',
+    category: 'juros',
+    ai_confidence: 0.92,
+  });
+
+  assert.equal(row.ai_confidence, 92);
+  assert.equal(row.status, 'publicado');
+});

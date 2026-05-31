@@ -34,6 +34,26 @@ async function insertRow(sql, table, payload) {
   return normalizeRow(result[0]);
 }
 
+async function insertArticle(sql, payload, seed = '') {
+  const row = { ...payload };
+  const slugSource = row.slug || row.title || 'analise-mercado';
+  const baseSlug = String(slugSource)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72) || 'analise-mercado';
+
+  row.slug = baseSlug;
+  const existing = await sql.query(`select id from qj_articles where slug = $1 limit 1`, [row.slug]);
+  if (existing.length > 0) {
+    row.slug = `${baseSlug}-${simpleHash(`${seed}:${row.title}:${Date.now()}`).slice(0, 6)}`;
+  }
+
+  return insertRow(sql, 'qj_articles', row);
+}
+
 async function updateRow(sql, table, id, payload) {
   const row = toDatabasePayload(payload);
   const entries = Object.entries(row).filter(([, value]) => value !== undefined);
@@ -128,7 +148,7 @@ async function processRawNewsItem(sql, rawItem) {
 
   const generated = await invokeDeepSeek(buildArticlePrompt(rawItem), true, false);
   const articleRow = toArticleRow(generated, rawItem);
-  const article = await insertRow(sql, 'qj_articles', articleRow);
+  const article = await insertArticle(sql, articleRow, rawItem.source_url || rawItem.id);
 
   await updateRow(sql, 'qj_raw_news_feed', rawItem.id, {
     status: 'processed',
@@ -283,7 +303,7 @@ async function handleBackfillNews(sql, body) {
     };
     const generated = await invokeDeepSeek(buildArticlePrompt(raw), true, false);
     generated.category = topic.category;
-    const article = await insertRow(sql, 'qj_articles', toArticleRow(generated, raw));
+    const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
     created.push(article);
   }
 
@@ -457,7 +477,7 @@ async function handleAutoPublishNews(sql) {
   };
   const generated = await invokeDeepSeek(buildArticlePrompt(raw), true, false);
   generated.category = topic.category;
-  const article = await insertRow(sql, 'qj_articles', toArticleRow(generated, raw));
+  const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
   await logSystem(sql, `Auto-publicado: ${article.title}`, `Categoria: ${article.category}`, 'success', 'autoPublishNews');
   return { success: true, article_id: article.id, title: article.title, category: article.category };
 }

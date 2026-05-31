@@ -116,6 +116,13 @@ export function cleanArticleText(text = '') {
     .trim();
 }
 
+function normalizeConfidence(value) {
+  const confidence = Number(value || 70);
+  if (!Number.isFinite(confidence)) return 70;
+  const scaled = confidence > 0 && confidence <= 1 ? confidence * 100 : confidence;
+  return Math.max(0, Math.min(100, Math.round(scaled)));
+}
+
 export function normalizeGeneratedArticle(article = {}) {
   const category = CATEGORIES.has(article.category) ? article.category : 'economia';
   const sourceLinks = Array.isArray(article.source_links)
@@ -157,7 +164,7 @@ export function normalizeGeneratedArticle(article = {}) {
     conclusion: cleanArticleText(article.conclusion || ''),
     impacts: article.impacts && typeof article.impacts === 'object' ? article.impacts : {},
     source_links: sourceLinks,
-    ai_confidence: Number(article.ai_confidence || 70),
+    ai_confidence: normalizeConfidence(article.ai_confidence),
   };
 }
 
