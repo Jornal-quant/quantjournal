@@ -1,4 +1,4 @@
-import { getSql, normalizeRow, sendJson, toDatabasePayload } from '../_db.js';
+import { getSql, isAdminRequest, normalizeRow, sendJson, toDatabasePayload } from '../_db.js';
 import {
   BACKFILL_TOPICS,
   DEFAULT_RSS_SOURCES,
@@ -41,8 +41,48 @@ async function insertRow(sql, table, payload) {
   return normalizeRow(result[0]);
 }
 
+const TITLE_STOPWORDS = new Set(['para', 'pelo', 'pela', 'com', 'que', 'dos', 'das', 'uma', 'ent', 'ano', 'hoje', 'sobre', 'apos', 'mais', 'menos', 'entre', 'como', 'pode', 'tem']);
+
+function titleKeywords(title) {
+  return new Set(
+    String(title || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9 ]/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !TITLE_STOPWORDS.has(w)),
+  );
+}
+
+// Detecta matérias quase iguais (mesma categoria, últimas 36h) por sobreposição
+// de palavras-chave do título — pega variações como "alívio externo e cautela
+// fiscal" vs "alívio fiscal e cautela externa" que o dedup exato não pegava.
+async function isDuplicatePublished(sql, row) {
+  const kw = titleKeywords(row.title);
+  if (kw.size < 3) return false;
+  const recent = await sql.query(
+    `select title from qj_articles where status = 'publicado' and category = $1 and created_date > now() - interval '36 hours' order by created_date desc limit 40`,
+    [row.category],
+  );
+  for (const other of recent) {
+    const otherKw = titleKeywords(other.title);
+    if (otherKw.size === 0) continue;
+    let inter = 0;
+    for (const w of kw) if (otherKw.has(w)) inter += 1;
+    if (inter / Math.min(kw.size, otherKw.size) >= 0.6) return true;
+  }
+  return false;
+}
+
 async function insertArticle(sql, payload, seed = '') {
   const row = { ...payload };
+  // Evita publicar duplicata recente no feed: mantém para revisão em vez de publicar.
+  if (row.status === 'publicado' && (await isDuplicatePublished(sql, row).catch(() => false))) {
+    row.status = 'revisao';
+    row.is_featured = false;
+    row.is_breaking = false;
+  }
   const slugSource = row.slug || row.title || 'analise-mercado';
   const baseSlug = String(slugSource)
     .toLowerCase()
@@ -863,6 +903,35 @@ async function handleBackfillImages(sql, body) {
   return { success: true, scanned: rows.length, updated };
 }
 
+// Contas de admin: ADMIN_USERS = "email1:senha1,email2:senha2" (preferido) com
+// fallback para ADMIN_EMAIL/ADMIN_PASSWORD (conta única).
+function adminAccounts() {
+  const map = new Map();
+  for (const pair of String(process.env.ADMIN_USERS || '').split(',')) {
+    const i = pair.indexOf(':');
+    if (i > 0) map.set(pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1));
+  }
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    map.set(String(process.env.ADMIN_EMAIL).trim().toLowerCase(), process.env.ADMIN_PASSWORD);
+  }
+  return map;
+}
+
+// Login do admin: valida e-mail/senha contra as envs do servidor (não ficam no
+// bundle do front) e devolve o token de sessão.
+async function handleAdminLogin(sql, body) {
+  const email = String(body.email || '').trim().toLowerCase();
+  const password = String(body.password || '');
+  const token = process.env.ADMIN_TOKEN || '';
+  if (!token) throw new Error('Autenticação de admin não configurada no servidor.');
+
+  const accounts = adminAccounts();
+  if (password && accounts.get(email) === password) {
+    return { success: true, token };
+  }
+  return { success: false, error: 'E-mail ou senha inválidos.' };
+}
+
 const handlers = {
   processRawNews: handleProcessRawNews,
   collectLatestNews: handleCollectLatestNews,
@@ -874,6 +943,7 @@ const handlers = {
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
   autoPublishNews: handleAutoPublishNews,
+  adminLogin: handleAdminLogin,
 };
 
 export default async function handler(req, res) {
@@ -884,10 +954,19 @@ export default async function handler(req, res) {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
+  // Funções públicas (chamadas pelo front sem login): histórico do gráfico e o
+  // próprio login. As demais (coleta, geração, snapshots, newsletter, etc.)
+  // exigem token de admin — o GitHub Actions envia o token via header.
+  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin']);
+
   try {
     const fn = handlers[name];
     if (!fn) {
       return sendJson(res, 404, { error: `Unknown function: ${name}` });
+    }
+
+    if (!PUBLIC_FUNCTIONS.has(name) && !isAdminRequest(req)) {
+      return sendJson(res, 401, { error: 'Não autorizado' });
     }
 
     const sql = getSql();

@@ -6,15 +6,5 @@
     "api/**/*.js": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/functions/collectLatestNews",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/functions/updateMarketSnapshots",
-      "schedule": "15 9 * * *"
-    }
-  ]
+  }
 }

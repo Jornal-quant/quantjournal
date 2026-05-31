@@ -4,11 +4,21 @@ import { appParams } from '@/lib/app-params';
 const { appId, token, functionsVersion, appBaseUrl } = appParams;
 export const dataBackend = import.meta.env.VITE_DATA_BACKEND || 'base44';
 
+function adminAuthHeader() {
+  try {
+    const t = localStorage.getItem('qj_admin_token');
+    return t ? { 'x-admin-token': t } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function requestJson(path, options = {}) {
   const response = await fetch(path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...adminAuthHeader(),
       ...(options.headers || {}),
     },
   });

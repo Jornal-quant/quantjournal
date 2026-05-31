@@ -73,3 +73,13 @@ export function sendJson(res, status, data) {
   res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify(data));
 }
+
+// Requisição autenticada como admin: header x-admin-token (ou Bearer) igual ao
+// ADMIN_TOKEN do servidor. Usado para proteger escrita/funções administrativas.
+export function isAdminRequest(req) {
+  const token = process.env.ADMIN_TOKEN;
+  if (!token) return false;
+  const headers = req.headers || {};
+  const provided = headers['x-admin-token'] || String(headers.authorization || '').replace(/^Bearer\s+/i, '');
+  return provided === token;
+}
