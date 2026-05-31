@@ -1,0 +1,16 @@
+{
+  "name": "updateMarketSnapshots",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "refresh_quotes",
+      "description": "Atualiza cotações reais (FX, cripto, Selic, índices, commodities) a cada 15 minutos.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 15
+    }
+  ]
+}

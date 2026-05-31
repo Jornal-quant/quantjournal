@@ -1,0 +1,16 @@
+{
+  "name": "autoPublishNews",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "evergreen_topic_filler",
+      "description": "Gera e publica um artigo de tema recorrente (Ibovespa, Selic, Dólar, etc.) a cada 8 horas, para complementar as notícias de RSS.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 8
+    }
+  ]
+}

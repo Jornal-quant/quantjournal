@@ -1,0 +1,15 @@
+{
+  "name": "sendDailyNewsletter",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "daily_morning_brief",
+      "description": "Envia o resumo diário para os inscritos ativos todo dia às 10:30 UTC (07:30 BRT, antes da abertura).",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "cron",
+      "cron_expression": "30 10 * * *"
+    }
+  ]
+}

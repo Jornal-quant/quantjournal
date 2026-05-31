@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight, TrendingUp, TrendingDown, Zap, BarChart3, Shield, Clock, Globe, Search, MessageSquare, Bell } from 'lucide-react';
+import { ArrowRight, Zap, BarChart3, Shield, Globe, Search, MessageSquare } from 'lucide-react';
 
 import ArticleCard from '../components/news/ArticleCard';
 import NewsletterForm from '../components/news/NewsletterForm';
@@ -251,9 +251,22 @@ export default function Home() {
 
   const activeCategories = CATEGORY_SECTIONS.filter((c) => (byCategory[c.key]?.length || 0) >= 1);
 
-  const trending = useMemo(() =>
-    [...articles].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 7),
-  [articles]);
+  const trending = useMemo(() => {
+    const maxViews = articles.reduce((m, a) => Math.max(m, a.views || 0), 0);
+    // Enquanto não houver leituras reais, evita exibir artigos-semente antigos:
+    // ranqueia por relevância e recência em vez de views zeradas.
+    if (maxViews > 0) {
+      return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 7);
+    }
+    const rank = { urgente: 3, alta: 2, media: 1, baixa: 0 };
+    return [...articles]
+      .sort((a, b) => {
+        const r = (rank[b.relevance] || 0) - (rank[a.relevance] || 0);
+        if (r !== 0) return r;
+        return new Date(b.created_date) - new Date(a.created_date);
+      })
+      .slice(0, 7);
+  }, [articles]);
 
   const urgent = useMemo(() => articles.filter((a) => a.relevance === 'urgente'), [articles]);
   const hasContent = articles.length > 0;

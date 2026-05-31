@@ -1,0 +1,16 @@
+{
+  "name": "processRawNews",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "drain_pending_queue",
+      "description": "Escreve com IA o próximo item pendente da fila (drena o backlog) a cada 20 minutos.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 20
+    }
+  ]
+}

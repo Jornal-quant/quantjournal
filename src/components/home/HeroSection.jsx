@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { timeAgo } from '@/lib/utils';
 
 const CAT_LABEL = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Câmbio',
@@ -15,11 +14,6 @@ const CAT_ACCENT = {
   commodities: '#10B981', empresas: '#6366F1', internacional: '#EC4899',
   economia: '#84CC16', renda_fixa: '#14B8A6',
 };
-
-function timeAgo(date) {
-  if (!date) return '';
-  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
-}
 
 function HeroMain({ article }) {
   const cat = CAT_LABEL[article.category] || article.category;

@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, MessageSquare, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, MessageSquare } from 'lucide-react';
+import { formatMarketPrice, formatChangePercent } from '@/lib/utils';
 import ArticleCard from '../components/news/ArticleCard';
 
 const OTHER_ASSETS = [
@@ -148,15 +149,6 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
   const displayName = asset?.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
   const displayTicker = asset?.ticker;
 
-  function fmtPrice(s) {
-    if (!s?.price) return null;
-    if (s.market_type === 'rate') return `${s.price.toFixed(2)}%`;
-    if (s.market_type === 'fx') return `R$ ${s.price.toFixed(2)}`;
-    if (s.market_type === 'index') return s.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-    if (s.price > 50000) return `US$ ${(s.price / 1000).toFixed(1)}k`;
-    return `US$ ${s.price.toFixed(2)}`;
-  }
-
   const up = snapshot?.change_percent > 0;
   const dn = snapshot?.change_percent < 0;
 
@@ -192,10 +184,10 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
           <div className="flex items-center gap-4 flex-shrink-0">
             {snapshot && (
               <div className="text-right">
-                <p className="font-mono text-2xl font-semibold">{fmtPrice(snapshot)}</p>
+                <p className="font-mono text-2xl font-semibold">{formatMarketPrice(snapshot)}</p>
                 <p className={`font-mono text-sm font-semibold flex items-center gap-1 justify-end ${dn ? 'text-ds-dn' : up ? 'text-ds-up' : 'text-muted-foreground'}`}>
                   {dn ? <TrendingDown className="w-4 h-4" /> : up ? <TrendingUp className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                  {snapshot.change_percent != null ? `${up ? '+' : ''}${snapshot.change_percent.toFixed(2)}%` : '—'}
+                  {formatChangePercent(snapshot.change_percent)}
                 </p>
               </div>
             )}

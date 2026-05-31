@@ -1,0 +1,17 @@
+{
+  "name": "collectLatestNews",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "collect_rss",
+      "description": "Busca os feeds RSS, deduplica e encadeia o processamento dos itens mais novos a cada 30 minutos.",
+      "function_args": { "auto_process": true },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 30
+    }
+  ]
+}

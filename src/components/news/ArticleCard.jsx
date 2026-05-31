@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
+import { timeAgo } from '@/lib/utils';
 
 const CAT_LABEL = {
   bolsa: 'Bolsa', renda_fixa: 'Renda Fixa', juros: 'Juros', dolar: 'Câmbio',
@@ -24,18 +23,14 @@ const SENTIMENT_CONFIG = {
   misto:    { icon: Minus,        color: 'text-yellow-400',  label: 'Misto' },
 };
 
-function timeAgo(date) {
-  if (!date) return '';
-  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
-}
+const CAT_COLORS = {
+  bolsa: '#3B82F6', dolar: '#8B5CF6', juros: '#06B6D4', criptomoedas: '#F59E0B',
+  commodities: '#10B981', empresas: '#6366F1', internacional: '#EC4899',
+  economia: '#84CC16', renda_fixa: '#14B8A6',
+};
 
 function CategoryDot({ category }) {
-  const colors = {
-    bolsa: '#3B82F6', dolar: '#8B5CF6', juros: '#06B6D4', criptomoedas: '#F59E0B',
-    commodities: '#10B981', empresas: '#6366F1', internacional: '#EC4899',
-    economia: '#84CC16', renda_fixa: '#14B8A6',
-  };
-  return <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[category] || '#6B7280' }} />;
+  return <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: CAT_COLORS[category] || '#6B7280' }} />;
 }
 
 // Compact list card variant
@@ -74,17 +69,24 @@ function DefaultCard({ article }) {
   const impact = IMPACT_CONFIG[article.impact_level];
   const sentiment = SENTIMENT_CONFIG[article.sentiment];
   const SentimentIcon = sentiment?.icon;
+  const accent = CAT_COLORS[article.category] || '#6B7280';
+  const firstTicker = article.tickers ? article.tickers.split(',')[0].trim() : '';
 
   return (
     <Link to={`/artigo/${article.id}`}
       className="group flex flex-col bg-white/3 hover:bg-white/6 border border-white/8 hover:border-white/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
-      {/* Image or gradient header */}
+      {/* Image or generated category cover */}
       <div className="relative h-40 flex-shrink-0 overflow-hidden bg-white/4">
         {article.image_url ? (
           <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity duration-300" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-end p-3 bg-gradient-to-br from-white/6 to-transparent">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/15">{cat}</span>
+          <div
+            className="w-full h-full flex flex-col justify-between p-3.5"
+            style={{ background: `radial-gradient(ellipse at 75% 20%, ${accent}30 0%, transparent 65%), linear-gradient(135deg, ${accent}12 0%, transparent 70%)` }}>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: `${accent}` }}>{cat}</span>
+            <span className="font-mono text-[26px] font-bold leading-none text-white/10 self-end tabular-nums">
+              {firstTicker || '⬡'}
+            </span>
           </div>
         )}
         {/* Overlays */}

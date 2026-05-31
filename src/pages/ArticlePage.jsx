@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Eye, ExternalLink, ChevronRight, AlertTriangle, TrendingUp, TrendingDown, Minus, Share2 } from 'lucide-react';
@@ -104,9 +104,13 @@ export default function ArticlePage() {
   });
 
   useEffect(() => {
-    if (article?.id) {
-      base44.entities.Article.update(article.id, { views: (article.views || 0) + 1 });
-    }
+    if (!article?.id) return;
+    // Conta uma leitura por sessão/artigo — evita dupla contagem do StrictMode
+    // e inflar a cada refresh. (Idealmente migrar para uma function no backend.)
+    const key = `viewed:${article.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    base44.entities.Article.update(article.id, { views: (article.views || 0) + 1 }).catch(() => {});
   }, [article?.id]);
 
   if (isLoading) {
@@ -202,7 +206,9 @@ export default function ArticlePage() {
               <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[10px] text-muted-foreground mb-4 pb-4 border-b border-ds-border">
                 <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" />{pubDate}</span>
                 {updDate && <span className="flex items-center gap-1.5 text-ds-up"><RefreshCwIcon /> Atualizado {updDate}</span>}
-                <span className="flex items-center gap-1.5"><Eye className="w-3 h-3" />{article.views || 0} leituras</span>
+                {article.views > 0 && (
+                  <span className="flex items-center gap-1.5"><Eye className="w-3 h-3" />{article.views.toLocaleString('pt-BR')} {article.views === 1 ? 'leitura' : 'leituras'}</span>
+                )}
                 <span>{readTime} min de leitura</span>
                 {article.source && (
                   <span className="flex items-center gap-1.5 ml-auto">

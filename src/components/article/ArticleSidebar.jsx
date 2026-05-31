@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Minus, ExternalLink } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { formatMarketPrice, formatChangePercent, isSaneSnapshot, timeAgo } from '@/lib/utils';
 import NewsletterForm from '../news/NewsletterForm';
 
 const CAT_LABEL = {
@@ -28,15 +27,6 @@ const FALLBACK_QUOTES = [
   { symbol: 'GOLD',    name: 'Ouro',     price: 3290,   change_percent: 0.52, market_type: 'commodity' },
 ];
 
-function fmtPrice(q) {
-  if (q.price == null) return '—';
-  if (q.market_type === 'rate') return `${q.price.toFixed(2)}%`;
-  if (q.market_type === 'fx') return `R$ ${q.price.toFixed(2)}`;
-  if (q.market_type === 'index') return q.price.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
-  if (q.price > 50000) return `US$ ${(q.price / 1000).toFixed(1)}k`;
-  return `US$ ${q.price.toFixed(2)}`;
-}
-
 const impactDot = { critico: 'bg-ds-dn', alto: 'bg-amber-500', medio: 'bg-ds-up', baixo: 'bg-ds-border' };
 
 export default function ArticleSidebar({ related = [] }) {
@@ -46,10 +36,11 @@ export default function ArticleSidebar({ related = [] }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLive = snapshots.length > 0;
-  const quotes = isLive
-    ? snapshots.filter((s) => ['IBOV', 'USD/BRL', 'BTC', 'SELIC', 'GOLD'].includes(s.symbol))
-    : FALLBACK_QUOTES;
+  const liveQuotes = snapshots
+    .filter((s) => ['IBOV', 'USD/BRL', 'BTC', 'SELIC', 'GOLD'].includes(s.symbol))
+    .filter(isSaneSnapshot);
+  const isLive = liveQuotes.length > 0;
+  const quotes = isLive ? liveQuotes : FALLBACK_QUOTES;
 
   return (
     <aside className="space-y-4">
@@ -67,12 +58,12 @@ export default function ArticleSidebar({ related = [] }) {
               <div key={q.symbol} className="flex items-center justify-between px-4 py-2.5">
                 <span className="font-mono text-xs font-semibold">{q.name || q.symbol}</span>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs">{fmtPrice(q)}</span>
+                  <span className="font-mono text-xs">{formatMarketPrice(q)}</span>
                   <span className={`flex items-center gap-0.5 font-mono text-[11px] font-semibold w-14 justify-end ${
                     dn ? 'text-ds-dn' : up ? 'text-ds-up' : 'text-muted-foreground'
                   }`}>
                     {dn ? <TrendingDown className="w-3 h-3" /> : up ? <TrendingUp className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                    {q.change_percent != null ? `${up ? '+' : ''}${q.change_percent.toFixed(2)}%` : '—'}
+                    {formatChangePercent(q.change_percent)}
                   </span>
                 </div>
               </div>
@@ -106,7 +97,7 @@ export default function ArticleSidebar({ related = [] }) {
                 <div className="flex-1 min-w-0">
                   <p className="font-serif text-xs font-semibold leading-snug line-clamp-2 group-hover:text-ds-beige transition-colors">{a.title}</p>
                   <span className="font-mono text-[10px] text-muted-foreground mt-1 block">
-                    {a.created_date ? formatDistanceToNow(new Date(a.created_date), { addSuffix: true, locale: ptBR }) : ''}
+                    {timeAgo(a.created_date)}
                   </span>
                 </div>
               </Link>
@@ -117,8 +108,9 @@ export default function ArticleSidebar({ related = [] }) {
 
       {/* Agenda */}
       <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
-        <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2">
+        <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2 flex items-center justify-between">
           <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Agenda econômica</h3>
+          <span className="font-mono text-[9px] text-muted-foreground/50">referência</span>
         </div>
         <div className="divide-y divide-ds-border">
           {ECON_EVENTS.map((ev) => (

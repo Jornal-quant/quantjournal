@@ -10,8 +10,22 @@ const MOOD_CONFIG = {
 
 const LABELS = ['Principal movimento', 'Ativos em atenção', 'Monitorar'];
 
+const CACHE_KEY = 'daily-summary';
+const todayKey = () => new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.day === todayKey() ? parsed.summary : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function DailySummaryBar({ articles = [] }) {
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState(() => loadCache());
   const [loading, setLoading] = useState(false);
 
   const generate = async () => {
@@ -41,10 +55,14 @@ Seja assertivo e concreto. Sem URLs.`,
       },
     });
     setSummary(result);
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ day: todayKey(), summary: result }));
+    } catch { /* ignore quota / privacy mode */ }
     setLoading(false);
   };
 
   useEffect(() => {
+    // Só gera se ainda não houver resumo cacheado para hoje.
     if (articles.length >= 3 && !summary && !loading) generate();
   }, [articles.length]);
 
