@@ -46,9 +46,9 @@ export default function ArticleSidebar({ related = [] }) {
     <aside className="space-y-4">
       {/* Market Now */}
       <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
-        <div className="px-4 py-2.5 border-b border-ds-border bg-foreground flex items-center gap-2">
+        <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2 flex items-center gap-2">
           <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-ds-up animate-pulse' : 'bg-white/20'}`} />
-          <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">Mercado agora</h3>
+          <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mercado agora</h3>
         </div>
         <div className="divide-y divide-ds-border">
           {quotes.map((q) => {
@@ -127,11 +127,11 @@ export default function ArticleSidebar({ related = [] }) {
       {/* Chat CTA */}
       <Link to="/chat" className="group block bg-foreground rounded-lg p-4 hover:opacity-95 transition-opacity">
         <div className="flex items-center gap-2 mb-2">
-          <span className="font-mono text-sm text-white/65">⬡</span>
-          <p className="font-mono text-[11px] font-semibold text-white">Pergunte ao Market Chat</p>
+          <span className="font-mono text-sm text-background/70">⬡</span>
+          <p className="font-mono text-[11px] font-semibold text-background">Pergunte ao Market Chat</p>
         </div>
-        <p className="font-sans text-xs text-white/55 leading-relaxed">Tire dúvidas sobre este artigo ou qualquer ativo financeiro.</p>
-        <span className="font-mono text-[11px] text-white/55 group-hover:text-white/60 mt-2 block transition-colors">Abrir chat →</span>
+        <p className="font-sans text-xs text-background/70 leading-relaxed">Tire dúvidas sobre este artigo ou qualquer ativo financeiro.</p>
+        <span className="font-mono text-[11px] text-background/70 group-hover:text-background mt-2 block transition-colors">Abrir chat →</span>
       </Link>
 
       <NewsletterForm />

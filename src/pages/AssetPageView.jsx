@@ -47,7 +47,7 @@ function AISummaryPanel({ summary, name }) {
     <div className="border border-ds-border rounded-lg overflow-hidden mb-8">
       <div className="flex items-center justify-between px-4 py-3 bg-foreground">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">⬡ Análise IA · {name}</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-background">⬡ Análise IA · {name}</span>
         </div>
         <span className={`font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${cls}`}>
           Perspectiva {summary.perspectiva}
@@ -240,11 +240,11 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
           <Link to={`/chat`}
             className="group block bg-foreground rounded-lg p-4 hover:opacity-95 transition-opacity">
             <div className="flex items-center gap-2 mb-2">
-              <MessageSquare className="w-4 h-4 text-white/65" />
-              <p className="font-mono text-[11px] font-semibold text-white">Pergunte sobre {displayName}</p>
+              <MessageSquare className="w-4 h-4 text-background/70" />
+              <p className="font-mono text-[11px] font-semibold text-background">Pergunte sobre {displayName}</p>
             </div>
-            <p className="font-sans text-xs text-white/55">Use o Market Chat para análises interativas sobre este ativo.</p>
-            <span className="font-mono text-[11px] text-white/55 group-hover:text-white/60 mt-2 block transition-colors">Abrir Market Chat →</span>
+            <p className="font-sans text-xs text-background/70">Use o Market Chat para análises interativas sobre este ativo.</p>
+            <span className="font-mono text-[11px] text-background/70 group-hover:text-background mt-2 block transition-colors">Abrir Market Chat →</span>
           </Link>
 
           {/* Outros ativos */}
