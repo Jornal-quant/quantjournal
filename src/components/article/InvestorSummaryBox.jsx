@@ -28,9 +28,9 @@ export default function InvestorSummaryBox({ article }) {
       <div className="bg-foreground px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-ds-up animate-pulse" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Resumo para o investidor</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-background">Resumo para o investidor</span>
         </div>
-        <span className="font-mono text-[9px] text-white/50">⬡ Gerado por IA</span>
+        <span className="font-mono text-[9px] text-background/70">⬡ Gerado por IA</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-ds-border bg-ds-surface2">
         {bullets.slice(0, 3).map((bullet, i) => (
