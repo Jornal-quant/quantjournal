@@ -131,8 +131,11 @@ export function cleanArticleText(text = '') {
   return String(text)
     .replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g, '$1')
     .replace(/https?:\/\/\S+/g, '')
-    .replace(/\s+\./g, '.')
-    .replace(/\s+/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')    // colapsa espaços/tabs MAS preserva as quebras de parágrafo
+    .replace(/ ?\n ?/g, '\n')   // remove espaços ao redor das quebras
+    .replace(/\n{3,}/g, '\n\n') // no máximo um parágrafo em branco entre blocos
+    .replace(/ +\./g, '.')
     .trim();
 }
 

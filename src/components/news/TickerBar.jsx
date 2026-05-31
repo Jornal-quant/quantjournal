@@ -18,7 +18,9 @@ export default function TickerBar() {
   const { data: snaps = [] } = useQuery({
     queryKey: ['ticker-snapshots'],
     queryFn: () => base44.entities.MarketSnapshot.list(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000, // cotações ao vivo
+    refetchOnWindowFocus: true,
   });
 
   const sane = snaps.filter(isSaneSnapshot);
