@@ -60,7 +60,7 @@ async function main() {
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
       temperature: 0.25,
-      max_tokens: 5000,
+      max_tokens: 8000,
     }),
   });
 

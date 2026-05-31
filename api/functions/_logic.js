@@ -250,14 +250,15 @@ REGRAS:
 - Use parágrafos completos, com análise objetiva e linguagem de portal financeiro profissional.
 
 TAMANHO MÍNIMO DOS CAMPOS:
-- summary: 3 frases completas.
-- what_happened: 4 a 6 parágrafos, separados por "\\n\\n".
-- why_it_matters: 3 a 5 parágrafos, separados por "\\n\\n".
-- conclusion: 2 a 3 parágrafos, separados por "\\n\\n".
+- summary: 80 a 120 palavras em 3 frases completas.
+- what_happened: 450 a 650 palavras, em 5 a 7 parágrafos separados por "\\n\\n".
+- why_it_matters: 350 a 500 palavras, em 4 a 6 parágrafos separados por "\\n\\n".
+- conclusion: 180 a 260 palavras, em 2 a 3 parágrafos separados por "\\n\\n".
 - investor_summary: 3 bullets separados por "|".
 - key_takeaways: 4 bullets separados por "|".
 - assets_to_watch: lista separada por vírgula.
 - affected_companies e tickers: listas separadas por vírgula, nunca objetos JSON.
+- Antes de retornar, confira mentalmente: se a soma de summary + what_happened + why_it_matters + conclusion tiver menos de 900 palavras, expanda a análise.
 
 Notícia original:
 Título: "${rawItem.raw_title}"

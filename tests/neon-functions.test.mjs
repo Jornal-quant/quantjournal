@@ -102,9 +102,9 @@ test('buildArticlePrompt asks DeepSeek for long investor-grade articles', () => 
 
   assert.match(prompt, /mínimo absoluto de 900 palavras/);
   assert.match(prompt, /alvo ideal é 1\.200 a 1\.600 palavras/);
-  assert.match(prompt, /what_happened: 4 a 6 parágrafos/);
-  assert.match(prompt, /why_it_matters: 3 a 5 parágrafos/);
-  assert.match(prompt, /conclusion: 2 a 3 parágrafos/);
+  assert.match(prompt, /what_happened: 450 a 650 palavras/);
+  assert.match(prompt, /why_it_matters: 350 a 500 palavras/);
+  assert.match(prompt, /conclusion: 180 a 260 palavras/);
 });
 
 test('normalizeGeneratedArticle converts AI arrays and objects into clean display text', () => {
