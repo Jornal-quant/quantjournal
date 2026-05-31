@@ -201,9 +201,6 @@ export default function ArticlePage() {
                 {article.is_breaking && <span className="font-mono text-[9px] font-semibold uppercase tracking-wider bg-ds-dn text-white px-2 py-1 rounded-sm">Breaking</span>}
                 <SentimentBadge sentiment={article.sentiment} />
                 <ImpactBadge impact={article.impact_level} />
-                {article.ai_confidence > 0 && (
-                  <span className="font-mono text-[9px] text-white/60 bg-foreground/80 px-2 py-1 rounded-sm">⬡ IA {article.ai_confidence}%</span>
-                )}
               </div>
 
               {/* Title */}

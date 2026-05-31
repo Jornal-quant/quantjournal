@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
 
 const CAT_LABEL = {
@@ -94,12 +94,6 @@ function DefaultCard({ article }) {
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-md">
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
             <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-white">Urgente</span>
-          </div>
-        )}
-        {article.ai_confidence > 0 && (
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md">
-            <Zap className="w-2.5 h-2.5 text-white/65" />
-            <span className="font-mono text-[9px] text-white/50">{article.ai_confidence}%</span>
           </div>
         )}
       </div>
