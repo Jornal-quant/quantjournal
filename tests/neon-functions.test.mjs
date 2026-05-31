@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  articleWordCount,
+  buildArticleExpansionPrompt,
   buildArticlePrompt,
   normalizeGeneratedArticle,
   parseRssItems,
@@ -100,11 +102,11 @@ test('toArticleRow scales fractional AI confidence and auto-publishes strong art
 test('buildArticlePrompt asks DeepSeek for long investor-grade articles', () => {
   const prompt = buildArticlePrompt({ raw_title: 'Fed mantém juros', source_name: 'Reuters' });
 
-  assert.match(prompt, /mínimo absoluto de 900 palavras/);
-  assert.match(prompt, /alvo ideal é 1\.200 a 1\.600 palavras/);
-  assert.match(prompt, /what_happened: 450 a 650 palavras/);
-  assert.match(prompt, /why_it_matters: 350 a 500 palavras/);
-  assert.match(prompt, /conclusion: 180 a 260 palavras/);
+  assert.match(prompt, /mínimo absoluto de 1\.200 palavras/);
+  assert.match(prompt, /alvo ideal é 1\.600 a 2\.200 palavras/);
+  assert.match(prompt, /what_happened: 650 a 900 palavras/);
+  assert.match(prompt, /why_it_matters: 550 a 800 palavras/);
+  assert.match(prompt, /conclusion: 250 a 380 palavras/);
 });
 
 test('normalizeGeneratedArticle converts AI arrays and objects into clean display text', () => {
@@ -121,4 +123,27 @@ test('normalizeGeneratedArticle converts AI arrays and objects into clean displa
   assert.equal(article.assets_to_watch, 'BCG, Consultorias');
   assert.equal(article.affected_companies, 'BCG');
   assert.equal(article.tickers, 'BCG');
+});
+
+test('articleWordCount counts the visible long-form article fields', () => {
+  const article = {
+    summary: 'uma duas tres',
+    what_happened: 'quatro cinco',
+    why_it_matters: 'seis sete oito',
+    conclusion: 'nove',
+  };
+
+  assert.equal(articleWordCount(article), 9);
+});
+
+test('buildArticleExpansionPrompt requires a magazine-length rewrite', () => {
+  const prompt = buildArticleExpansionPrompt({
+    title: 'Morgan Stanley supera Nasdaq',
+    summary: 'Resumo curto',
+    what_happened: 'Texto curto',
+  }, { raw_title: 'Morgan Stanley supera Nasdaq' });
+
+  assert.match(prompt, /reescrever e expandir/);
+  assert.match(prompt, /mínimo obrigatório de 1\.400 palavras/);
+  assert.match(prompt, /não resuma/);
 });

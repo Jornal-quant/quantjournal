@@ -143,6 +143,20 @@ function stringifyList(value, separator = ', ') {
   return cleanArticleText(value || '');
 }
 
+export function articleWordCount(article = {}) {
+  return [
+    article.summary,
+    article.what_happened,
+    article.why_it_matters,
+    article.conclusion,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
 export function normalizeGeneratedArticle(article = {}) {
   const category = CATEGORIES.has(article.category) ? article.category : 'economia';
   const sourceLinks = Array.isArray(article.source_links)
@@ -240,7 +254,7 @@ export function buildArticlePrompt(rawItem = {}) {
   return `Você é editor-chefe de um portal financeiro profissional. Escreva em português brasileiro, com precisão jornalística e foco no investidor.
 
 REGRAS:
-- Gere uma matéria longa, densa e útil. O mínimo absoluto de 900 palavras deve ser respeitado; o alvo ideal é 1.200 a 1.600 palavras no total.
+- Gere uma matéria longa, densa e útil. O mínimo absoluto de 1.200 palavras deve ser respeitado; o alvo ideal é 1.600 a 2.200 palavras no total.
 - Nunca inclua URLs brutas no corpo do texto.
 - Cite fontes de forma natural, como "segundo a Reuters" ou "conforme o Banco Central".
 - Separe fatos de interpretação.
@@ -250,21 +264,53 @@ REGRAS:
 - Use parágrafos completos, com análise objetiva e linguagem de portal financeiro profissional.
 
 TAMANHO MÍNIMO DOS CAMPOS:
-- summary: 80 a 120 palavras em 3 frases completas.
-- what_happened: 450 a 650 palavras, em 5 a 7 parágrafos separados por "\\n\\n".
-- why_it_matters: 350 a 500 palavras, em 4 a 6 parágrafos separados por "\\n\\n".
-- conclusion: 180 a 260 palavras, em 2 a 3 parágrafos separados por "\\n\\n".
+- summary: 100 a 150 palavras em 3 a 4 frases completas.
+- what_happened: 650 a 900 palavras, em 6 a 9 parágrafos separados por "\\n\\n".
+- why_it_matters: 550 a 800 palavras, em 5 a 8 parágrafos separados por "\\n\\n".
+- conclusion: 250 a 380 palavras, em 3 a 4 parágrafos separados por "\\n\\n".
 - investor_summary: 3 bullets separados por "|".
 - key_takeaways: 4 bullets separados por "|".
 - assets_to_watch: lista separada por vírgula.
 - affected_companies e tickers: listas separadas por vírgula, nunca objetos JSON.
-- Antes de retornar, confira mentalmente: se a soma de summary + what_happened + why_it_matters + conclusion tiver menos de 900 palavras, expanda a análise.
+- Antes de retornar, confira mentalmente: se a soma de summary + what_happened + why_it_matters + conclusion tiver menos de 1.200 palavras, expanda a análise.
 
 Notícia original:
 Título: "${rawItem.raw_title}"
 Conteúdo: ${rawItem.raw_content || '(use o título e contexto público para complementar)'}
 Fonte: ${rawItem.source_name || 'Não identificada'}
 URL: ${rawItem.source_url || ''}
+
+Retorne somente JSON com:
+title, slug, summary, what_happened, why_it_matters, impacts, affected_companies, tickers, conclusion, investor_summary, key_takeaways, assets_to_watch, source_links, tags, meta_title, meta_description, social_summary, category, sentiment, impact_level, relevance, country, sector, source, ai_confidence.`;
+}
+
+export function buildArticleExpansionPrompt(article = {}, rawItem = {}) {
+  return `Você é editor-chefe de um portal financeiro profissional. Sua tarefa é reescrever e expandir uma matéria curta para o padrão de matéria grande, com análise profunda para investidores.
+
+OBJETIVO:
+- Transformar o texto atual em uma matéria completa, com mínimo obrigatório de 1.400 palavras e alvo de 1.800 a 2.400 palavras.
+- não resuma. Amplie com contexto, dados setoriais, implicações, riscos, cenários e pontos de monitoramento.
+- Preserve os fatos conhecidos. Não invente números específicos que não estejam no texto original.
+- Separe fato de interpretação.
+- Não faça recomendação de compra ou venda.
+- Não inclua URLs brutas no corpo do texto.
+
+TAMANHO POR CAMPO:
+- summary: 120 a 180 palavras.
+- what_happened: 750 a 1.000 palavras, em 7 a 10 parágrafos separados por "\\n\\n".
+- why_it_matters: 650 a 900 palavras, em 6 a 9 parágrafos separados por "\\n\\n".
+- conclusion: 280 a 420 palavras, em 3 a 5 parágrafos separados por "\\n\\n".
+- investor_summary: 3 bullets densos separados por "|".
+- key_takeaways: 5 bullets separados por "|".
+- assets_to_watch, affected_companies e tickers: listas separadas por vírgula, nunca objetos JSON.
+
+Notícia original:
+Título: "${rawItem.raw_title || article.title || ''}"
+Conteúdo base: ${rawItem.raw_content || ''}
+Fonte: ${rawItem.source_name || article.source || 'Não identificada'}
+
+Matéria curta atual:
+${JSON.stringify(article)}
 
 Retorne somente JSON com:
 title, slug, summary, what_happened, why_it_matters, impacts, affected_companies, tickers, conclusion, investor_summary, key_takeaways, assets_to_watch, source_links, tags, meta_title, meta_description, social_summary, category, sentiment, impact_level, relevance, country, sector, source, ai_confidence.`;

@@ -2,12 +2,18 @@ import { getSql, normalizeRow, sendJson, toDatabasePayload } from '../_db.js';
 import {
   BACKFILL_TOPICS,
   DEFAULT_RSS_SOURCES,
+  articleWordCount,
+  buildArticleExpansionPrompt,
   buildArticlePrompt,
   buildNewsletterPrompt,
+  normalizeGeneratedArticle,
   parseRssItems,
   simpleHash,
   toArticleRow,
 } from './_logic.js';
+
+const MIN_ARTICLE_WORDS = 1200;
+const EXPANSION_ATTEMPTS = 2;
 
 const SANITY = {
   IBOV: [50000, 400000],
@@ -133,6 +139,21 @@ async function invokeDeepSeek(prompt, schema = true, quality = false) {
   return schema ? JSON.parse(content) : content;
 }
 
+async function generateLongArticle(rawItem, forcedCategory) {
+  let generated = await invokeDeepSeek(buildArticlePrompt(rawItem), true, false);
+  if (forcedCategory) generated.category = forcedCategory;
+
+  for (let attempt = 0; attempt < EXPANSION_ATTEMPTS; attempt += 1) {
+    const normalized = normalizeGeneratedArticle(generated);
+    if (articleWordCount(normalized) >= MIN_ARTICLE_WORDS) return normalized;
+
+    generated = await invokeDeepSeek(buildArticleExpansionPrompt(normalized, rawItem), true, false);
+    if (forcedCategory) generated.category = forcedCategory;
+  }
+
+  return normalizeGeneratedArticle(generated);
+}
+
 async function processRawNewsItem(sql, rawItem) {
   await updateRow(sql, 'qj_raw_news_feed', rawItem.id, { status: 'processing' });
 
@@ -147,7 +168,7 @@ async function processRawNewsItem(sql, rawItem) {
     return { processed: 0, duplicate: true };
   }
 
-  const generated = await invokeDeepSeek(buildArticlePrompt(rawItem), true, false);
+  const generated = await generateLongArticle(rawItem, rawItem.category_hint);
   const articleRow = toArticleRow(generated, rawItem);
   const article = await insertArticle(sql, articleRow, rawItem.source_url || rawItem.id);
 
@@ -302,8 +323,7 @@ async function handleBackfillNews(sql, body) {
       source_url: '',
       category_hint: topic.category,
     };
-    const generated = await invokeDeepSeek(buildArticlePrompt(raw), true, false);
-    generated.category = topic.category;
+    const generated = await generateLongArticle(raw, topic.category);
     const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
     created.push(article);
   }
@@ -476,8 +496,7 @@ async function handleAutoPublishNews(sql) {
     source_url: '',
     category_hint: topic.category,
   };
-  const generated = await invokeDeepSeek(buildArticlePrompt(raw), true, false);
-  generated.category = topic.category;
+  const generated = await generateLongArticle(raw, topic.category);
   const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
   await logSystem(sql, `Auto-publicado: ${article.title}`, `Categoria: ${article.category}`, 'success', 'autoPublishNews');
   return { success: true, article_id: article.id, title: article.title, category: article.category };
