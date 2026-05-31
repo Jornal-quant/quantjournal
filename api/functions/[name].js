@@ -107,6 +107,48 @@ function safeIso(value) {
   return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
+// Imagem ilustrativa por categoria via Pexels (fotos livres). Opcional — só roda
+// com PEXELS_API_KEY; sem ela, o artigo fica sem image_url e o front cai no
+// gradiente de fallback que já existe.
+const PEXELS_QUERY_BY_CATEGORY = {
+  bolsa: 'stock market trading floor',
+  renda_fixa: 'bonds finance documents',
+  juros: 'central bank interest rates',
+  dolar: 'us dollar currency exchange',
+  economia: 'economy finance city skyline',
+  criptomoedas: 'cryptocurrency bitcoin',
+  commodities: 'oil refinery commodities',
+  empresas: 'corporate office business',
+  internacional: 'global economy stock exchange',
+};
+
+async function fetchPexelsImage(query) {
+  const key = process.env.PEXELS_API_KEY;
+  if (!key || !query) return '';
+  try {
+    const data = await fetchJson(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape`,
+      { Authorization: key },
+    );
+    const photos = data?.photos || [];
+    if (photos.length === 0) return '';
+    const pick = photos[Math.floor(Math.random() * Math.min(photos.length, 10))];
+    return pick?.src?.landscape || pick?.src?.large || '';
+  } catch {
+    return '';
+  }
+}
+
+// Preenche image_url (se vazio) com uma foto da categoria. Mutações in-place no
+// articleRow antes do insert.
+async function resolveArticleImage(articleRow) {
+  if (articleRow.image_url && String(articleRow.image_url).trim()) return articleRow;
+  const query = PEXELS_QUERY_BY_CATEGORY[articleRow.category] || 'finance stock market';
+  const url = await fetchPexelsImage(query);
+  if (url) articleRow.image_url = url;
+  return articleRow;
+}
+
 // JSON market-news collectors. Each returns items already shaped like RSS items
 // (title/link/description/pubDate/guid) plus source metadata, and yields [] when
 // its API key is absent so the collector stays optional and never throws on setup.
@@ -286,6 +328,7 @@ async function processRawNewsItem(sql, rawItem) {
 
   const generated = await generateLongArticle(rawItem, rawItem.category_hint);
   const articleRow = toArticleRow(generated, rawItem);
+  await resolveArticleImage(articleRow);
   const article = await insertArticle(sql, articleRow, rawItem.source_url || rawItem.id);
 
   await updateRow(sql, 'qj_raw_news_feed', rawItem.id, {
@@ -449,7 +492,8 @@ async function handleBackfillNews(sql, body) {
       category_hint: topic.category,
     };
     const generated = await generateLongArticle(raw, topic.category);
-    const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
+    const articleRow = await resolveArticleImage(toArticleRow(generated, raw));
+    const article = await insertArticle(sql, articleRow, topic.topic);
     created.push(article);
   }
 
@@ -703,9 +747,33 @@ async function handleAutoPublishNews(sql) {
     category_hint: topic.category,
   };
   const generated = await generateLongArticle(raw, topic.category);
-  const article = await insertArticle(sql, toArticleRow(generated, raw), topic.topic);
+  const articleRow = await resolveArticleImage(toArticleRow(generated, raw));
+  const article = await insertArticle(sql, articleRow, topic.topic);
   await logSystem(sql, `Auto-publicado: ${article.title}`, `Categoria: ${article.category}`, 'success', 'autoPublishNews');
   return { success: true, article_id: article.id, title: article.title, category: article.category };
+}
+
+// Preenche imagens dos artigos já publicados que estão sem image_url.
+async function handleBackfillImages(sql, body) {
+  if (!process.env.PEXELS_API_KEY) throw new Error('PEXELS_API_KEY is required for backfillImages.');
+  const limit = Math.min(Number(body.limit || 20), 50);
+  const rows = await sql.query(
+    `select id, category from qj_articles where image_url is null or image_url = '' order by created_date desc limit $1`,
+    [limit],
+  );
+
+  let updated = 0;
+  for (const row of rows) {
+    const query = PEXELS_QUERY_BY_CATEGORY[row.category] || 'finance stock market';
+    const url = await fetchPexelsImage(query);
+    if (url) {
+      await updateRow(sql, 'qj_articles', row.id, { image_url: url });
+      updated += 1;
+    }
+  }
+
+  await logSystem(sql, 'Backfill de imagens', `Escaneados: ${rows.length} | Atualizados: ${updated}`, 'success', 'backfillImages');
+  return { success: true, scanned: rows.length, updated };
 }
 
 const handlers = {
@@ -713,6 +781,7 @@ const handlers = {
   collectLatestNews: handleCollectLatestNews,
   collectNewsSources: handleCollectLatestNews,
   backfillNews: handleBackfillNews,
+  backfillImages: handleBackfillImages,
   updateMarketSnapshots: handleUpdateMarketSnapshots,
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
