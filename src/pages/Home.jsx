@@ -222,6 +222,9 @@ export default function Home() {
   const { data: raw = [], isLoading } = useQuery({
     queryKey: ['articles-home'],
     queryFn: () => base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 120),
+    // Feed ao vivo: revalida a cada 60s e ao voltar o foco para a aba.
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
 
   const articles = useMemo(() => dedupe(raw), [raw]);
