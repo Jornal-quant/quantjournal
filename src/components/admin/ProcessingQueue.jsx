@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Sparkles, Loader2, Clock, ExternalLink,
-  CheckCircle2, AlertCircle, Inbox
+  Sparkles, Loader2, Clock, ExternalLink, Inbox
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
