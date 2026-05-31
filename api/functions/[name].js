@@ -101,6 +101,104 @@ async function fetchText(url, headers = {}) {
   return response.text();
 }
 
+function safeIso(value) {
+  const date = value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+}
+
+// JSON market-news collectors. Each returns items already shaped like RSS items
+// (title/link/description/pubDate/guid) plus source metadata, and yields [] when
+// its API key is absent so the collector stays optional and never throws on setup.
+async function fetchFinnhubNews() {
+  const token = process.env.FINNHUB_API_KEY;
+  if (!token) return [];
+  const data = await fetchJson(`https://finnhub.io/api/v1/news?category=general&token=${token}`);
+  return (Array.isArray(data) ? data : []).slice(0, 25).map((item) => ({
+    title: item.headline,
+    link: item.url,
+    description: item.summary || '',
+    pubDate: item.datetime ? new Date(item.datetime * 1000).toISOString() : '',
+    guid: String(item.id || item.url),
+    source_name: item.source ? `Finnhub · ${item.source}` : 'Finnhub',
+    category: 'internacional',
+    priority: 1,
+    type: 'api',
+  })).filter((item) => item.title && item.link);
+}
+
+async function fetchGNewsBrazil() {
+  const token = process.env.GNEWS_API_KEY;
+  if (!token) return [];
+  const data = await fetchJson(
+    `https://gnews.io/api/v4/top-headlines?category=business&lang=pt&country=br&max=25&apikey=${token}`,
+  );
+  return (data?.articles || []).map((item) => ({
+    title: item.title,
+    link: item.url,
+    description: item.description || '',
+    pubDate: item.publishedAt || '',
+    guid: item.url,
+    source_name: item.source?.name ? `GNews · ${item.source.name}` : 'GNews Brasil',
+    category: 'economia',
+    priority: 1,
+    type: 'api',
+  })).filter((item) => item.title && item.link);
+}
+
+const API_COLLECTORS = [
+  { name: 'Finnhub', fetch: fetchFinnhubNews },
+  { name: 'GNews Brasil', fetch: fetchGNewsBrazil },
+];
+
+// Inserts a batch of normalized items into qj_raw_news_feed, skipping anything
+// already seen via the shared dedupe sets. Used for both RSS and API sources.
+async function ingestRawItems(sql, items, source, seen) {
+  let collected = 0;
+  let duplicates = 0;
+  const newItems = [];
+
+  for (const item of items) {
+    const contentHash = simpleHash(`${item.title}:${item.description}`);
+    const externalId = item.guid || item.link;
+
+    if (seen.urls.has(item.link) || seen.hashes.has(contentHash) || seen.externalIds.has(externalId)) {
+      duplicates += 1;
+      continue;
+    }
+
+    const priority = item.priority ?? source.priority ?? 2;
+    const raw = await insertRow(sql, 'qj_raw_news_feed', {
+      raw_title: item.title,
+      raw_content: item.description,
+      source_url: item.link,
+      source_name: item.source_name || source.name,
+      source_type: item.type || source.type || 'rss',
+      category_hint: item.category || source.category,
+      external_id: externalId,
+      content_hash: contentHash,
+      published_at: safeIso(item.pubDate),
+      fetched_at: new Date().toISOString(),
+      status: 'pending',
+      relevance_score: priority <= 1 ? 8 : 6,
+    }).catch((error) => {
+      if (String(error.message).includes('duplicate')) return null;
+      throw error;
+    });
+
+    if (raw) {
+      seen.urls.add(item.link);
+      seen.hashes.add(contentHash);
+      seen.externalIds.add(externalId);
+      collected += 1;
+      newItems.push(raw);
+    } else {
+      duplicates += 1;
+    }
+  }
+
+  return { collected, duplicates, newItems };
+}
+
 function isSaneQuote(symbol, price) {
   if (!Number.isFinite(price)) return false;
   const range = SANITY[symbol];
@@ -210,57 +308,25 @@ async function handleCollectLatestNews(sql, body) {
   const existingRows = await sql.query(
     `select source_url, content_hash, external_id from qj_raw_news_feed order by created_date desc limit 500`,
   );
-  const urls = new Set(existingRows.map((row) => row.source_url).filter(Boolean));
-  const hashes = new Set(existingRows.map((row) => row.content_hash).filter(Boolean));
-  const externalIds = new Set(existingRows.map((row) => row.external_id).filter(Boolean));
+  const seen = {
+    urls: new Set(existingRows.map((row) => row.source_url).filter(Boolean)),
+    hashes: new Set(existingRows.map((row) => row.content_hash).filter(Boolean)),
+    externalIds: new Set(existingRows.map((row) => row.external_id).filter(Boolean)),
+  };
 
   let collected = 0;
   let duplicates = 0;
   let errors = 0;
   const newItems = [];
 
+  // 1. RSS feeds (DB-configured sources, or the curated defaults).
   for (const source of sources) {
     try {
       const xml = await fetchText(source.url, { 'User-Agent': 'QuantJournal/1.0' });
-      const items = parseRssItems(xml);
-
-      for (const item of items) {
-        const contentHash = simpleHash(`${item.title}:${item.description}`);
-        const externalId = item.guid || item.link;
-
-        if (urls.has(item.link) || hashes.has(contentHash) || externalIds.has(externalId)) {
-          duplicates += 1;
-          continue;
-        }
-
-        const raw = await insertRow(sql, 'qj_raw_news_feed', {
-          raw_title: item.title,
-          raw_content: item.description,
-          source_url: item.link,
-          source_name: source.name,
-          source_type: source.type || 'rss',
-          category_hint: source.category,
-          external_id: externalId,
-          content_hash: contentHash,
-          published_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-          fetched_at: new Date().toISOString(),
-          status: 'pending',
-          relevance_score: source.priority <= 1 ? 8 : 6,
-        }).catch((error) => {
-          if (String(error.message).includes('duplicate')) return null;
-          throw error;
-        });
-
-        if (raw) {
-          urls.add(item.link);
-          hashes.add(contentHash);
-          externalIds.add(externalId);
-          collected += 1;
-          newItems.push(raw);
-        } else {
-          duplicates += 1;
-        }
-      }
+      const result = await ingestRawItems(sql, parseRssItems(xml), source, seen);
+      collected += result.collected;
+      duplicates += result.duplicates;
+      newItems.push(...result.newItems);
 
       if (source.id) {
         await updateRow(sql, 'qj_news_sources', source.id, {
@@ -279,9 +345,28 @@ async function handleCollectLatestNews(sql, body) {
     }
   }
 
+  // 2. JSON market-news APIs (each one is a no-op unless its API key is set).
+  for (const collector of API_COLLECTORS) {
+    try {
+      const items = await collector.fetch();
+      if (items.length === 0) continue;
+      const result = await ingestRawItems(sql, items, { name: collector.name, type: 'api', priority: 1 }, seen);
+      collected += result.collected;
+      duplicates += result.duplicates;
+      newItems.push(...result.newItems);
+    } catch (error) {
+      errors += 1;
+      await logSystem(sql, `Erro na fonte: ${collector.name}`, error.message, 'error', 'collectLatestNews');
+    }
+  }
+
+  // Cap AI article generation per run to control DeepSeek cost as collection
+  // frequency increases. Override with AUTO_PROCESS_LIMIT or the request body.
+  const autoProcessLimit = Math.max(0, Number(body.auto_process_limit ?? process.env.AUTO_PROCESS_LIMIT ?? 3));
+
   let processed = 0;
-  if (autoProcess && newItems.length > 0 && process.env.DEEPSEEK_API_KEY) {
-    for (const item of newItems.slice(0, 3)) {
+  if (autoProcess && autoProcessLimit > 0 && newItems.length > 0 && process.env.DEEPSEEK_API_KEY) {
+    for (const item of newItems.slice(0, autoProcessLimit)) {
       try {
         const result = await processRawNewsItem(sql, item);
         processed += result.processed || 0;
@@ -516,7 +601,8 @@ const handlers = {
 export default async function handler(req, res) {
   const name = req.query.name;
 
-  if (req.method !== 'POST') {
+  // Vercel Cron triggers functions with a GET (no body), so accept both verbs.
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
@@ -527,7 +613,8 @@ export default async function handler(req, res) {
     }
 
     const sql = getSql();
-    const result = await fn(sql, req.body || {});
+    const body = req.method === 'POST' ? (req.body || {}) : {};
+    const result = await fn(sql, body);
     return sendJson(res, 200, result);
   } catch (error) {
     const sql = process.env.DATABASE_URL ? getSql() : null;

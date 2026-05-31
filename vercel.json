@@ -10,11 +10,11 @@
   "crons": [
     {
       "path": "/api/functions/collectLatestNews",
-      "schedule": "0 9 * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/functions/updateMarketSnapshots",
-      "schedule": "15 9 * * *"
+      "schedule": "*/15 * * * *"
     }
   ]
 }

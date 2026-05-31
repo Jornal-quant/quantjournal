@@ -1,10 +1,20 @@
 export const DEFAULT_RSS_SOURCES = [
+  // Internacional
   { name: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex', category: 'internacional', priority: 1 },
   { name: 'MarketWatch', url: 'https://feeds.content.dowjones.io/public/rss/mw_topstories', category: 'internacional', priority: 1 },
   { name: 'CNBC Markets', url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', category: 'internacional', priority: 1 },
-  { name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', category: 'criptomoedas', priority: 2 },
-  { name: 'Agencia Brasil Economia', url: 'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml', category: 'economia', priority: 2 },
+  { name: 'Investing.com', url: 'https://www.investing.com/rss/news.rss', category: 'internacional', priority: 2 },
+  { name: 'Google News · Markets', url: 'https://news.google.com/rss/search?q=stock+market+OR+economy+when:1d&hl=en-US&gl=US&ceid=US:en', category: 'internacional', priority: 2 },
   { name: 'Federal Reserve', url: 'https://www.federalreserve.gov/feeds/press_all.xml', category: 'juros', priority: 1 },
+  // Cripto
+  { name: 'CoinDesk', url: 'https://www.coindesk.com/arc/outboundfeeds/rss/', category: 'criptomoedas', priority: 2 },
+  // Brasil
+  { name: 'InfoMoney · Mercados', url: 'https://www.infomoney.com.br/mercados/feed/', category: 'bolsa', priority: 1 },
+  { name: 'InfoMoney · Economia', url: 'https://www.infomoney.com.br/economia/feed/', category: 'economia', priority: 1 },
+  { name: 'Money Times', url: 'https://www.moneytimes.com.br/feed/', category: 'bolsa', priority: 1 },
+  { name: 'Brazil Journal', url: 'https://braziljournal.com/feed/', category: 'empresas', priority: 2 },
+  { name: 'CNN Brasil · Economia', url: 'https://www.cnnbrasil.com.br/economia/feed/', category: 'economia', priority: 2 },
+  { name: 'Agencia Brasil Economia', url: 'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml', category: 'economia', priority: 2 },
 ];
 
 export const BACKFILL_TOPICS = [
