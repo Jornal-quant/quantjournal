@@ -283,6 +283,12 @@ REGRAS:
 - Separe fatos de interpretação.
 - Evite linguagem genérica e repetitiva.
 - Não faça recomendação de compra ou venda.
+
+ORIGINALIDADE (evitar direitos autorais):
+- Reescreva TUDO com palavras próprias. NÃO copie frases, títulos ou trechos literais da notícia original — reproduza apenas os fatos (números, datas, nomes), nunca a redação.
+- Crie um título original e diferente do título da fonte.
+- Reorganize a ordem das informações e a estrutura; não siga a sequência da matéria original.
+- Acrescente análise, contexto e interpretação próprios que vão além do texto de origem, para que o resultado seja claramente uma obra transformadora, não uma cópia.
 - Não escreva texto curto. Se a notícia original for simples, amplie com contexto setorial, histórico recente, impactos prováveis, riscos e próximos indicadores a observar.
 - Use parágrafos completos, com análise objetiva e linguagem de portal financeiro profissional.
 
@@ -317,6 +323,7 @@ OBJETIVO:
 - Separe fato de interpretação.
 - Não faça recomendação de compra ou venda.
 - Não inclua URLs brutas no corpo do texto.
+- ORIGINALIDADE: reescreva com palavras próprias, sem copiar frases ou o título da fonte. Reproduza só os fatos, nunca a redação original; o resultado deve ser uma obra transformadora.
 
 TAMANHO POR CAMPO:
 - summary: 120 a 180 palavras.
