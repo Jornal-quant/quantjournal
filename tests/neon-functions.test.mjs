@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildArticlePrompt,
   normalizeGeneratedArticle,
   parseRssItems,
   simpleHash,
@@ -94,4 +95,29 @@ test('toArticleRow scales fractional AI confidence and auto-publishes strong art
 
   assert.equal(row.ai_confidence, 92);
   assert.equal(row.status, 'publicado');
+});
+
+test('buildArticlePrompt asks DeepSeek for long investor-grade articles', () => {
+  const prompt = buildArticlePrompt({ raw_title: 'Fed mantém juros', source_name: 'Reuters' });
+
+  assert.match(prompt, /900 a 1\.400 palavras/);
+  assert.match(prompt, /what_happened: 4 a 6 parágrafos/);
+  assert.match(prompt, /why_it_matters: 3 a 5 parágrafos/);
+  assert.match(prompt, /conclusion: 2 a 3 parágrafos/);
+});
+
+test('normalizeGeneratedArticle converts AI arrays and objects into clean display text', () => {
+  const article = normalizeGeneratedArticle({
+    title: 'BCG e liderança',
+    category: 'economia',
+    key_takeaways: ['Primeiro ponto', 'Segundo ponto'],
+    assets_to_watch: ['BCG', 'Consultorias'],
+    affected_companies: [{ name: 'BCG', ticker: 'privada' }],
+    tickers: ['BCG'],
+  });
+
+  assert.equal(article.key_takeaways, 'Primeiro ponto|Segundo ponto');
+  assert.equal(article.assets_to_watch, 'BCG, Consultorias');
+  assert.equal(article.affected_companies, 'BCG');
+  assert.equal(article.tickers, 'BCG');
 });

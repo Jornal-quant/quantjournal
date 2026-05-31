@@ -72,7 +72,7 @@ export default function ArticleSidebar({ related = [] }) {
         </div>
         <div className="px-4 py-2 border-t border-ds-border">
           <p className="font-mono text-[9px] text-muted-foreground/40">
-            {isLive ? 'Dados do sistema' : 'Valores ilustrativos · integração com dados reais em breve'}
+            {isLive ? 'Dados atualizados pelo sistema' : 'Aguardando cotações do sistema'}
           </p>
         </div>
       </div>

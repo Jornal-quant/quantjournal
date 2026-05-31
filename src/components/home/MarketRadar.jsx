@@ -38,7 +38,7 @@ export default function MarketRadar() {
           <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/40">Mercados</span>
         </div>
         <span className="font-mono text-[10px] text-white/30">
-          {isLive ? (lastUpdate ? `Atualizado ${timeAgo(lastUpdate)}` : 'Dados ao vivo') : 'Dados ilustrativos'}
+          {isLive ? (lastUpdate ? `Atualizado ${timeAgo(lastUpdate)}` : 'Dados do sistema') : 'Aguardando dados'}
         </span>
       </div>
 

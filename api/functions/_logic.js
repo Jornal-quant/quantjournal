@@ -123,6 +123,26 @@ function normalizeConfidence(value) {
   return Math.max(0, Math.min(100, Math.round(scaled)));
 }
 
+function stringifyList(value, separator = ', ') {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (item == null) return '';
+        if (typeof item === 'object') return item.name || item.ticker || item.symbol || item.title || '';
+        return String(item);
+      })
+      .map((item) => cleanArticleText(item))
+      .filter(Boolean)
+      .join(separator);
+  }
+
+  if (value && typeof value === 'object') {
+    return cleanArticleText(value.name || value.ticker || value.symbol || Object.values(value).filter(Boolean).join(' '));
+  }
+
+  return cleanArticleText(value || '');
+}
+
 export function normalizeGeneratedArticle(article = {}) {
   const category = CATEGORIES.has(article.category) ? article.category : 'economia';
   const sourceLinks = Array.isArray(article.source_links)
@@ -162,6 +182,12 @@ export function normalizeGeneratedArticle(article = {}) {
     what_happened: cleanArticleText(article.what_happened || ''),
     why_it_matters: cleanArticleText(article.why_it_matters || ''),
     conclusion: cleanArticleText(article.conclusion || ''),
+    affected_companies: stringifyList(article.affected_companies),
+    tickers: stringifyList(article.tickers),
+    investor_summary: stringifyList(article.investor_summary, '|'),
+    key_takeaways: stringifyList(article.key_takeaways, '|'),
+    assets_to_watch: stringifyList(article.assets_to_watch),
+    tags: stringifyList(article.tags),
     impacts: article.impacts && typeof article.impacts === 'object' ? article.impacts : {},
     source_links: sourceLinks,
     ai_confidence: normalizeConfidence(article.ai_confidence),
@@ -214,11 +240,24 @@ export function buildArticlePrompt(rawItem = {}) {
   return `Você é editor-chefe de um portal financeiro profissional. Escreva em português brasileiro, com precisão jornalística e foco no investidor.
 
 REGRAS:
+- Gere uma matéria longa, densa e útil, com 900 a 1.400 palavras no total.
 - Nunca inclua URLs brutas no corpo do texto.
 - Cite fontes de forma natural, como "segundo a Reuters" ou "conforme o Banco Central".
 - Separe fatos de interpretação.
 - Evite linguagem genérica e repetitiva.
 - Não faça recomendação de compra ou venda.
+- Não escreva texto curto. Se a notícia original for simples, amplie com contexto setorial, histórico recente, impactos prováveis, riscos e próximos indicadores a observar.
+- Use parágrafos completos, com análise objetiva e linguagem de portal financeiro profissional.
+
+TAMANHO MÍNIMO DOS CAMPOS:
+- summary: 3 frases completas.
+- what_happened: 4 a 6 parágrafos, separados por "\\n\\n".
+- why_it_matters: 3 a 5 parágrafos, separados por "\\n\\n".
+- conclusion: 2 a 3 parágrafos, separados por "\\n\\n".
+- investor_summary: 3 bullets separados por "|".
+- key_takeaways: 4 bullets separados por "|".
+- assets_to_watch: lista separada por vírgula.
+- affected_companies e tickers: listas separadas por vírgula, nunca objetos JSON.
 
 Notícia original:
 Título: "${rawItem.raw_title}"

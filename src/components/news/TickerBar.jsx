@@ -42,7 +42,7 @@ export default function TickerBar() {
         <div className="flex items-center gap-1.5 px-4 border-r border-white/6 flex-shrink-0 z-10" style={{ backgroundColor: '#080806' }}>
           <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-white/12'}`} />
           <span className="font-mono text-[9px] text-white/20 uppercase tracking-widest whitespace-nowrap">
-            {isLive ? 'Ao vivo' : 'Simulado'}
+            {isLive ? 'Sistema' : 'Aguardando'}
           </span>
         </div>
         {/* Scrolling items */}
