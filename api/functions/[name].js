@@ -553,6 +553,36 @@ async function fetchTwelveDataQuotes() {
   return quotes;
 }
 
+// Brapi: especialista em B3. Cobre o Ibovespa (e ações brasileiras) melhor que
+// o Yahoo no caso nacional. Opcional — só roda com BRAPI_TOKEN.
+const BRAPI_MAP = {
+  IBOV: { brapi: '^BVSP', name: 'Ibovespa', market_type: 'index' },
+};
+
+async function fetchBrapiQuotes() {
+  const token = process.env.BRAPI_TOKEN;
+  if (!token) return [];
+  const entries = Object.entries(BRAPI_MAP);
+  const tickers = entries.map(([, meta]) => meta.brapi).join(',');
+  const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(tickers)}?token=${token}`);
+  const results = data?.results || [];
+
+  const quotes = [];
+  for (const [symbol, meta] of entries) {
+    const result = results.find((r) => r.symbol === meta.brapi);
+    const price = Number(result?.regularMarketPrice);
+    if (!Number.isFinite(price)) continue;
+    quotes.push({
+      symbol,
+      name: meta.name,
+      price,
+      change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
+      market_type: meta.market_type,
+    });
+  }
+  return quotes;
+}
+
 async function handleUpdateMarketSnapshots(sql) {
   const results = await Promise.allSettled([
     fetchFxQuotes(),
@@ -560,15 +590,19 @@ async function handleUpdateMarketSnapshots(sql) {
     fetchSelicQuote(),
     fetchYahooQuotes(),
     fetchTwelveDataQuotes(),
+    fetchBrapiQuotes(),
   ]);
   const legacy = results.slice(0, 4).flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
   const twelve = results[4].status === 'fulfilled' ? results[4].value : [];
+  const brapi = results[5].status === 'fulfilled' ? results[5].value : [];
 
-  // Twelve Data tem precedência sobre as fontes legadas para o mesmo símbolo;
-  // as legadas cobrem o que a TD não trouxe (SELIC, Ibovespa, etc.).
+  // Precedência por símbolo: legadas (Yahoo/AwesomeAPI/CoinGecko/BCB) < Twelve
+  // Data (global) < Brapi (B3/Ibovespa). Cada camada sobrescreve a anterior só
+  // nos símbolos que trouxe; o resto continua das fontes anteriores.
   const bySymbol = new Map();
   for (const quote of legacy) bySymbol.set(quote.symbol, quote);
   for (const quote of twelve) bySymbol.set(quote.symbol, quote);
+  for (const quote of brapi) bySymbol.set(quote.symbol, quote);
   const quotes = [...bySymbol.values()];
 
   const saneQuotes = quotes.filter((quote) => isSaneQuote(quote.symbol, Number(quote.price)));
