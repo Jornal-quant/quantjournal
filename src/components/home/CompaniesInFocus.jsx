@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 
 const COMPANIES = [
   { name: 'Petrobras',  ticker: 'PETR4',  slug: 'petrobras',  sector: 'Energia' },

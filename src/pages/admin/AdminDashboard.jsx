@@ -5,10 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Newspaper, Users, BarChart3, Zap, Loader2, Trash2, Star,
+import { BarChart3, Zap, Loader2, Trash2, Star,
   Plus, RefreshCw, Globe, Activity, CheckCircle, AlertCircle,
-  Clock, TrendingUp, Send, Eye
+  Clock, TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
