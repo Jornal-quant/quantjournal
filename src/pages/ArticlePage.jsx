@@ -226,13 +226,6 @@ export default function ArticlePage() {
                   <span className="flex items-center gap-1.5"><Eye className="w-3 h-3" />{article.views.toLocaleString('pt-BR')} {article.views === 1 ? 'leitura' : 'leituras'}</span>
                 )}
                 <span>{readTime} min de leitura</span>
-                {article.source && (
-                  <span className="flex items-center gap-1.5 ml-auto">
-                    Fonte: {article.source_url
-                      ? <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1 transition-colors">{article.source} <ExternalLink className="w-3 h-3" /></a>
-                      : article.source}
-                  </span>
-                )}
               </div>
 
               <Disclaimer />
