@@ -89,6 +89,16 @@ function getTagValue(itemXml, tag) {
   return decodeHtml(match?.[1] || '');
 }
 
+// Conteúdo fora do escopo de mercado financeiro que algumas fontes (ex.: GNews
+// category=business no Brasil) injetam — sobretudo resultados de loteria.
+// Aplicado na coleta para não virar "análise de mercado" de sorteio.
+export const IRRELEVANT_PATTERN = /\b(loteria|lotof[aá]cil|mega[ -]?sena|quina|timemania|lotomania|dupla[ -]?sena|dia de sorte|super[ -]?sete|milion[aá]ria|loteca|lotogol|sorteio|resultado da (?:lot|mega|quina|loteria)|concurso \d)\b/i;
+
+export function isMarketRelevant(item = {}) {
+  const haystack = `${item.title || ''} ${item.description || ''}`;
+  return !IRRELEVANT_PATTERN.test(haystack);
+}
+
 export function simpleHash(input = '') {
   let hash = 0;
   const text = String(input);
@@ -121,8 +131,11 @@ export function cleanArticleText(text = '') {
   return String(text)
     .replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g, '$1')
     .replace(/https?:\/\/\S+/g, '')
-    .replace(/\s+\./g, '.')
-    .replace(/\s+/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')    // colapsa espaços/tabs MAS preserva as quebras de parágrafo
+    .replace(/ ?\n ?/g, '\n')   // remove espaços ao redor das quebras
+    .replace(/\n{3,}/g, '\n\n') // no máximo um parágrafo em branco entre blocos
+    .replace(/ +\./g, '.')
     .trim();
 }
 

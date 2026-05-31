@@ -21,6 +21,22 @@ function cleanText(text) {
   return text.replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g, '$1').replace(/https?:\/\/\S+/g, '').trim();
 }
 
+// Quebra o texto em parágrafos legíveis. Usa as quebras de linha quando existem;
+// para conteúdo legado sem quebras, agrupa ~3 frases por parágrafo.
+function toParagraphs(text) {
+  const clean = cleanText(text);
+  if (!clean) return [];
+  if (/\n/.test(clean)) {
+    return clean.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+  }
+  const sentences = clean.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [clean];
+  const paras = [];
+  for (let i = 0; i < sentences.length; i += 3) {
+    paras.push(sentences.slice(i, i + 3).join(' ').trim());
+  }
+  return paras.filter(Boolean);
+}
+
 function estimateReadingTime(article) {
   const text = [article.what_happened, article.why_it_matters, article.conclusion].filter(Boolean).join(' ');
   return Math.max(1, Math.round(text.split(/\s+/).length / 200));
@@ -248,7 +264,7 @@ export default function ArticlePage() {
                 {article.what_happened && (
                   <ArticleBodySection title="O que aconteceu">
                     <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
-                      {cleanText(article.what_happened).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
+                      {toParagraphs(article.what_happened).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
                   </ArticleBodySection>
                 )}
@@ -256,7 +272,7 @@ export default function ArticlePage() {
                 {article.why_it_matters && (
                   <ArticleBodySection title="Contexto de mercado">
                     <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
-                      {cleanText(article.why_it_matters).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
+                      {toParagraphs(article.why_it_matters).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
                   </ArticleBodySection>
                 )}
@@ -284,7 +300,7 @@ export default function ArticlePage() {
                   <ArticleBodySection title="Possível impacto">
                     <div className="bg-ds-surface2 border-l-2 border-foreground/20 pl-4 py-1">
                       <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
-                        {cleanText(article.conclusion).split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
+                        {toParagraphs(article.conclusion).map((p, i) => <p key={i}>{p}</p>)}
                       </div>
                     </div>
                   </ArticleBodySection>

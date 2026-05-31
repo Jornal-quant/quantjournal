@@ -6,6 +6,7 @@ import {
   buildArticleExpansionPrompt,
   buildArticlePrompt,
   buildNewsletterPrompt,
+  isMarketRelevant,
   normalizeGeneratedArticle,
   parseRssItems,
   simpleHash,
@@ -155,9 +156,16 @@ const API_COLLECTORS = [
 async function ingestRawItems(sql, items, source, seen) {
   let collected = 0;
   let duplicates = 0;
+  let irrelevant = 0;
   const newItems = [];
 
   for (const item of items) {
+    // Descarta lixo fora do escopo (loteria etc.) antes de gastar IA com ele.
+    if (!isMarketRelevant(item)) {
+      irrelevant += 1;
+      continue;
+    }
+
     const contentHash = simpleHash(`${item.title}:${item.description}`);
     const externalId = item.guid || item.link;
 
@@ -196,7 +204,7 @@ async function ingestRawItems(sql, items, source, seen) {
     }
   }
 
-  return { collected, duplicates, newItems };
+  return { collected, duplicates, irrelevant, newItems };
 }
 
 function isSaneQuote(symbol, price) {
@@ -288,15 +296,34 @@ async function processRawNewsItem(sql, rawItem) {
 }
 
 async function handleProcessRawNews(sql, body) {
-  const rawItems = body.raw_id
-    ? await sql.query(`select * from qj_raw_news_feed where id = $1 limit 1`, [body.raw_id])
-    : await sql.query(`select * from qj_raw_news_feed where status = 'pending' order by created_date desc limit 1`);
+  if (body.raw_id) {
+    const rows = await sql.query(`select * from qj_raw_news_feed where id = $1 limit 1`, [body.raw_id]);
+    if (rows.length === 0) return { success: true, message: 'Item não encontrado', processed: 0 };
+    return { success: true, ...(await processRawNewsItem(sql, normalizeRow(rows[0]))) };
+  }
 
-  if (rawItems.length === 0) {
+  // Pega os pendentes mais recentes e processa o primeiro relevante, marcando
+  // os irrelevantes (loteria etc.) como 'skipped' para não gastar IA com eles.
+  const pending = await sql.query(
+    `select * from qj_raw_news_feed where status = 'pending' order by created_date desc limit 25`,
+  );
+
+  if (pending.length === 0) {
     return { success: true, message: 'Nenhum item pendente', processed: 0 };
   }
 
-  return { success: true, ...(await processRawNewsItem(sql, normalizeRow(rawItems[0]))) };
+  let skipped = 0;
+  for (const row of pending) {
+    const item = normalizeRow(row);
+    if (!isMarketRelevant({ title: item.raw_title, description: item.raw_content })) {
+      await updateRow(sql, 'qj_raw_news_feed', item.id, { status: 'skipped', processed: false }).catch(() => {});
+      skipped += 1;
+      continue;
+    }
+    return { success: true, skipped, ...(await processRawNewsItem(sql, item)) };
+  }
+
+  return { success: true, skipped, processed: 0, message: 'Somente itens irrelevantes na fila' };
 }
 
 async function handleCollectLatestNews(sql, body) {
@@ -316,6 +343,7 @@ async function handleCollectLatestNews(sql, body) {
 
   let collected = 0;
   let duplicates = 0;
+  let irrelevant = 0;
   let errors = 0;
   const newItems = [];
 
@@ -326,6 +354,7 @@ async function handleCollectLatestNews(sql, body) {
       const result = await ingestRawItems(sql, parseRssItems(xml), source, seen);
       collected += result.collected;
       duplicates += result.duplicates;
+      irrelevant += result.irrelevant;
       newItems.push(...result.newItems);
 
       if (source.id) {
@@ -353,6 +382,7 @@ async function handleCollectLatestNews(sql, body) {
       const result = await ingestRawItems(sql, items, { name: collector.name, type: 'api', priority: 1 }, seen);
       collected += result.collected;
       duplicates += result.duplicates;
+      irrelevant += result.irrelevant;
       newItems.push(...result.newItems);
     } catch (error) {
       errors += 1;
@@ -382,12 +412,12 @@ async function handleCollectLatestNews(sql, body) {
   await logSystem(
     sql,
     'Coleta automática concluída',
-    `Novas: ${collected} | Duplicadas: ${duplicates} | Processadas: ${processed} | Erros: ${errors}`,
+    `Novas: ${collected} | Duplicadas: ${duplicates} | Irrelevantes: ${irrelevant} | Processadas: ${processed} | Erros: ${errors}`,
     collected > 0 ? 'success' : 'info',
     'collectLatestNews',
   );
 
-  return { success: true, collected, duplicates, processed, errors };
+  return { success: true, collected, duplicates, irrelevant, processed, errors };
 }
 
 async function handleBackfillNews(sql, body) {
