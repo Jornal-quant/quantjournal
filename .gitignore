@@ -29,3 +29,6 @@ dist-ssr
 
 .env
 .vite
+
+# Data exports can contain subscribers, logs, and article drafts.
+exports/

@@ -9,13 +9,19 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:apply": "node scripts/apply-neon-schema.mjs",
+    "base44:export": "node scripts/export-base44-data.mjs",
+    "neon:import": "node scripts/import-neon-data.mjs",
+    "deepseek:smoke": "node scripts/smoke-deepseek-analysis.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.30",
     "@base44/vite-plugin": "^1.0.20",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
+    "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-aspect-ratio": "^1.1.2",
