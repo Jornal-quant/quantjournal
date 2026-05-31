@@ -117,7 +117,7 @@ export default function ArticleSidebar({ related = [] }) {
             <div key={ev.event} className="flex items-center gap-3 px-4 py-2.5">
               <span className="font-mono text-[10px] font-semibold text-muted-foreground w-7 flex-shrink-0">{ev.day}</span>
               <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${impactDot[ev.impact] || 'bg-ds-border'}`} />
-              <p className="font-sans text-xs text-foreground/80 flex-1 leading-snug">{ev.event}</p>
+              <p className="font-sans text-xs text-foreground/90 flex-1 leading-snug">{ev.event}</p>
               <span className="text-sm flex-shrink-0">{ev.country}</span>
             </div>
           ))}
@@ -127,11 +127,11 @@ export default function ArticleSidebar({ related = [] }) {
       {/* Chat CTA */}
       <Link to="/chat" className="group block bg-foreground rounded-lg p-4 hover:opacity-95 transition-opacity">
         <div className="flex items-center gap-2 mb-2">
-          <span className="font-mono text-sm text-white/40">⬡</span>
+          <span className="font-mono text-sm text-white/65">⬡</span>
           <p className="font-mono text-[11px] font-semibold text-white">Pergunte ao Market Chat</p>
         </div>
-        <p className="font-sans text-xs text-white/30 leading-relaxed">Tire dúvidas sobre este artigo ou qualquer ativo financeiro.</p>
-        <span className="font-mono text-[11px] text-white/30 group-hover:text-white/60 mt-2 block transition-colors">Abrir chat →</span>
+        <p className="font-sans text-xs text-white/55 leading-relaxed">Tire dúvidas sobre este artigo ou qualquer ativo financeiro.</p>
+        <span className="font-mono text-[11px] text-white/55 group-hover:text-white/60 mt-2 block transition-colors">Abrir chat →</span>
       </Link>
 
       <NewsletterForm />

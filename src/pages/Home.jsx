@@ -50,11 +50,11 @@ function SectionLabel({ label, href, count }) {
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
         <div className="w-px h-4 rounded-full bg-white/15" />
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/35">{label}</span>
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">{label}</span>
         {count != null && <span className="font-mono text-[9px] text-white/15">{count}</span>}
       </div>
       {href && (
-        <Link to={href} className="font-mono text-[10px] text-white/25 hover:text-white/60 transition-colors duration-150">
+        <Link to={href} className="font-mono text-[10px] text-white/50 hover:text-white/60 transition-colors duration-150">
           ver todas →
         </Link>
       )}
@@ -88,7 +88,7 @@ function LandingHero() {
           <div>
             <div className="flex items-center gap-2 mb-6">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/25">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">
                 Plataforma de inteligência financeira · IA
               </span>
             </div>
@@ -96,7 +96,7 @@ function LandingHero() {
               Entenda o mercado<br />
               <span style={{ color: '#8C8478' }}>antes de todo mundo</span>
             </h1>
-            <p className="font-sans text-base text-white/40 leading-relaxed mb-2 max-w-lg">
+            <p className="font-sans text-base text-white/65 leading-relaxed mb-2 max-w-lg">
               O FinAI Pulse monitora fontes financeiras globais, identifica eventos relevantes e transforma dados complexos em análises claras e rastreáveis.
             </p>
             <p className="font-sans text-sm text-white/22 leading-relaxed mb-10 max-w-lg">
@@ -129,14 +129,14 @@ function LandingHero() {
               ].map((v) => (
                 <div key={v} className="flex items-start gap-2.5">
                   <span className="w-1 h-1 bg-emerald-400 rounded-full flex-shrink-0 mt-2" />
-                  <p className="font-sans text-[13px] text-white/40 leading-snug">{v}</p>
+                  <p className="font-sans text-[13px] text-white/65 leading-snug">{v}</p>
                 </div>
               ))}
             </div>
             <div className="pt-4 border-t border-white/6 mt-4">
               <p className="font-sans text-[11px] text-white/18 leading-relaxed">
                 Conteúdo informativo. Não constitui recomendação de investimento.{' '}
-                <Link to="/metodologia" className="underline hover:text-white/35 transition-colors duration-150">Metodologia</Link>
+                <Link to="/metodologia" className="underline hover:text-white/60 transition-colors duration-150">Metodologia</Link>
               </p>
             </div>
           </div>
@@ -155,9 +155,9 @@ function FeaturesGrid() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {FEATURES.map((f) => (
             <div key={f.title} className="border border-white/6 rounded-xl p-4 hover:bg-white/3 hover:border-white/10 transition-all duration-200">
-              <f.icon className="w-4 h-4 text-white/30 mb-3" />
+              <f.icon className="w-4 h-4 text-white/55 mb-3" />
               <h3 className="font-mono text-[12px] font-semibold text-white/70 mb-1.5">{f.title}</h3>
-              <p className="font-sans text-[12px] text-white/30 leading-relaxed">{f.desc}</p>
+              <p className="font-sans text-[12px] text-white/55 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -174,7 +174,7 @@ function Sidebar({ trending }) {
       {trending.length > 0 && (
         <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
           <div className="px-4 py-2.5 border-b border-white/6 bg-white/3">
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/35">Mais lidas</span>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Mais lidas</span>
           </div>
           <div className="divide-y divide-white/5">
             {trending.map((a, i) => (
@@ -203,7 +203,7 @@ function Sidebar({ trending }) {
           </div>
         </div>
         <p className="font-sans text-[12px] text-white/28 leading-relaxed mb-2.5">Pergunte sobre qualquer ativo, empresa ou notícia.</p>
-        <span className="font-mono text-[11px] text-white/25 group-hover:text-white/55 transition-colors duration-150">Acessar chat →</span>
+        <span className="font-mono text-[11px] text-white/50 group-hover:text-white/55 transition-colors duration-150">Acessar chat →</span>
       </Link>
 
       <CompaniesInFocus />
@@ -356,7 +356,7 @@ export default function Home() {
           <div className="max-w-screen-2xl mx-auto px-6 py-16 text-center space-y-4">
             <div className="font-mono text-5xl text-white/6 mb-4">⬡</div>
             <h2 className="font-mono text-[18px] font-semibold text-white/70">Nenhum conteúdo publicado ainda</h2>
-            <p className="font-sans text-[13px] text-white/30">Acesse o painel de administração para gerar artigos com IA.</p>
+            <p className="font-sans text-[13px] text-white/55">Acesse o painel de administração para gerar artigos com IA.</p>
             <Link to="/admin" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-6 py-2.5 rounded-lg hover:bg-white/90 transition-colors duration-150 mt-2">
               Ir para o Admin <ArrowRight className="w-4 h-4" />
             </Link>

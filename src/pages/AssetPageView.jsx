@@ -57,7 +57,7 @@ function AISummaryPanel({ summary, name }) {
         {rows.map((r) => (
           <div key={r.label} className="bg-ds-surface2 border border-ds-border rounded p-3">
             <p className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">{r.label}</p>
-            <p className="font-sans text-sm text-foreground/80 leading-relaxed">{r.value}</p>
+            <p className="font-sans text-sm text-foreground/90 leading-relaxed">{r.value}</p>
           </div>
         ))}
       </div>
@@ -240,11 +240,11 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
           <Link to={`/chat`}
             className="group block bg-foreground rounded-lg p-4 hover:opacity-95 transition-opacity">
             <div className="flex items-center gap-2 mb-2">
-              <MessageSquare className="w-4 h-4 text-white/40" />
+              <MessageSquare className="w-4 h-4 text-white/65" />
               <p className="font-mono text-[11px] font-semibold text-white">Pergunte sobre {displayName}</p>
             </div>
-            <p className="font-sans text-xs text-white/30">Use o Market Chat para análises interativas sobre este ativo.</p>
-            <span className="font-mono text-[11px] text-white/30 group-hover:text-white/60 mt-2 block transition-colors">Abrir Market Chat →</span>
+            <p className="font-sans text-xs text-white/55">Use o Market Chat para análises interativas sobre este ativo.</p>
+            <span className="font-mono text-[11px] text-white/55 group-hover:text-white/60 mt-2 block transition-colors">Abrir Market Chat →</span>
           </Link>
 
           {/* Outros ativos */}

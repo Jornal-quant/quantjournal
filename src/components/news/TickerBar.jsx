@@ -51,7 +51,7 @@ export default function TickerBar() {
         <div className="flex animate-ticker">
           {doubled.map((t, i) => (
             <div key={i} className="flex items-center gap-2 px-4 border-r border-white/5 whitespace-nowrap flex-shrink-0 h-full">
-              <span className="font-mono text-[10px] font-semibold text-white/30 tracking-widest uppercase">{t.name}</span>
+              <span className="font-mono text-[10px] font-semibold text-white/55 tracking-widest uppercase">{t.name}</span>
               <span className="font-mono text-[11px] font-medium text-white/75 tabular-nums">{t.value}</span>
               <span className={`font-mono text-[10px] font-semibold tabular-nums ${
                 t.up === true ? 'text-emerald-400' : t.up === false ? 'text-red-400' : 'text-white/20'

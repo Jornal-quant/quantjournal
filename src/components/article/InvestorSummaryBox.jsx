@@ -30,7 +30,7 @@ export default function InvestorSummaryBox({ article }) {
           <span className="w-1.5 h-1.5 rounded-full bg-ds-up animate-pulse" />
           <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Resumo para o investidor</span>
         </div>
-        <span className="font-mono text-[9px] text-white/25">⬡ Gerado por IA</span>
+        <span className="font-mono text-[9px] text-white/50">⬡ Gerado por IA</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-ds-border bg-ds-surface2">
         {bullets.slice(0, 3).map((bullet, i) => (
@@ -38,7 +38,7 @@ export default function InvestorSummaryBox({ article }) {
             <p className="font-mono text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               {SLOTS[i]?.label || `Ponto ${i + 1}`}
             </p>
-            <p className="font-sans text-sm text-foreground/80 leading-relaxed">{bullet}</p>
+            <p className="font-sans text-sm text-foreground/90 leading-relaxed">{bullet}</p>
           </div>
         ))}
       </div>

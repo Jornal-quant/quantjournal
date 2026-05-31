@@ -250,7 +250,7 @@ export default function ArticlePage() {
                   <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Resumo rápido</p>
                   <ul className="space-y-2.5">
                     {keyTakeaways.map((k, i) => (
-                      <li key={i} className="flex items-start gap-3 font-sans text-sm text-foreground/80 leading-relaxed">
+                      <li key={i} className="flex items-start gap-3 font-sans text-sm text-foreground/90 leading-relaxed">
                         <span className="font-mono text-[10px] font-semibold text-muted-foreground/40 w-4 flex-shrink-0 mt-0.5">{String(i + 1).padStart(2, '0')}</span>
                         {k}
                       </li>
@@ -263,7 +263,7 @@ export default function ArticlePage() {
               <div className="space-y-10">
                 {article.what_happened && (
                   <ArticleBodySection title="O que aconteceu">
-                    <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                    <div className="font-sans text-[15px] text-foreground/90 leading-[1.8] space-y-4">
                       {toParagraphs(article.what_happened).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
                   </ArticleBodySection>
@@ -271,7 +271,7 @@ export default function ArticlePage() {
 
                 {article.why_it_matters && (
                   <ArticleBodySection title="Contexto de mercado">
-                    <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                    <div className="font-sans text-[15px] text-foreground/90 leading-[1.8] space-y-4">
                       {toParagraphs(article.why_it_matters).map((p, i) => <p key={i}>{p}</p>)}
                     </div>
                   </ArticleBodySection>
@@ -289,7 +289,7 @@ export default function ArticlePage() {
                       ))}
                       {companies.length > tickers.length && companies.slice(tickers.length).map((c) => (
                         <div key={c} className="bg-ds-surface2 border border-ds-border rounded px-3 py-2">
-                          <span className="font-sans text-xs text-foreground/80">{c}</span>
+                          <span className="font-sans text-xs text-foreground/90">{c}</span>
                         </div>
                       ))}
                     </div>
@@ -299,7 +299,7 @@ export default function ArticlePage() {
                 {article.conclusion && (
                   <ArticleBodySection title="Possível impacto">
                     <div className="bg-ds-surface2 border-l-2 border-foreground/20 pl-4 py-1">
-                      <div className="font-sans text-[15px] text-foreground/80 leading-[1.8] space-y-4">
+                      <div className="font-sans text-[15px] text-foreground/90 leading-[1.8] space-y-4">
                         {toParagraphs(article.conclusion).map((p, i) => <p key={i}>{p}</p>)}
                       </div>
                     </div>
@@ -326,7 +326,7 @@ export default function ArticlePage() {
                         <li key={i} className="flex items-center gap-2 font-sans text-sm">
                           <span className="w-1 h-1 bg-ds-border rounded-full" />
                           {s.url ? (
-                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground flex items-center gap-1 transition-colors">
+                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-foreground/85 hover:text-foreground flex items-center gap-1 transition-colors">
                               {s.name} <ExternalLink className="w-3 h-3" />
                             </a>
                           ) : <span className="text-muted-foreground">{s.name}</span>}
@@ -335,7 +335,7 @@ export default function ArticlePage() {
                         <li className="flex items-center gap-2 font-sans text-sm">
                           <span className="w-1 h-1 bg-ds-border rounded-full" />
                           {article.source_url
-                            ? <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-foreground flex items-center gap-1">{article.source} <ExternalLink className="w-3 h-3" /></a>
+                            ? <a href={article.source_url} target="_blank" rel="noopener noreferrer" className="text-foreground/85 hover:text-foreground flex items-center gap-1">{article.source} <ExternalLink className="w-3 h-3" /></a>
                             : <span className="text-muted-foreground">{article.source}</span>}
                         </li>
                       )}

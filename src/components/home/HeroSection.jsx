@@ -43,9 +43,9 @@ function HeroMain({ article }) {
           {article.title}
         </h2>
         {article.summary && (
-          <p className="font-sans text-[13px] text-white/45 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
+          <p className="font-sans text-[13px] text-white/70 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
         )}
-        <span className="font-mono text-[10px] text-white/30 tabular-nums">{ago}</span>
+        <span className="font-mono text-[10px] text-white/55 tabular-nums">{ago}</span>
       </div>
     </Link>
   );
@@ -67,7 +67,7 @@ function HeroSecondary({ article }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/25">{cat}</span>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/50">{cat}</span>
         </div>
         <p className="font-mono text-[13px] font-semibold text-white/70 group-hover:text-white/90 leading-snug line-clamp-2 transition-colors duration-150">{article.title}</p>
         <span className="font-mono text-[10px] text-white/22 mt-1 block tabular-nums">{ago}</span>

@@ -22,15 +22,15 @@ export default function NewsletterForm() {
     return (
       <div className="border border-white/8 rounded-xl p-4 text-center" style={{ backgroundColor: '#111110' }}>
         <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-emerald-400">✓ Inscrito</span>
-        <p className="font-sans text-[12px] text-white/30 mt-1">Você receberá o briefing diário.</p>
+        <p className="font-sans text-[12px] text-white/55 mt-1">Você receberá o briefing diário.</p>
       </div>
     );
   }
 
   return (
     <div className="border border-white/8 rounded-xl p-4" style={{ backgroundColor: '#111110' }}>
-      <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/30 mb-1">Morning Brief</p>
-      <p className="font-sans text-[12px] text-white/25 mb-3 leading-relaxed">
+      <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/55 mb-1">Morning Brief</p>
+      <p className="font-sans text-[12px] text-white/50 mb-3 leading-relaxed">
         Receba o resumo do mercado antes da abertura.
       </p>
       <form onSubmit={submit} className="flex flex-col gap-2">

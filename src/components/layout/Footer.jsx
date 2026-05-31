@@ -23,7 +23,7 @@ export default function Footer() {
                 FinAI<span className="text-[#8C8478]">Pulse</span>
               </span>
             </Link>
-            <p className="font-sans text-[13px] text-white/30 leading-relaxed mb-4">
+            <p className="font-sans text-[13px] text-white/55 leading-relaxed mb-4">
               Inteligência financeira automatizada — notícias curadas e analisadas por IA, 24h por dia.
             </p>
             <div className="flex items-center gap-1.5 font-mono text-[10px] text-white/20">
@@ -37,7 +37,7 @@ export default function Footer() {
               <h4 className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/20 mb-4">{col.label}</h4>
               <div className="space-y-2.5">
                 {col.items.map(([l, p]) => (
-                  <Link key={p} to={p} className="block font-sans text-[13px] text-white/35 hover:text-white/65 transition-colors duration-150">{l}</Link>
+                  <Link key={p} to={p} className="block font-sans text-[13px] text-white/60 hover:text-white/65 transition-colors duration-150">{l}</Link>
                 ))}
               </div>
             </div>
@@ -48,14 +48,14 @@ export default function Footer() {
         <div className="border-t border-white/6 pt-6 space-y-4">
           <div className="flex items-start gap-2.5 bg-white/3 border border-white/6 rounded-lg p-3">
             <Shield className="w-3.5 h-3.5 text-white/20 flex-shrink-0 mt-0.5" />
-            <p className="font-sans text-[11px] text-white/25 leading-relaxed">
+            <p className="font-sans text-[11px] text-white/50 leading-relaxed">
               O conteúdo do FinAI Pulse é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="font-mono text-[10px] text-white/15">© {new Date().getFullYear()} FinAI Pulse</p>
             <div className="flex items-center gap-4">
-              <Link to="/metodologia" className="font-mono text-[10px] text-white/20 hover:text-white/40 transition-colors duration-150">Metodologia</Link>
+              <Link to="/metodologia" className="font-mono text-[10px] text-white/20 hover:text-white/65 transition-colors duration-150">Metodologia</Link>
               <span className="text-white/10">·</span>
               <span className="font-mono text-[10px] text-white/15">Dados com possível atraso</span>
             </div>
