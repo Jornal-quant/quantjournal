@@ -102,3 +102,32 @@ DEEPSEEK_QUALITY_MODEL=deepseek-reasoner
 RESEND_API_KEY=...
 NEWSLETTER_FROM=FinAI Pulse <news@your-domain.com>
 ```
+
+## DeepSeek Analysis Setup
+
+Use a new DeepSeek key only. If a key was pasted into chat, revoke it in DeepSeek and generate another one before deploying.
+
+Local test:
+
+```bash
+cp .env.example .env.local
+# Fill DEEPSEEK_API_KEY with a new key in .env.local, then:
+npm run deepseek:smoke
+```
+
+The smoke command calls DeepSeek with a sample market item and prints only non-secret output:
+
+- Model used.
+- Generated title.
+- Category.
+- AI confidence.
+- Whether impact analysis was returned.
+
+Production flow:
+
+- `processRawNews` takes queued RSS items from `qj_raw_news_feed`, asks DeepSeek for a structured article, and saves it in `qj_articles`.
+- `autoPublishNews` collects fresh RSS items and processes the most relevant ones.
+- `backfillNews` generates older/context articles to fill the portal.
+- `sendDailyNewsletter` uses DeepSeek to create the daily newsletter body.
+
+Vercel should store `DEEPSEEK_API_KEY` as a server-side environment variable. Do not prefix it with `VITE_`, because `VITE_*` variables are exposed to the browser.
