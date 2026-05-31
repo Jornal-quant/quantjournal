@@ -1,4 +1,4 @@
-import { getSql, normalizeRow, sendJson, toDatabasePayload } from '../_db.js';
+import { getSql, isAdminRequest, normalizeRow, sendJson, toDatabasePayload } from '../_db.js';
 import {
   BACKFILL_TOPICS,
   DEFAULT_RSS_SOURCES,
@@ -903,22 +903,33 @@ async function handleBackfillImages(sql, body) {
   return { success: true, scanned: rows.length, updated };
 }
 
+// Contas de admin: ADMIN_USERS = "email1:senha1,email2:senha2" (preferido) com
+// fallback para ADMIN_EMAIL/ADMIN_PASSWORD (conta única).
+function adminAccounts() {
+  const map = new Map();
+  for (const pair of String(process.env.ADMIN_USERS || '').split(',')) {
+    const i = pair.indexOf(':');
+    if (i > 0) map.set(pair.slice(0, i).trim().toLowerCase(), pair.slice(i + 1));
+  }
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    map.set(String(process.env.ADMIN_EMAIL).trim().toLowerCase(), process.env.ADMIN_PASSWORD);
+  }
+  return map;
+}
+
 // Login do admin: valida e-mail/senha contra as envs do servidor (não ficam no
 // bundle do front) e devolve o token de sessão.
 async function handleAdminLogin(sql, body) {
   const email = String(body.email || '').trim().toLowerCase();
   const password = String(body.password || '');
-  const allowedEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-  const allowedPassword = process.env.ADMIN_PASSWORD || '';
   const token = process.env.ADMIN_TOKEN || '';
+  if (!token) throw new Error('Autenticação de admin não configurada no servidor.');
 
-  if (!allowedEmail || !allowedPassword || !token) {
-    throw new Error('Autenticação de admin não configurada no servidor.');
+  const accounts = adminAccounts();
+  if (password && accounts.get(email) === password) {
+    return { success: true, token };
   }
-  if (email !== allowedEmail || password !== allowedPassword) {
-    return { success: false, error: 'E-mail ou senha inválidos.' };
-  }
-  return { success: true, token };
+  return { success: false, error: 'E-mail ou senha inválidos.' };
 }
 
 const handlers = {
@@ -943,10 +954,19 @@ export default async function handler(req, res) {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
+  // Funções públicas (chamadas pelo front sem login): histórico do gráfico e o
+  // próprio login. As demais (coleta, geração, snapshots, newsletter, etc.)
+  // exigem token de admin — o GitHub Actions envia o token via header.
+  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin']);
+
   try {
     const fn = handlers[name];
     if (!fn) {
       return sendJson(res, 404, { error: `Unknown function: ${name}` });
+    }
+
+    if (!PUBLIC_FUNCTIONS.has(name) && !isAdminRequest(req)) {
+      return sendJson(res, 401, { error: 'Não autorizado' });
     }
 
     const sql = getSql();

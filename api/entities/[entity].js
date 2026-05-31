@@ -1,4 +1,15 @@
-import { getSql, normalizeRow, normalizeRows, parseOrder, sendJson, tableFor, toDatabasePayload } from '../_db.js';
+import { getSql, isAdminRequest, normalizeRow, normalizeRows, parseOrder, sendJson, tableFor, toDatabasePayload } from '../_db.js';
+
+// Escritas liberadas ao público (sem token de admin):
+// - cadastro de newsletter (POST NewsletterSubscriber)
+// - contador de leituras do artigo (PATCH Article só com o campo `views`)
+function isPublicWrite(method, entity, body) {
+  if (method === 'POST') return entity === 'NewsletterSubscriber';
+  if (method === 'PATCH') {
+    return entity === 'Article' && Object.keys(body || {}).every((k) => k === 'views');
+  }
+  return false;
+}
 
 function parseFilters(raw) {
   if (!raw) return {};
@@ -41,6 +52,11 @@ export default async function handler(req, res) {
     const sql = getSql();
     const entity = req.query.entity;
     const table = tableFor(entity);
+
+    // Leitura é pública; escrita exige admin, salvo as exceções públicas.
+    if (req.method !== 'GET' && !isPublicWrite(req.method, entity, req.body) && !isAdminRequest(req)) {
+      return sendJson(res, 401, { error: 'Não autorizado' });
+    }
 
     if (req.method === 'GET') {
       const values = [];

@@ -34,12 +34,15 @@ jobs:
       # Secrets and variables → Actions → Variables) se o domínio mudar.
       SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
       PROCESS_BATCH: '4' # quantos artigos gerar por execução
+      # Token de admin (igual ao ADMIN_TOKEN da Vercel). Crie como secret do repo:
+      # Settings → Secrets and variables → Actions → New repository secret.
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
     steps:
       - name: Coletar feeds (sem IA)
         run: |
           curl --fail --show-error --silent --location \
             --retry 2 --max-time 70 \
-            -X POST -H 'Content-Type: application/json' \
+            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" \
             -d '{"auto_process":false}' \
             "$SITE_URL/api/functions/collectLatestNews" | head -c 2000
           echo
@@ -52,7 +55,7 @@ jobs:
             # a fila continua e a próxima execução pega o resto.
             curl --show-error --silent --location \
               --max-time 80 \
-              -X POST -H 'Content-Type: application/json' -d '{}' \
+              -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
               "$SITE_URL/api/functions/processRawNews" | head -c 1000 || true
             echo
             sleep 2
@@ -62,6 +65,6 @@ jobs:
         run: |
           curl --fail --show-error --silent --location \
             --retry 2 --max-time 70 \
-            -X POST -H 'Content-Type: application/json' -d '{}' \
+            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
             "$SITE_URL/api/functions/updateMarketSnapshots" | head -c 2000
           echo
