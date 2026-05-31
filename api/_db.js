@@ -46,12 +46,16 @@ export function normalizeRows(rows) {
 export function toDatabasePayload(payload = {}) {
   const out = { ...payload };
   for (const field of JSON_FIELDS) {
-    if (field in out && typeof out[field] === 'string') {
+    if (!(field in out) || out[field] == null) continue;
+
+    if (typeof out[field] === 'string') {
       try {
-        out[field] = JSON.parse(out[field]);
+        out[field] = JSON.stringify(JSON.parse(out[field]));
       } catch {
-        out[field] = field === 'source_links' || field === 'messages' ? [] : {};
+        out[field] = field === 'source_links' || field === 'messages' ? '[]' : '{}';
       }
+    } else {
+      out[field] = JSON.stringify(out[field]);
     }
   }
   return out;
