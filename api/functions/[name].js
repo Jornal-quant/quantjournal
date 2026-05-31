@@ -6,6 +6,7 @@ import {
   buildArticleExpansionPrompt,
   buildArticlePrompt,
   buildNewsletterPrompt,
+  isMarketRelevant,
   normalizeGeneratedArticle,
   parseRssItems,
   simpleHash,
@@ -155,9 +156,16 @@ const API_COLLECTORS = [
 async function ingestRawItems(sql, items, source, seen) {
   let collected = 0;
   let duplicates = 0;
+  let irrelevant = 0;
   const newItems = [];
 
   for (const item of items) {
+    // Descarta lixo fora do escopo (loteria etc.) antes de gastar IA com ele.
+    if (!isMarketRelevant(item)) {
+      irrelevant += 1;
+      continue;
+    }
+
     const contentHash = simpleHash(`${item.title}:${item.description}`);
     const externalId = item.guid || item.link;
 
@@ -196,7 +204,7 @@ async function ingestRawItems(sql, items, source, seen) {
     }
   }
 
-  return { collected, duplicates, newItems };
+  return { collected, duplicates, irrelevant, newItems };
 }
 
 function isSaneQuote(symbol, price) {
@@ -316,6 +324,7 @@ async function handleCollectLatestNews(sql, body) {
 
   let collected = 0;
   let duplicates = 0;
+  let irrelevant = 0;
   let errors = 0;
   const newItems = [];
 
@@ -326,6 +335,7 @@ async function handleCollectLatestNews(sql, body) {
       const result = await ingestRawItems(sql, parseRssItems(xml), source, seen);
       collected += result.collected;
       duplicates += result.duplicates;
+      irrelevant += result.irrelevant;
       newItems.push(...result.newItems);
 
       if (source.id) {
@@ -353,6 +363,7 @@ async function handleCollectLatestNews(sql, body) {
       const result = await ingestRawItems(sql, items, { name: collector.name, type: 'api', priority: 1 }, seen);
       collected += result.collected;
       duplicates += result.duplicates;
+      irrelevant += result.irrelevant;
       newItems.push(...result.newItems);
     } catch (error) {
       errors += 1;
@@ -382,12 +393,12 @@ async function handleCollectLatestNews(sql, body) {
   await logSystem(
     sql,
     'Coleta automática concluída',
-    `Novas: ${collected} | Duplicadas: ${duplicates} | Processadas: ${processed} | Erros: ${errors}`,
+    `Novas: ${collected} | Duplicadas: ${duplicates} | Irrelevantes: ${irrelevant} | Processadas: ${processed} | Erros: ${errors}`,
     collected > 0 ? 'success' : 'info',
     'collectLatestNews',
   );
 
-  return { success: true, collected, duplicates, processed, errors };
+  return { success: true, collected, duplicates, irrelevant, processed, errors };
 }
 
 async function handleBackfillNews(sql, body) {
