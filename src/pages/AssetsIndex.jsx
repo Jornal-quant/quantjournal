@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ArrowRight } from 'lucide-react';
+import AssetLogo from '../components/AssetLogo';
 
 const ASSETS = [
   // Empresas BR
@@ -102,11 +103,7 @@ export default function AssetsIndex() {
                   <Link key={asset.slug} to={`/ativo/${asset.slug}`}
                     className="group flex items-center justify-between bg-ds-surface border border-ds-border rounded-lg px-4 py-3.5 hover:border-foreground/20 hover:shadow-sm transition-all">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center flex-shrink-0">
-                        <span className="font-mono text-[8px] font-semibold text-white/50 leading-none">
-                          {asset.ticker ? asset.ticker.slice(0, 3) : asset.name.slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
+                      <AssetLogo ticker={asset.ticker} name={asset.name} type={asset.type} size={36} />
                       <div className="min-w-0">
                         <p className="font-mono text-xs font-semibold leading-none truncate group-hover:text-ds-beige transition-colors">{asset.name}</p>
                         <div className="flex items-center gap-1.5 mt-1">
