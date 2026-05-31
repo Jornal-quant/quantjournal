@@ -37,9 +37,9 @@ export default function MarketRadar() {
       <div className="px-4 py-2.5 border-b border-white/6 flex items-center justify-between bg-white/3">
         <div className="flex items-center gap-2">
           <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-white/15'}`} />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/40">Mercados</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/65">Mercados</span>
         </div>
-        <span className="font-mono text-[10px] text-white/30">
+        <span className="font-mono text-[10px] text-white/55">
           {isLive ? (lastUpdate ? `Atualizado ${timeAgo(lastUpdate)}` : 'Dados do sistema') : 'Aguardando dados'}
         </span>
       </div>
@@ -52,12 +52,12 @@ export default function MarketRadar() {
           const Icon = up ? TrendingUp : dn ? TrendingDown : null;
           return (
             <div key={s.symbol} className="px-3.5 py-3 hover:bg-white/4 transition-colors duration-150 group">
-              <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/40 mb-1.5">{s.symbol}</p>
+              <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/65 mb-1.5">{s.symbol}</p>
               <p className="font-mono text-[15px] font-semibold text-white/85 tabular-nums leading-none mb-1">{formatMarketPrice(s)}</p>
               <div className="flex items-center gap-1">
                 {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-400' : 'text-red-400'}`} />}
                 <p className={`font-mono text-[11px] font-medium tabular-nums ${
-                  dn ? 'text-red-400' : up ? 'text-emerald-400' : 'text-white/30'
+                  dn ? 'text-red-400' : up ? 'text-emerald-400' : 'text-white/55'
                 }`}>
                   {formatChangePercent(s.change_percent)}
                 </p>

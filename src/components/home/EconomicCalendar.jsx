@@ -31,17 +31,17 @@ export default function EconomicCalendar() {
   return (
     <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
       <div className="px-4 py-2.5 border-b border-white/6 bg-white/3 flex items-center justify-between">
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/35">Calendário econômico</span>
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Calendário econômico</span>
         <span className="font-mono text-[9px] text-white/20">referência</span>
       </div>
       <div className="divide-y divide-white/5">
         {EVENTS.map((e, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/3 transition-colors duration-150">
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${IMPACT_DOT[e.impact]}`} />
-            <span className="font-mono text-[9px] text-white/30 w-6 flex-shrink-0">{WD_LABEL[e.weekday]}</span>
-            <span className="font-mono text-[10px] text-white/30 w-10 flex-shrink-0 tabular-nums">{dateForWeekday(e.weekday)}</span>
+            <span className="font-mono text-[9px] text-white/55 w-6 flex-shrink-0">{WD_LABEL[e.weekday]}</span>
+            <span className="font-mono text-[10px] text-white/55 w-10 flex-shrink-0 tabular-nums">{dateForWeekday(e.weekday)}</span>
             <span className="font-mono text-[10px] text-white/20 w-9 flex-shrink-0 tabular-nums">{e.time}</span>
-            <span className="font-sans text-[11px] text-white/45 flex-1 leading-tight">{e.label}</span>
+            <span className="font-sans text-[11px] text-white/70 flex-1 leading-tight">{e.label}</span>
             <span className="text-[11px] flex-shrink-0">{e.country}</span>
           </div>
         ))}

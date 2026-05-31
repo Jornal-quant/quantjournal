@@ -73,8 +73,8 @@ Seja assertivo e concreto. Sem URLs.`,
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/6 bg-white/3">
         <div className="flex items-center gap-2">
-          <Zap className="w-3 h-3 text-white/30" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/40">Resumo IA do dia</span>
+          <Zap className="w-3 h-3 text-white/55" />
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/65">Resumo IA do dia</span>
         </div>
         <div className="flex items-center gap-2">
           {moodCfg && (
@@ -83,7 +83,7 @@ Seja assertivo e concreto. Sem URLs.`,
               {summary.mood}
             </span>
           )}
-          {loading && <Loader2 className="w-3 h-3 animate-spin text-white/25" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin text-white/50" />}
           {!loading && summary && (
             <button onClick={generate} className="text-white/20 hover:text-white/50 transition-colors duration-150" aria-label="Atualizar resumo">
               <RefreshCw className="w-3 h-3" />
@@ -96,20 +96,20 @@ Seja assertivo e concreto. Sem URLs.`,
       <div className="p-4">
         {loading && !summary && (
           <div className="flex items-center gap-2.5 py-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-white/25 flex-shrink-0" />
-            <span className="font-sans text-[12px] text-white/25">Analisando as principais notícias do dia…</span>
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-white/50 flex-shrink-0" />
+            <span className="font-sans text-[12px] text-white/50">Analisando as principais notícias do dia…</span>
           </div>
         )}
 
         {!loading && !summary && articles.length < 3 && (
-          <p className="font-sans text-[12px] text-white/25 py-1">Aguardando mais notícias para gerar o resumo.</p>
+          <p className="font-sans text-[12px] text-white/50 py-1">Aguardando mais notícias para gerar o resumo.</p>
         )}
 
         {summary?.bullets && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {summary.bullets.slice(0, 3).map((b, i) => (
               <div key={i} className="bg-white/3 border border-white/6 rounded-lg p-3 flex flex-col gap-2">
-                <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/25">{LABELS[i]}</span>
+                <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/50">{LABELS[i]}</span>
                 <p className="font-sans text-[13px] text-white/65 leading-relaxed">{b}</p>
               </div>
             ))}

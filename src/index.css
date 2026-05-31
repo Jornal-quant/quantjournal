@@ -23,10 +23,10 @@
     --border-medium:rgba(255,255,255,0.12);
 
     /* Text */
-    --text-primary:   rgba(255,255,255,0.90);
-    --text-secondary: rgba(255,255,255,0.50);
-    --text-muted:     rgba(255,255,255,0.25);
-    --text-subtle:    rgba(255,255,255,0.12);
+    --text-primary:   rgba(255,255,255,0.92);
+    --text-secondary: rgba(255,255,255,0.66);
+    --text-muted:     rgba(255,255,255,0.46);
+    --text-subtle:    rgba(255,255,255,0.18);
 
     /* Accent */
     --accent-color:   #8C8478;
@@ -51,7 +51,7 @@
     --secondary:           30 5% 12%;
     --secondary-foreground:60 6% 92%;
     --muted:               30 5% 14%;
-    --muted-foreground:    30 4% 50%;
+    --muted-foreground:    35 5% 66%;
     --accent:              38 8% 47%;
     --accent-foreground:   60 6% 92%;
     --destructive:         0 72% 51%;

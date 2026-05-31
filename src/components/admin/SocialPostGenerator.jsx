@@ -80,7 +80,7 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
                         <Copy className="w-3 h-3 mr-1" /> Copiar
                       </Button>
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap border border-border/50">
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap border border-border/50">
                       {posts.instagram_caption}
                     </div>
                   </div>
@@ -96,7 +96,7 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
                         <Copy className="w-3 h-3 mr-1" /> Copiar
                       </Button>
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/80 leading-relaxed border border-border/50">
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/90 leading-relaxed border border-border/50">
                       {posts.x_post}
                       <p className="text-[10px] text-muted-foreground mt-1">{posts.x_post.length}/280 chars</p>
                     </div>
@@ -113,7 +113,7 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
                         <Copy className="w-3 h-3 mr-1" /> Copiar
                       </Button>
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap border border-border/50">
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap border border-border/50">
                       {posts.telegram_message}
                     </div>
                   </div>
@@ -127,7 +127,7 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
                         <Copy className="w-3 h-3 mr-1" /> Copiar
                       </Button>
                     </div>
-                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap border border-border/50">
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap border border-border/50">
                       {posts.key_takeaways}
                     </div>
                   </div>

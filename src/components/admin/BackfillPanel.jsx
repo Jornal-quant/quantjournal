@@ -154,7 +154,7 @@ export default function BackfillPanel() {
           {log.map((l, i) => (
             <div key={i} className="flex items-start gap-2 text-xs">
               <span className="text-muted-foreground flex-shrink-0">{l.ts}</span>
-              <span className={l.type === 'error' ? 'text-destructive' : l.type === 'success' ? 'text-chart-2' : 'text-foreground/70'}>
+              <span className={l.type === 'error' ? 'text-destructive' : l.type === 'success' ? 'text-chart-2' : 'text-foreground/85'}>
                 {l.msg}
               </span>
             </div>

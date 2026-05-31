@@ -116,7 +116,7 @@ export default function Metodologia() {
                         const parts = line.split(/\*\*(.+?)\*\*/g);
                         return (
                           <p key={k} className={line.startsWith('-') ? 'pl-4' : ''}>
-                            {parts.map((part, pi) => pi % 2 === 1 ? <strong key={pi} className="text-foreground/70 font-semibold">{part}</strong> : part)}
+                            {parts.map((part, pi) => pi % 2 === 1 ? <strong key={pi} className="text-foreground/85 font-semibold">{part}</strong> : part)}
                           </p>
                         );
                       })}

@@ -27,12 +27,12 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <span className="font-mono text-[10px] text-white/20 capitalize">{today}</span>
           <span className="text-white/10">·</span>
-          <span className="flex items-center gap-1.5 font-mono text-[10px] text-white/25">
+          <span className="flex items-center gap-1.5 font-mono text-[10px] text-white/50">
             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
             Análise contínua por IA
           </span>
         </div>
-        <div className="flex items-center gap-5 font-mono text-[10px] text-white/25">
+        <div className="flex items-center gap-5 font-mono text-[10px] text-white/50">
           <Link to="/metodologia" className="hover:text-white/50 transition-colors duration-150">Metodologia</Link>
           <span className="text-white/10">|</span>
           <Link to="/admin" className="hover:text-white/50 transition-colors duration-150">Admin</Link>
@@ -60,7 +60,7 @@ export default function Navbar() {
                 className={`font-mono text-[11px] font-medium tracking-wide whitespace-nowrap px-3 py-1.5 rounded transition-colors duration-150 ${
                   active
                     ? 'bg-white/10 text-white'
-                    : 'text-white/35 hover:text-white/70 hover:bg-white/6'
+                    : 'text-white/60 hover:text-white/70 hover:bg-white/6'
                 }`}>
                 {item.label}
               </Link>
@@ -76,11 +76,11 @@ export default function Navbar() {
             IA Chat
           </Link>
           <Link to="/busca"
-            className="flex items-center gap-1.5 font-mono text-[11px] text-white/35 hover:text-white/70 px-2.5 py-1.5 rounded hover:bg-white/6 transition-colors duration-150">
+            className="flex items-center gap-1.5 font-mono text-[11px] text-white/60 hover:text-white/70 px-2.5 py-1.5 rounded hover:bg-white/6 transition-colors duration-150">
             <Search className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Buscar</span>
           </Link>
-          <button className="lg:hidden text-white/40 hover:text-white/80 p-1.5 transition-colors duration-150" onClick={() => setOpen(!open)} aria-label="Menu">
+          <button className="lg:hidden text-white/65 hover:text-white/80 p-1.5 transition-colors duration-150" onClick={() => setOpen(!open)} aria-label="Menu">
             {open ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
           </button>
         </div>
@@ -95,7 +95,7 @@ export default function Navbar() {
               return (
                 <Link key={item.path} to={item.path} onClick={() => setOpen(false)}
                   className={`px-3 py-2 font-mono text-[11px] rounded transition-colors duration-150 ${
-                    active ? 'bg-white/12 text-white font-semibold' : 'text-white/35 hover:bg-white/6 hover:text-white/70'
+                    active ? 'bg-white/12 text-white font-semibold' : 'text-white/60 hover:bg-white/6 hover:text-white/70'
                   }`}>
                   {item.label}
                 </Link>
@@ -104,11 +104,11 @@ export default function Navbar() {
           </div>
           <div className="px-4 pb-3 grid grid-cols-2 gap-2">
             <Link to="/chat" onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-1.5 font-mono text-[11px] border border-white/12 rounded py-2 text-white/40 hover:text-white/80 hover:bg-white/6 transition-colors duration-150">
+              className="flex items-center justify-center gap-1.5 font-mono text-[11px] border border-white/12 rounded py-2 text-white/65 hover:text-white/80 hover:bg-white/6 transition-colors duration-150">
               <Zap className="w-3.5 h-3.5" /> IA Chat
             </Link>
             <Link to="/busca" onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-1.5 font-mono text-[11px] border border-white/12 rounded py-2 text-white/40 hover:text-white/80 hover:bg-white/6 transition-colors duration-150">
+              className="flex items-center justify-center gap-1.5 font-mono text-[11px] border border-white/12 rounded py-2 text-white/65 hover:text-white/80 hover:bg-white/6 transition-colors duration-150">
               <Search className="w-3.5 h-3.5" /> Buscar
             </Link>
           </div>

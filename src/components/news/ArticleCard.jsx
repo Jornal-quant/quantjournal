@@ -46,7 +46,7 @@ function CompactCard({ article }) {
       <CategoryDot category={article.category} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">{cat}</span>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/55">{cat}</span>
           {article.relevance === 'urgente' && (
             <span className="font-mono text-[8px] font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-sm">Urgente</span>
           )}
@@ -54,7 +54,7 @@ function CompactCard({ article }) {
         <p className="font-mono text-[13px] font-medium leading-snug text-white/80 group-hover:text-white transition-colors duration-150 line-clamp-2">{article.title}</p>
         <div className="flex items-center gap-2 mt-1.5">
           {SentimentIcon && <SentimentIcon className={`w-3 h-3 ${sentiment.color}`} />}
-          <span className="font-mono text-[10px] text-white/25">{ago}</span>
+          <span className="font-mono text-[10px] text-white/50">{ago}</span>
           {article.source && <span className="font-mono text-[10px] text-white/15 truncate max-w-[80px]">· {article.source}</span>}
         </div>
       </div>
@@ -98,7 +98,7 @@ function DefaultCard({ article }) {
         )}
         {article.ai_confidence > 0 && (
           <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md">
-            <Zap className="w-2.5 h-2.5 text-white/40" />
+            <Zap className="w-2.5 h-2.5 text-white/65" />
             <span className="font-mono text-[9px] text-white/50">{article.ai_confidence}%</span>
           </div>
         )}
@@ -110,7 +110,7 @@ function DefaultCard({ article }) {
         <div className="flex items-center gap-2 mb-2.5">
           <div className="flex items-center gap-1.5">
             <CategoryDot category={article.category} />
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/30">{cat}</span>
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/55">{cat}</span>
           </div>
           {SentimentIcon && (
             <span className={`flex items-center gap-0.5 font-mono text-[9px] ${sentiment.color}`}>
@@ -131,12 +131,12 @@ function DefaultCard({ article }) {
 
         {/* Summary */}
         {article.summary && (
-          <p className="font-sans text-[12px] text-white/35 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
+          <p className="font-sans text-[12px] text-white/60 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
         )}
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-white/6 mt-auto">
-          <span className="font-mono text-[10px] text-white/25 tabular-nums">{ago}</span>
+          <span className="font-mono text-[10px] text-white/50 tabular-nums">{ago}</span>
           {article.source && (
             <span className="font-mono text-[10px] text-white/20 truncate max-w-[100px]">{article.source}</span>
           )}

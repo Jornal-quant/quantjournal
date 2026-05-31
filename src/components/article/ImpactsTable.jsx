@@ -72,14 +72,14 @@ export default function ImpactsTable({ impacts }) {
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-base">{asset.emoji}</span>
-                <span className="text-xs font-bold uppercase tracking-wide text-foreground/70">{asset.key}</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-foreground/85">{asset.key}</span>
               </div>
               <div className={`flex items-center gap-1 text-xs font-semibold ${s.textCls}`}>
                 <Icon className="w-3.5 h-3.5" />
                 {s.label}
               </div>
             </div>
-            <p className="text-sm text-foreground/80 leading-relaxed">{value}</p>
+            <p className="text-sm text-foreground/90 leading-relaxed">{value}</p>
           </div>
         );
       })}
