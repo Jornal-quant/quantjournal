@@ -31,6 +31,7 @@ export default async function handler(req, res) {
         messages: [{ role: 'user', content: prompt }],
         response_format: schema ? { type: 'json_object' } : undefined,
         temperature: 0.3,
+        max_tokens: schema ? 5000 : 3000,
       }),
     });
 

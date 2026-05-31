@@ -120,6 +120,7 @@ async function invokeDeepSeek(prompt, schema = true, quality = false) {
       messages: [{ role: 'user', content: prompt }],
       response_format: schema ? { type: 'json_object' } : undefined,
       temperature: 0.25,
+      max_tokens: schema ? 5000 : 3000,
     }),
   });
 

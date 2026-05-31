@@ -240,7 +240,7 @@ export function buildArticlePrompt(rawItem = {}) {
   return `Você é editor-chefe de um portal financeiro profissional. Escreva em português brasileiro, com precisão jornalística e foco no investidor.
 
 REGRAS:
-- Gere uma matéria longa, densa e útil, com 900 a 1.400 palavras no total.
+- Gere uma matéria longa, densa e útil. O mínimo absoluto de 900 palavras deve ser respeitado; o alvo ideal é 1.200 a 1.600 palavras no total.
 - Nunca inclua URLs brutas no corpo do texto.
 - Cite fontes de forma natural, como "segundo a Reuters" ou "conforme o Banco Central".
 - Separe fatos de interpretação.

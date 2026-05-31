@@ -100,7 +100,8 @@ test('toArticleRow scales fractional AI confidence and auto-publishes strong art
 test('buildArticlePrompt asks DeepSeek for long investor-grade articles', () => {
   const prompt = buildArticlePrompt({ raw_title: 'Fed mantém juros', source_name: 'Reuters' });
 
-  assert.match(prompt, /900 a 1\.400 palavras/);
+  assert.match(prompt, /mínimo absoluto de 900 palavras/);
+  assert.match(prompt, /alvo ideal é 1\.200 a 1\.600 palavras/);
   assert.match(prompt, /what_happened: 4 a 6 parágrafos/);
   assert.match(prompt, /why_it_matters: 3 a 5 parágrafos/);
   assert.match(prompt, /conclusion: 2 a 3 parágrafos/);
