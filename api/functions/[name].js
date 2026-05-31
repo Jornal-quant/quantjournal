@@ -613,28 +613,115 @@ const BRAPI_MAP = {
   IBOV: { brapi: '^BVSP', name: 'Ibovespa', market_type: 'index' },
 };
 
+// Ações da B3 acompanhadas (aparecem no ticker e dão preço às páginas de ativo).
+const B3_STOCKS = [
+  { ticker: 'PETR4', name: 'Petrobras' },
+  { ticker: 'VALE3', name: 'Vale' },
+  { ticker: 'ITUB4', name: 'Itaú Unibanco' },
+  { ticker: 'BBDC4', name: 'Bradesco' },
+  { ticker: 'B3SA3', name: 'B3' },
+  { ticker: 'ABEV3', name: 'Ambev' },
+  { ticker: 'WEGE3', name: 'WEG' },
+  { ticker: 'BBAS3', name: 'Banco do Brasil' },
+  { ticker: 'MGLU3', name: 'Magazine Luiza' },
+  { ticker: 'ITSA4', name: 'Itaúsa' },
+];
+
 async function fetchBrapiQuotes() {
   const token = process.env.BRAPI_TOKEN;
   if (!token) return [];
-  const entries = Object.entries(BRAPI_MAP);
-  const tickers = entries.map(([, meta]) => meta.brapi).join(',');
-  const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(tickers)}?token=${token}`);
+  const indexEntries = Object.entries(BRAPI_MAP);
+  const allTickers = [
+    ...indexEntries.map(([, meta]) => meta.brapi),
+    ...B3_STOCKS.map((s) => s.ticker),
+  ].join(',');
+  const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(allTickers)}?token=${token}`);
   const results = data?.results || [];
+  const find = (sym) => results.find((r) => r.symbol === sym);
 
   const quotes = [];
-  for (const [symbol, meta] of entries) {
-    const result = results.find((r) => r.symbol === meta.brapi);
+  for (const [symbol, meta] of indexEntries) {
+    const result = find(meta.brapi);
     const price = Number(result?.regularMarketPrice);
-    if (!Number.isFinite(price)) continue;
-    quotes.push({
-      symbol,
-      name: meta.name,
-      price,
-      change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
-      market_type: meta.market_type,
-    });
+    if (Number.isFinite(price)) {
+      quotes.push({
+        symbol,
+        name: meta.name,
+        price,
+        change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
+        market_type: meta.market_type,
+      });
+    }
+  }
+  for (const stock of B3_STOCKS) {
+    const result = find(stock.ticker);
+    const price = Number(result?.regularMarketPrice);
+    if (Number.isFinite(price) && price > 0) {
+      quotes.push({
+        symbol: stock.ticker,
+        name: stock.name,
+        price,
+        change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
+        market_type: 'stock',
+      });
+    }
   }
   return quotes;
+}
+
+// Histórico de preços para o gráfico da página de ativo. B3/Ibovespa via Brapi,
+// global (cripto/índices/commodities/câmbio) via Twelve Data.
+const TD_HISTORY_SYMBOL = {
+  BTC: 'BTC/USD', ETH: 'ETH/USD', SPX: 'SPX', GOLD: 'XAU/USD', OIL: 'WTI/USD',
+  'USD/BRL': 'USD/BRL', 'EUR/BRL': 'EUR/BRL',
+};
+const RANGE_DAYS = { '1mo': 30, '3mo': 90, '1y': 365 };
+
+async function fetchBrapiHistory(ticker, range) {
+  const token = process.env.BRAPI_TOKEN;
+  if (!token) return [];
+  const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(ticker)}?range=${range}&interval=1d&token=${token}`);
+  const hist = data?.results?.[0]?.historicalDataPrice || [];
+  return hist
+    .filter((p) => p.date && Number.isFinite(Number(p.close)))
+    .map((p) => ({ date: new Date(p.date * 1000).toISOString().slice(0, 10), close: +Number(p.close).toFixed(2) }));
+}
+
+async function fetchTwelveHistory(tdSymbol, days) {
+  const token = process.env.TWELVEDATA_API_KEY;
+  if (!token) return [];
+  const data = await fetchJson(`https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(tdSymbol)}&interval=1day&outputsize=${days}&apikey=${token}`);
+  return (data?.values || [])
+    .filter((v) => Number.isFinite(Number(v.close)))
+    .map((v) => ({ date: v.datetime, close: +Number(v.close).toFixed(2) }))
+    .reverse();
+}
+
+async function handleAssetHistory(sql, body) {
+  const ticker = String(body.ticker || '').trim().toUpperCase();
+  if (!ticker) throw new Error('ticker is required');
+  const range = ['1mo', '3mo', '1y'].includes(body.range) ? body.range : '3mo';
+
+  const isB3 = ticker === 'IBOV' || /^[A-Z]{4}\d{1,2}$/.test(ticker);
+  const brapiTicker = ticker === 'IBOV' ? '^BVSP' : ticker;
+  let series = [];
+  let source = null;
+
+  if (isB3) {
+    try { series = await fetchBrapiHistory(brapiTicker, range); if (series.length) source = 'brapi'; } catch { /* segue */ }
+  }
+  if (!series.length && TD_HISTORY_SYMBOL[ticker]) {
+    try { series = await fetchTwelveHistory(TD_HISTORY_SYMBOL[ticker], RANGE_DAYS[range]); if (series.length) source = 'twelvedata'; } catch { /* segue */ }
+  }
+  // Ações dos EUA / outros tickers alfabéticos -> Twelve Data com o próprio símbolo.
+  if (!series.length && /^[A-Z]{1,5}$/.test(ticker)) {
+    try { series = await fetchTwelveHistory(ticker, RANGE_DAYS[range]); if (series.length) source = 'twelvedata'; } catch { /* segue */ }
+  }
+  if (!series.length && !isB3) {
+    try { series = await fetchBrapiHistory(brapiTicker, range); if (series.length) source = 'brapi'; } catch { /* segue */ }
+  }
+
+  return { success: true, ticker, range, source, series };
 }
 
 async function handleUpdateMarketSnapshots(sql) {
@@ -783,6 +870,7 @@ const handlers = {
   backfillNews: handleBackfillNews,
   backfillImages: handleBackfillImages,
   updateMarketSnapshots: handleUpdateMarketSnapshots,
+  assetHistory: handleAssetHistory,
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
   autoPublishNews: handleAutoPublishNews,

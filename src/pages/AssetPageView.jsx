@@ -4,8 +4,26 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, MessageSquare } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatMarketPrice, formatChangePercent } from '@/lib/utils';
 import ArticleCard from '../components/news/ArticleCard';
+
+// Resolve o ticker a partir do slug (mesmo sem registro de AssetPage no banco),
+// pra casar a cotação e buscar o histórico do gráfico.
+const SLUG_TO_TICKER = {
+  petrobras: 'PETR4', vale: 'VALE3', itau: 'ITUB4', bradesco: 'BBDC4', b3: 'B3SA3',
+  wege: 'WEGE3', 'magazine-luiza': 'MGLU3', 'banco-do-brasil': 'BBAS3', itausa: 'ITSA4',
+  ambev: 'ABEV3', nubank: 'NUBR33', inter: 'INBR32',
+  nvidia: 'NVDA', apple: 'AAPL', amazon: 'AMZN',
+  ibovespa: 'IBOV', sp500: 'SPX', dolar: 'USD/BRL', euro: 'EUR/BRL',
+  bitcoin: 'BTC', ethereum: 'ETH', petroleo: 'OIL', ouro: 'GOLD',
+};
+
+const RANGES = [
+  { key: '1mo', label: '1M' },
+  { key: '3mo', label: '3M' },
+  { key: '1y', label: '1A' },
+];
 
 const OTHER_ASSETS = [
   { slug: 'petrobras', name: 'Petrobras', ticker: 'PETR4' },
@@ -68,6 +86,78 @@ function AISummaryPanel({ summary, name }) {
   );
 }
 
+function PriceChart({ ticker }) {
+  const [range, setRange] = useState('3mo');
+  const { data, isLoading } = useQuery({
+    queryKey: ['asset-history', ticker, range],
+    queryFn: () => base44.functions.invoke('assetHistory', { ticker, range }),
+    enabled: !!ticker,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+  const series = data?.data?.series || [];
+  const hasData = series.length > 1;
+  const first = series[0]?.close;
+  const last = series[series.length - 1]?.close;
+  const up = hasData && last >= first;
+  const color = up ? '#34D399' : '#F87171';
+  const variation = hasData && first ? ((last - first) / first) * 100 : null;
+
+  const fmtPrice = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: Number(v) >= 1000 ? 0 : 2 });
+  const fmtDate = (d) => { const p = String(d).slice(0, 10).split('-'); return `${p[2]}/${p[1]}`; };
+
+  return (
+    <div className="border border-ds-border rounded-lg overflow-hidden mb-6 bg-ds-surface">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-ds-border bg-ds-surface2">
+        <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Histórico de preço · {ticker}</h3>
+        <div className="flex gap-1">
+          {RANGES.map((r) => (
+            <button key={r.key} onClick={() => setRange(r.key)}
+              className={`font-mono text-[10px] font-semibold px-2 py-1 rounded transition-colors ${range === r.key ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="p-4">
+        {isLoading ? (
+          <Skeleton className="h-56 w-full rounded" />
+        ) : hasData ? (
+          <>
+            {variation != null && (
+              <p className={`font-mono text-[11px] font-semibold mb-2 ${up ? 'text-ds-up' : 'text-ds-dn'}`}>
+                {up ? '+' : ''}{variation.toFixed(2)}% no período
+              </p>
+            )}
+            <ResponsiveContainer width="100%" height={224}>
+              <AreaChart data={series} margin={{ top: 5, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tickFormatter={fmtDate} minTickGap={40} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.45)' }} axisLine={false} tickLine={false} />
+                <YAxis domain={['auto', 'auto']} width={48} tickFormatter={fmtPrice} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.45)' }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: '#111110', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: 'rgba(255,255,255,0.6)' }}
+                  labelFormatter={(d) => String(d).slice(0, 10).split('-').reverse().join('/')}
+                  formatter={(v) => [fmtPrice(v), 'Fechamento']} />
+                <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill="url(#priceGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </>
+        ) : (
+          <div className="h-56 flex items-center justify-center text-center">
+            <p className="font-mono text-xs text-muted-foreground">Sem histórico disponível para {ticker}.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AssetPageView() {
   const { slug } = useParams();
   const [aiSummary, setAiSummary] = useState(null);
@@ -105,8 +195,11 @@ export default function AssetPageView() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const resolvedTicker = (asset?.ticker || SLUG_TO_TICKER[slug] || slug).toUpperCase();
+
   const snapshot = snapshots.find((s) =>
-    s.symbol?.toLowerCase() === (asset?.ticker?.toLowerCase() || slug) ||
+    s.symbol?.toUpperCase() === resolvedTicker ||
+    s.symbol?.toLowerCase() === slug ||
     s.name?.toLowerCase().includes(slug)
   );
 
@@ -200,6 +293,8 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
           </div>
         </div>
       </div>
+
+      <PriceChart ticker={resolvedTicker} />
 
       <AISummaryPanel summary={aiSummary} name={displayName} />
 
