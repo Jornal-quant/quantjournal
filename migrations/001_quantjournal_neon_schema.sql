@@ -12,6 +12,7 @@ $$;
 
 create table if not exists qj_articles (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   title text not null,
@@ -51,6 +52,7 @@ create table if not exists qj_articles (
 
 create table if not exists qj_raw_news_feed (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   source_url text,
@@ -64,6 +66,7 @@ create table if not exists qj_raw_news_feed (
   published_at timestamptz,
   processed boolean not null default false,
   article_id uuid references qj_articles(id) on delete set null,
+  legacy_article_id text,
   category_hint text,
   relevance_score numeric,
   status text not null default 'pending' check (status in ('pending', 'processing', 'processed', 'duplicate', 'failed', 'rejected')),
@@ -72,6 +75,7 @@ create table if not exists qj_raw_news_feed (
 
 create table if not exists qj_news_sources (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   name text not null,
@@ -87,6 +91,7 @@ create table if not exists qj_news_sources (
 
 create table if not exists qj_market_snapshots (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   symbol text not null unique,
@@ -99,6 +104,7 @@ create table if not exists qj_market_snapshots (
 
 create table if not exists qj_newsletter_subscribers (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   email text not null unique,
@@ -110,6 +116,7 @@ create table if not exists qj_newsletter_subscribers (
 
 create table if not exists qj_system_logs (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   action text not null,
@@ -120,6 +127,7 @@ create table if not exists qj_system_logs (
 
 create table if not exists qj_asset_pages (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   slug text not null unique,
@@ -136,6 +144,7 @@ create table if not exists qj_asset_pages (
 
 create table if not exists qj_chat_conversations (
   id uuid primary key default gen_random_uuid(),
+  legacy_id text unique,
   created_date timestamptz not null default now(),
   updated_date timestamptz not null default now(),
   session_id text not null unique,
@@ -149,6 +158,16 @@ create index if not exists qj_articles_featured_idx on qj_articles(is_featured, 
 create index if not exists qj_raw_status_created_idx on qj_raw_news_feed(status, created_date desc);
 create unique index if not exists qj_raw_content_hash_idx on qj_raw_news_feed(content_hash) where content_hash is not null;
 create unique index if not exists qj_raw_external_id_idx on qj_raw_news_feed(external_id) where external_id is not null;
+
+alter table qj_articles add column if not exists legacy_id text unique;
+alter table qj_raw_news_feed add column if not exists legacy_id text unique;
+alter table qj_raw_news_feed add column if not exists legacy_article_id text;
+alter table qj_news_sources add column if not exists legacy_id text unique;
+alter table qj_market_snapshots add column if not exists legacy_id text unique;
+alter table qj_newsletter_subscribers add column if not exists legacy_id text unique;
+alter table qj_system_logs add column if not exists legacy_id text unique;
+alter table qj_asset_pages add column if not exists legacy_id text unique;
+alter table qj_chat_conversations add column if not exists legacy_id text unique;
 
 drop trigger if exists qj_articles_touch_updated_at on qj_articles;
 create trigger qj_articles_touch_updated_at before update on qj_articles for each row execute function qj_touch_updated_at();

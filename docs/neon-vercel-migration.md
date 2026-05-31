@@ -43,12 +43,52 @@ This branch prepares QuantJournal to run outside Base44 while keeping the curren
 2. Port Base44 data export/import scripts.
 3. Deploy current frontend to Vercel with `VITE_DATA_BACKEND=base44` as a smoke test.
 4. Configure `DATABASE_URL` and switch Vercel to `VITE_DATA_BACKEND=neon`.
-5. Port `updateMarketSnapshots`.
-6. Port `processRawNews`.
-7. Port `collectLatestNews`.
-8. Port `backfillNews`.
-9. Port `sendDailyNewsletter`.
+5. Port `updateMarketSnapshots`. Done in `api/functions/[name].js`.
+6. Port `processRawNews`. Done in `api/functions/[name].js`.
+7. Port `collectLatestNews`. Done in `api/functions/[name].js`.
+8. Port `backfillNews`. Done in `api/functions/[name].js`.
+9. Port `sendDailyNewsletter`. Done in `api/functions/[name].js`, requires `RESEND_API_KEY`.
 10. Add real admin authentication.
+
+## Current Neon Runtime Status
+
+Implemented:
+
+- Generic entity CRUD for the current frontend entity API shape.
+- DeepSeek invocation route.
+- `updateMarketSnapshots`.
+- `collectLatestNews` and `collectNewsSources`.
+- `processRawNews`.
+- `backfillNews`.
+- `sendDailyNewsletter`.
+- `ingestNews`.
+- `autoPublishNews`.
+
+Verified against Neon:
+
+- `updateMarketSnapshots` created 9 market snapshots.
+- `collectLatestNews` collected 115 raw RSS items with `auto_process: false`.
+
+Still pending:
+
+- Running `npm run base44:export` with Base44 credentials to export production data into ignored `exports/*.json`.
+- Running `npm run neon:import` with `DATABASE_URL` to import exported data into Neon.
+- Replacing the temporary migration admin bypass with real authentication.
+- Setting Vercel environment variables and deploying the Neon runtime.
+
+## Data Migration Commands
+
+Export from Base44:
+
+```bash
+BASE44_APP_ID=... BASE44_ACCESS_TOKEN=... BASE44_APP_BASE_URL=... npm run base44:export
+```
+
+Import into Neon:
+
+```bash
+DATABASE_URL='postgresql://...' npm run neon:import
+```
 
 ## Required Vercel Variables
 
