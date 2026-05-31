@@ -7,6 +7,7 @@ import { ArrowLeft, Sparkles, Loader2, TrendingUp, TrendingDown, Minus, MessageS
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatMarketPrice, formatChangePercent } from '@/lib/utils';
 import ArticleCard from '../components/news/ArticleCard';
+import AssetLogo from '../components/AssetLogo';
 
 // Resolve o ticker a partir do slug (mesmo sem registro de AssetPage no banco),
 // pra casar a cotação e buscar o histórico do gráfico.
@@ -255,11 +256,7 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
       <div className="border border-ds-border rounded-lg p-6 mb-6 bg-ds-surface">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-foreground rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="font-mono text-sm font-semibold text-white/50">
-                {displayTicker?.slice(0, 3) || displayName.slice(0, 2).toUpperCase()}
-              </span>
-            </div>
+            <AssetLogo ticker={resolvedTicker} name={displayName} type={asset?.type} size={56} />
             <div>
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <h1 className="font-mono text-xl font-semibold">{displayName}</h1>
