@@ -45,18 +45,22 @@ const MARKET_SANITY = {
 
 // true se o snapshot tem preço plausível. Símbolos desconhecidos passam.
 export function isSaneSnapshot(s) {
-  if (!s || s.price == null || !Number.isFinite(s.price)) return false;
-  if (s.change_percent != null && Math.abs(s.change_percent) > 80) return false;
+  if (!s) return false;
+  // A API (Neon) serializa colunas numéricas como string; coage antes de validar.
+  const price = Number(s.price);
+  if (!Number.isFinite(price)) return false;
+  const change = Number(s.change_percent);
+  if (Number.isFinite(change) && Math.abs(change) > 80) return false;
   const range = MARKET_SANITY[s.symbol];
-  if (range && (s.price < range[0] || s.price > range[1])) return false;
+  if (range && (price < range[0] || price > range[1])) return false;
   return true;
 }
 
 // Formatação única e consistente (pt-BR) para preços de mercado.
 // Substitui as três implementações divergentes (Ticker/Radar/Sidebar).
 export function formatMarketPrice(s) {
-  if (!s || s.price == null || !Number.isFinite(s.price)) return "—";
-  const p = s.price;
+  const p = Number(s?.price);
+  if (!Number.isFinite(p)) return "—";
   const dec2 = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
   switch (s.market_type) {
     case "rate":
@@ -76,7 +80,8 @@ export function formatMarketPrice(s) {
 
 // "+1,92%" / "-1,10%" / "—" com vírgula decimal pt-BR.
 export function formatChangePercent(cp) {
-  if (cp == null || !Number.isFinite(cp)) return "—";
-  const sign = cp > 0 ? "+" : "";
-  return `${sign}${cp.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  const n = Number(cp);
+  if (!Number.isFinite(n)) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }

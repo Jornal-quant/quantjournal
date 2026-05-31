@@ -49,8 +49,10 @@ export default function AdminMarketTab() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {snapshots.map((s) => {
-            const up = s.change_percent > 0;
-            const neutral = s.change_percent === 0;
+            const price = Number(s.price);
+            const change = Number(s.change_percent);
+            const up = change > 0;
+            const neutral = change === 0;
             return (
               <div key={s.id} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-start justify-between mb-2">
@@ -62,9 +64,9 @@ export default function AdminMarketTab() {
                     : up ? <TrendingUp className="w-5 h-5 text-chart-2" />
                     : <TrendingDown className="w-5 h-5 text-destructive" />}
                 </div>
-                <p className="text-2xl font-bold">{s.price?.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</p>
+                <p className="text-2xl font-bold">{Number.isFinite(price) ? price.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '—'}</p>
                 <p className={`text-sm font-medium ${neutral ? 'text-muted-foreground' : up ? 'text-chart-2' : 'text-destructive'}`}>
-                  {s.change_percent > 0 ? '+' : ''}{s.change_percent?.toFixed(2)}%
+                  {Number.isFinite(change) ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : '—'}
                 </p>
                 {s.updated_at && (
                   <p className="text-[10px] text-muted-foreground mt-1">
