@@ -296,15 +296,34 @@ async function processRawNewsItem(sql, rawItem) {
 }
 
 async function handleProcessRawNews(sql, body) {
-  const rawItems = body.raw_id
-    ? await sql.query(`select * from qj_raw_news_feed where id = $1 limit 1`, [body.raw_id])
-    : await sql.query(`select * from qj_raw_news_feed where status = 'pending' order by created_date desc limit 1`);
+  if (body.raw_id) {
+    const rows = await sql.query(`select * from qj_raw_news_feed where id = $1 limit 1`, [body.raw_id]);
+    if (rows.length === 0) return { success: true, message: 'Item não encontrado', processed: 0 };
+    return { success: true, ...(await processRawNewsItem(sql, normalizeRow(rows[0]))) };
+  }
 
-  if (rawItems.length === 0) {
+  // Pega os pendentes mais recentes e processa o primeiro relevante, marcando
+  // os irrelevantes (loteria etc.) como 'skipped' para não gastar IA com eles.
+  const pending = await sql.query(
+    `select * from qj_raw_news_feed where status = 'pending' order by created_date desc limit 25`,
+  );
+
+  if (pending.length === 0) {
     return { success: true, message: 'Nenhum item pendente', processed: 0 };
   }
 
-  return { success: true, ...(await processRawNewsItem(sql, normalizeRow(rawItems[0]))) };
+  let skipped = 0;
+  for (const row of pending) {
+    const item = normalizeRow(row);
+    if (!isMarketRelevant({ title: item.raw_title, description: item.raw_content })) {
+      await updateRow(sql, 'qj_raw_news_feed', item.id, { status: 'skipped', processed: false }).catch(() => {});
+      skipped += 1;
+      continue;
+    }
+    return { success: true, skipped, ...(await processRawNewsItem(sql, item)) };
+  }
+
+  return { success: true, skipped, processed: 0, message: 'Somente itens irrelevantes na fila' };
 }
 
 async function handleCollectLatestNews(sql, body) {
