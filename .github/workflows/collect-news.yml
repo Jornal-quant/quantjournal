@@ -1,11 +1,17 @@
 name: Coleta de notícias e cotações
 
-# Plano Hobby da Vercel limita cron a 1x/dia, então a frequência real vem daqui.
-# As funções aceitam GET (ver api/functions/[name].js), então basta um curl.
+# Plano Hobby da Vercel limita cron a 1x/dia e funções a 60s, então a frequência
+# real e o processamento vêm daqui. As funções aceitam GET/POST (ver
+# api/functions/[name].js).
 #
-# Custo: cada chamada de collectLatestNews gera até AUTO_PROCESS_LIMIT artigos
-# via DeepSeek (padrão 3). A cada 30min = ~144 artigos/dia. Ajuste a env
-# AUTO_PROCESS_LIMIT no projeto da Vercel para controlar o custo.
+# Estratégia (evita o timeout de 60s):
+#   1. collectLatestNews com auto_process=false  -> só coleta os feeds (rápido).
+#   2. processRawNews chamado N vezes             -> gera 1 artigo por chamada,
+#      cada uma no seu próprio orçamento de 60s.
+#   3. updateMarketSnapshots                      -> atualiza cotações (sem IA).
+#
+# Ajuste PROCESS_BATCH para gerar mais/menos artigos por execução (cada um
+# consome créditos do DeepSeek).
 #
 # Observações do GitHub Actions:
 # - schedules podem atrasar alguns minutos em horários de pico.
@@ -16,7 +22,6 @@ on:
     - cron: '*/30 * * * *' # a cada 30 minutos (UTC)
   workflow_dispatch: {}     # permite disparo manual pela aba Actions
 
-# Evita execuções sobrepostas se uma demorar.
 concurrency:
   group: collect-news
   cancel-in-progress: false
@@ -28,17 +33,35 @@ jobs:
       # Sobrescreva criando a variável de repositório SITE_URL (Settings →
       # Secrets and variables → Actions → Variables) se o domínio mudar.
       SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
+      PROCESS_BATCH: '4' # quantos artigos gerar por execução
     steps:
-      - name: Coletar últimas notícias
+      - name: Coletar feeds (sem IA)
         run: |
           curl --fail --show-error --silent --location \
-            --retry 2 --max-time 60 \
+            --retry 2 --max-time 70 \
+            -X POST -H 'Content-Type: application/json' \
+            -d '{"auto_process":false}' \
             "$SITE_URL/api/functions/collectLatestNews" | head -c 2000
           echo
+
+      - name: Gerar artigos da fila (1 por chamada)
+        run: |
+          for i in $(seq 1 "$PROCESS_BATCH"); do
+            echo "--- processRawNews $i/$PROCESS_BATCH ---"
+            # Não falha o job se uma geração específica der erro/timeout;
+            # a fila continua e a próxima execução pega o resto.
+            curl --show-error --silent --location \
+              --max-time 80 \
+              -X POST -H 'Content-Type: application/json' -d '{}' \
+              "$SITE_URL/api/functions/processRawNews" | head -c 1000 || true
+            echo
+            sleep 2
+          done
 
       - name: Atualizar cotações de mercado
         run: |
           curl --fail --show-error --silent --location \
-            --retry 2 --max-time 60 \
+            --retry 2 --max-time 70 \
+            -X POST -H 'Content-Type: application/json' -d '{}' \
             "$SITE_URL/api/functions/updateMarketSnapshots" | head -c 2000
           echo
