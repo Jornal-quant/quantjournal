@@ -670,42 +670,45 @@ const B3_STOCKS = [
 async function fetchBrapiQuotes() {
   const token = process.env.BRAPI_TOKEN;
   if (!token) return [];
-  const indexEntries = Object.entries(BRAPI_MAP);
-  const allTickers = [
-    ...indexEntries.map(([, meta]) => meta.brapi),
-    ...B3_STOCKS.map((s) => s.ticker),
-  ].join(',');
-  const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(allTickers)}?token=${token}`);
-  const results = data?.results || [];
-  const find = (sym) => results.find((r) => r.symbol === sym);
-
   const quotes = [];
-  for (const [symbol, meta] of indexEntries) {
-    const result = find(meta.brapi);
-    const price = Number(result?.regularMarketPrice);
-    if (Number.isFinite(price)) {
-      quotes.push({
-        symbol,
-        name: meta.name,
-        price,
-        change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
-        market_type: meta.market_type,
-      });
-    }
+
+  // Índice: requisição individual (multi-ticker não é suportado no plano free).
+  for (const [symbol, meta] of Object.entries(BRAPI_MAP)) {
+    try {
+      const data = await fetchJson(`https://brapi.dev/api/quote/${encodeURIComponent(meta.brapi)}?token=${token}`);
+      const result = data?.results?.[0];
+      const price = Number(result?.regularMarketPrice);
+      if (Number.isFinite(price)) {
+        quotes.push({
+          symbol,
+          name: meta.name,
+          price,
+          change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
+          market_type: meta.market_type,
+        });
+      }
+    } catch { /* Yahoo cobre o Ibovespa no fallback */ }
   }
-  for (const stock of B3_STOCKS) {
-    const result = find(stock.ticker);
-    const price = Number(result?.regularMarketPrice);
-    if (Number.isFinite(price) && price > 0) {
+
+  // Ações: quote/list traz todas numa requisição só; filtramos a watchlist.
+  try {
+    const data = await fetchJson(`https://brapi.dev/api/quote/list?token=${token}`);
+    const list = data?.stocks || [];
+    const want = new Map(B3_STOCKS.map((s) => [s.ticker, s.name]));
+    for (const item of list) {
+      if (!want.has(item.stock)) continue;
+      const price = Number(item.close);
+      if (!Number.isFinite(price) || price <= 0) continue;
       quotes.push({
-        symbol: stock.ticker,
-        name: stock.name,
+        symbol: item.stock,
+        name: want.get(item.stock),
         price,
-        change_percent: +(Number(result.regularMarketChangePercent) || 0).toFixed(2),
+        change_percent: +(Number(item.change) || 0).toFixed(2),
         market_type: 'stock',
       });
     }
-  }
+  } catch { /* sem ações se o list falhar */ }
+
   return quotes;
 }
 
