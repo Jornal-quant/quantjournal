@@ -516,14 +516,61 @@ async function fetchYahooQuotes() {
   return quotes;
 }
 
+// Twelve Data: fonte única e estável para cotações globais (forex, cripto,
+// índices, commodities). Opcional — só roda com TWELVEDATA_API_KEY. Símbolos
+// que a TD não cobrir simplesmente não retornam, e as fontes legadas preenchem.
+const TWELVEDATA_MAP = {
+  'USD/BRL': { td: 'USD/BRL', name: 'Dólar', market_type: 'fx' },
+  'EUR/BRL': { td: 'EUR/BRL', name: 'Euro', market_type: 'fx' },
+  BTC: { td: 'BTC/USD', name: 'Bitcoin', market_type: 'crypto' },
+  ETH: { td: 'ETH/USD', name: 'Ethereum', market_type: 'crypto' },
+  SPX: { td: 'SPX', name: 'S&P 500', market_type: 'index' },
+  GOLD: { td: 'XAU/USD', name: 'Ouro', market_type: 'commodity' },
+  OIL: { td: 'WTI/USD', name: 'Petróleo WTI', market_type: 'commodity' },
+};
+
+async function fetchTwelveDataQuotes() {
+  const token = process.env.TWELVEDATA_API_KEY;
+  if (!token) return [];
+  const entries = Object.entries(TWELVEDATA_MAP);
+  const symbols = entries.map(([, meta]) => meta.td).join(',');
+  const data = await fetchJson(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbols)}&apikey=${token}`);
+
+  const quotes = [];
+  for (const [symbol, meta] of entries) {
+    const quote = data?.[meta.td] ?? (data?.symbol === meta.td ? data : null);
+    if (!quote || quote.status === 'error' || quote.code) continue;
+    const price = Number(quote.close ?? quote.price);
+    if (!Number.isFinite(price)) continue;
+    quotes.push({
+      symbol,
+      name: meta.name,
+      price,
+      change_percent: +(Number(quote.percent_change) || 0).toFixed(2),
+      market_type: meta.market_type,
+    });
+  }
+  return quotes;
+}
+
 async function handleUpdateMarketSnapshots(sql) {
   const results = await Promise.allSettled([
     fetchFxQuotes(),
     fetchCryptoQuotes(),
     fetchSelicQuote(),
     fetchYahooQuotes(),
+    fetchTwelveDataQuotes(),
   ]);
-  const quotes = results.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  const legacy = results.slice(0, 4).flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
+  const twelve = results[4].status === 'fulfilled' ? results[4].value : [];
+
+  // Twelve Data tem precedência sobre as fontes legadas para o mesmo símbolo;
+  // as legadas cobrem o que a TD não trouxe (SELIC, Ibovespa, etc.).
+  const bySymbol = new Map();
+  for (const quote of legacy) bySymbol.set(quote.symbol, quote);
+  for (const quote of twelve) bySymbol.set(quote.symbol, quote);
+  const quotes = [...bySymbol.values()];
+
   const saneQuotes = quotes.filter((quote) => isSaneQuote(quote.symbol, Number(quote.price)));
 
   let created = 0;
