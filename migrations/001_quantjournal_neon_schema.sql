@@ -152,6 +152,12 @@ create table if not exists qj_chat_conversations (
   total_messages integer not null default 0
 );
 
+create table if not exists qj_app_state (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists qj_articles_status_created_idx on qj_articles(status, created_date desc);
 create index if not exists qj_articles_category_created_idx on qj_articles(category, created_date desc);
 create index if not exists qj_articles_featured_idx on qj_articles(is_featured, created_date desc);

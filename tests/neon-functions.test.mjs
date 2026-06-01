@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 
 import {
   articleWordCount,
@@ -146,4 +147,10 @@ test('buildArticleExpansionPrompt requires a magazine-length rewrite', () => {
   assert.match(prompt, /reescrever e expandir/);
   assert.match(prompt, /mínimo obrigatório de 1\.400 palavras/);
   assert.match(prompt, /não resuma/);
+});
+
+test('schema creates app state table used by daily summary', async () => {
+  const migration = await readFile(new URL('../migrations/001_quantjournal_neon_schema.sql', import.meta.url), 'utf8');
+
+  assert.match(migration, /create table if not exists qj_app_state/i);
 });

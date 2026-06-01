@@ -124,6 +124,10 @@ async function logSystem(sql, action, details, logType = 'info', source = 'verce
   }).catch(() => {});
 }
 
+async function ensureAppStateTable(sql) {
+  await sql.query(`create table if not exists qj_app_state (key text primary key, value jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now())`);
+}
+
 async function fetchJson(url, headers = {}) {
   const response = await fetch(url, {
     headers,
@@ -839,6 +843,7 @@ async function handleEnsureSchema(sql) {
 // Gera o "Resumo IA do dia" no servidor (cron) e guarda em qj_app_state — assim
 // não roda no navegador de cada visitante (caro/lento).
 async function handleGenerateDailySummary(sql) {
+  await ensureAppStateTable(sql);
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY é necessária.');
   const arts = await sql.query(`select title, tickers from qj_articles where status = 'publicado' order by created_date desc limit 10`);
   if (arts.length < 3) return { success: true, skipped: true, message: 'Poucas matérias para resumir.' };
@@ -871,6 +876,7 @@ Seja assertivo e concreto. Sem URLs. Retorne JSON com: bullets (array de 3 strin
 
 // Leitura pública (sem IA): o front lê o resumo já gerado.
 async function handleGetDailySummary(sql) {
+  await ensureAppStateTable(sql);
   const rows = await sql.query(`select value from qj_app_state where key = 'daily_summary' limit 1`);
   let value = rows[0]?.value || null;
   if (typeof value === 'string') { try { value = JSON.parse(value); } catch { value = null; } }

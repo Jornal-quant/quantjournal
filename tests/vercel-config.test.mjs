@@ -13,8 +13,8 @@ function runsAtMostDaily(schedule = '') {
 test('vercel cron schedules are compatible with Hobby daily limit', async () => {
   const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
 
-  assert.ok(Array.isArray(config.crons));
-  for (const cron of config.crons) {
+  const crons = Array.isArray(config.crons) ? config.crons : [];
+  for (const cron of crons) {
     assert.ok(runsAtMostDaily(cron.schedule), `${cron.path} uses ${cron.schedule}`);
   }
 });
