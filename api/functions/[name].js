@@ -1097,6 +1097,42 @@ const handlers = {
   getDailySummary: handleGetDailySummary,
 };
 
+// Limite de chamadas por hora (anti-abuso/custo) para as funções do cron, que
+// rodam sem token. Usa qj_app_state como contador. Fail-open: se falhar, libera.
+async function withinRateLimit(sql, name, maxPerHour) {
+  try {
+    const key = `rl:${name}`;
+    const rows = await sql.query(`select value from qj_app_state where key = $1 limit 1`, [key]);
+    let v = rows[0]?.value;
+    if (typeof v === 'string') { try { v = JSON.parse(v); } catch { v = null; } }
+    const now = Date.now();
+    let count = Number(v?.count) || 0;
+    let windowStart = Number(v?.windowStart) || now;
+    if (now - windowStart > 3_600_000) { count = 0; windowStart = now; }
+    count += 1;
+    await sql.query(
+      `insert into qj_app_state (key, value, updated_at) values ($1, $2, now())
+       on conflict (key) do update set value = $2, updated_at = now()`,
+      [key, JSON.stringify({ count, windowStart })],
+    );
+    return count <= maxPerHour;
+  } catch {
+    return true;
+  }
+}
+
+// Funções acionadas pelo cron/GitHub Actions: rodam SEM token (sem precisar de
+// secret no GitHub), mas limitadas por hora. Escrita de dados, login e funções
+// manuais do admin continuam exigindo token.
+const CRON_FUNCTIONS = {
+  collectLatestNews: 8,
+  collectNewsSources: 8,
+  processRawNews: 30,
+  updateMarketSnapshots: 20,
+  pickHeadline: 10,
+  generateDailySummary: 6,
+};
+
 export default async function handler(req, res) {
   const name = req.query.name;
 
@@ -1105,9 +1141,7 @@ export default async function handler(req, res) {
     return sendJson(res, 405, { error: 'Method not allowed' });
   }
 
-  // Funções públicas (chamadas pelo front sem login): histórico do gráfico e o
-  // próprio login. As demais (coleta, geração, snapshots, newsletter, etc.)
-  // exigem token de admin — o GitHub Actions envia o token via header.
+  // Funções públicas (chamadas pelo front sem login).
   const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary', 'refreshQuotesIfStale']);
 
   try {
@@ -1116,11 +1150,20 @@ export default async function handler(req, res) {
       return sendJson(res, 404, { error: `Unknown function: ${name}` });
     }
 
-    if (!PUBLIC_FUNCTIONS.has(name) && !isAdminRequest(req)) {
-      return sendJson(res, 401, { error: 'Não autorizado' });
+    const sql = getSql();
+    const admin = isAdminRequest(req);
+
+    if (!admin && !PUBLIC_FUNCTIONS.has(name)) {
+      const cronLimit = CRON_FUNCTIONS[name];
+      if (cronLimit === undefined) {
+        // Funções administrativas (escrita/manuais) exigem token.
+        return sendJson(res, 401, { error: 'Não autorizado' });
+      }
+      if (!(await withinRateLimit(sql, name, cronLimit))) {
+        return sendJson(res, 429, { error: 'Limite de uso por hora atingido.' });
+      }
     }
 
-    const sql = getSql();
     const body = req.method === 'POST' ? (req.body || {}) : {};
     const result = await fn(sql, body);
     return sendJson(res, 200, result);
