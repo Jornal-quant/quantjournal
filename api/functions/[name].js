@@ -795,15 +795,21 @@ async function handleUpdateMarketSnapshots(sql) {
   let updated = 0;
   const now = new Date().toISOString();
 
+  let failed = 0;
   for (const quote of saneQuotes) {
-    const found = await sql.query(`select id from qj_market_snapshots where symbol = $1 limit 1`, [quote.symbol]);
-    const payload = { ...quote, updated_at: now };
-    if (found.length > 0) {
-      await updateRow(sql, 'qj_market_snapshots', found[0].id, payload);
-      updated += 1;
-    } else {
-      await insertRow(sql, 'qj_market_snapshots', payload);
-      created += 1;
+    try {
+      const found = await sql.query(`select id from qj_market_snapshots where symbol = $1 limit 1`, [quote.symbol]);
+      const payload = { ...quote, updated_at: now };
+      if (found.length > 0) {
+        await updateRow(sql, 'qj_market_snapshots', found[0].id, payload);
+        updated += 1;
+      } else {
+        await insertRow(sql, 'qj_market_snapshots', payload);
+        created += 1;
+      }
+    } catch {
+      // Uma cotação problemática não deve derrubar todo o snapshot.
+      failed += 1;
     }
   }
 
@@ -815,7 +821,15 @@ async function handleUpdateMarketSnapshots(sql) {
     'updateMarketSnapshots',
   );
 
-  return { success: true, updated, created, skipped: quotes.length - saneQuotes.length, symbols: saneQuotes.map((quote) => quote.symbol) };
+  return { success: true, updated, created, failed, skipped: quotes.length - saneQuotes.length, symbols: saneQuotes.map((quote) => quote.symbol) };
+}
+
+// Ajuste de schema idempotente: garante que market_type aceite 'stock' (a
+// constraint original não previa ações da B3). Admin-only, rodar uma vez.
+async function handleEnsureSchema(sql) {
+  await sql.query(`alter table qj_market_snapshots drop constraint if exists qj_market_snapshots_market_type_check`);
+  await sql.query(`alter table qj_market_snapshots add constraint qj_market_snapshots_market_type_check check (market_type in ('index', 'fx', 'crypto', 'commodity', 'rate', 'stock'))`);
+  return { success: true, message: "market_type agora aceita 'stock'." };
 }
 
 async function handleSendDailyNewsletter(sql, body) {
@@ -947,6 +961,7 @@ const handlers = {
   ingestNews: handleIngestNews,
   autoPublishNews: handleAutoPublishNews,
   adminLogin: handleAdminLogin,
+  ensureSchema: handleEnsureSchema,
 };
 
 export default async function handler(req, res) {
