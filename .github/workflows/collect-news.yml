@@ -36,15 +36,12 @@ jobs:
       # Secrets and variables → Actions → Variables) se o domínio mudar.
       SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
       PROCESS_BATCH: '4' # quantos artigos gerar por execução
-      # Token de admin (igual ao ADMIN_TOKEN da Vercel). Crie como secret do repo:
-      # Settings → Secrets and variables → Actions → New repository secret.
-      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
     steps:
       - name: Coletar feeds (sem IA)
         run: |
           curl --fail --show-error --silent --location \
             --retry 2 --max-time 70 \
-            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" \
+            -X POST -H 'Content-Type: application/json' \
             -d '{"auto_process":false}' \
             "$SITE_URL/api/functions/collectLatestNews" | head -c 2000
           echo
@@ -57,7 +54,7 @@ jobs:
             # a fila continua e a próxima execução pega o resto.
             curl --show-error --silent --location \
               --max-time 80 \
-              -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
+              -X POST -H 'Content-Type: application/json' -d '{}' \
               "$SITE_URL/api/functions/processRawNews" | head -c 1000 || true
             echo
             sleep 2
@@ -66,14 +63,14 @@ jobs:
       - name: Escolher manchete (IA por relevância e impacto)
         run: |
           curl --show-error --silent --location --max-time 40 \
-            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
+            -X POST -H 'Content-Type: application/json' -d '{}' \
             "$SITE_URL/api/functions/pickHeadline" | head -c 500 || true
           echo
 
       - name: Gerar resumo do dia (IA, no servidor)
         run: |
           curl --show-error --silent --location --max-time 60 \
-            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
+            -X POST -H 'Content-Type: application/json' -d '{}' \
             "$SITE_URL/api/functions/generateDailySummary" | head -c 500 || true
           echo
 

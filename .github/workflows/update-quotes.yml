@@ -23,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
-      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
 
     steps:
       - name: Atualizar cotações de mercado
@@ -33,7 +32,6 @@ jobs:
             --retry 2 --max-time 70 \
             -X POST \
             -H 'Content-Type: application/json' \
-            -H "x-admin-token: $ADMIN_TOKEN" \
             -d '{}' \
             "$SITE_URL/api/functions/updateMarketSnapshots" | head -c 2000
           echo
