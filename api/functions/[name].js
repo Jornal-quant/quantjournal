@@ -845,6 +845,34 @@ async function handleSetHeadline(sql, body) {
   return { success: true, headline_id: null };
 }
 
+// IA escolhe a manchete por relevância + impacto (confiança e recência desempatam).
+// Roda no ciclo de coleta (a cada 30min), então é estável entre execuções.
+const HEADLINE_RELEVANCE = { urgente: 4, alta: 3, media: 2, baixa: 1 };
+const HEADLINE_IMPACT = { critico: 4, alto: 3, medio: 2, baixo: 1 };
+
+async function handlePickHeadline(sql) {
+  const rows = await sql.query(
+    `select id, relevance, impact_level, ai_confidence, created_date from qj_articles where status = 'publicado' and created_date > now() - interval '48 hours'`,
+  );
+  if (rows.length === 0) return { success: true, headline_id: null, message: 'Sem artigos recentes.' };
+
+  let bestId = null;
+  let bestScore = -1;
+  for (const r of rows) {
+    const rel = HEADLINE_RELEVANCE[r.relevance] || 1;
+    const imp = HEADLINE_IMPACT[r.impact_level] || 1;
+    const conf = Number(r.ai_confidence) || 0;
+    const ageHours = (Date.now() - new Date(r.created_date).getTime()) / 3_600_000;
+    const recency = Math.max(0, 48 - ageHours) / 48; // 0..1
+    const score = rel * 10 + imp * 10 + conf * 0.05 + recency * 3;
+    if (score > bestScore) { bestScore = score; bestId = r.id; }
+  }
+
+  await sql.query(`update qj_articles set is_headline = (id = $1)`, [bestId]);
+  await logSystem(sql, 'Manchete escolhida (IA)', `id: ${bestId} | score: ${bestScore.toFixed(1)}`, 'success', 'pickHeadline');
+  return { success: true, headline_id: bestId, score: bestScore };
+}
+
 async function handleSendDailyNewsletter(sql, body) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('RESEND_API_KEY is not configured.');
@@ -976,6 +1004,7 @@ const handlers = {
   adminLogin: handleAdminLogin,
   ensureSchema: handleEnsureSchema,
   setHeadline: handleSetHeadline,
+  pickHeadline: handlePickHeadline,
 };
 
 export default async function handler(req, res) {
