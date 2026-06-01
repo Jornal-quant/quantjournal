@@ -536,11 +536,24 @@ async function handleCollectLatestNews(sql, body) {
   let errors = 0;
   const newItems = [];
 
-  // 1. RSS feeds (DB-configured sources, or the curated defaults).
-  for (const source of sources) {
+  // 1. RSS feeds (DB-configured sources, or the curated defaults). Fetch in
+  // parallel so a few slow feeds do not consume the whole 60s Vercel budget.
+  const rssResults = await Promise.all(
+    sources.map(async (source) => {
+      try {
+        return { source, xml: await fetchText(source.url, { 'User-Agent': 'QuantJournal/1.0' }) };
+      } catch (error) {
+        return { source, error };
+      }
+    }),
+  );
+
+  for (const feed of rssResults) {
+    const { source } = feed;
     try {
-      const xml = await fetchText(source.url, { 'User-Agent': 'QuantJournal/1.0' });
-      const result = await ingestRawItems(sql, parseRssItems(xml), source, seen);
+      if (feed.error) throw feed.error;
+
+      const result = await ingestRawItems(sql, parseRssItems(feed.xml), source, seen);
       collected += result.collected;
       duplicates += result.duplicates;
       irrelevant += result.irrelevant;
@@ -564,9 +577,22 @@ async function handleCollectLatestNews(sql, body) {
   }
 
   // 2. JSON market-news APIs (each one is a no-op unless its API key is set).
-  for (const collector of API_COLLECTORS) {
+  const apiResults = await Promise.all(
+    API_COLLECTORS.map(async (collector) => {
+      try {
+        return { collector, items: await collector.fetch() };
+      } catch (error) {
+        return { collector, error };
+      }
+    }),
+  );
+
+  for (const resultItem of apiResults) {
+    const { collector } = resultItem;
     try {
-      const items = await collector.fetch();
+      if (resultItem.error) throw resultItem.error;
+
+      const items = resultItem.items;
       if (items.length === 0) continue;
       const result = await ingestRawItems(sql, items, { name: collector.name, type: 'api', priority: 1 }, seen);
       collected += result.collected;
