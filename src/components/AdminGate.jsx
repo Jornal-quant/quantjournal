@@ -44,7 +44,7 @@ export default function AdminGate({ children }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: '#0C0C0A' }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: 'hsl(var(--background))' }}>
       <form onSubmit={submit} className="w-full max-w-sm border border-ds-border rounded-xl p-6 bg-ds-surface">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">

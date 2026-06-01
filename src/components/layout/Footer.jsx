@@ -10,23 +10,23 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A08] border-t border-white/6 mt-20">
+    <footer className="bg-[hsl(var(--background))] border-t border-foreground/6 mt-20">
       <div className="max-w-screen-2xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
           {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4 group w-fit">
-              <div className="w-6 h-6 bg-white/8 rounded flex items-center justify-center group-hover:bg-white/12 transition-colors duration-150">
-                <BarChart3 className="w-3.5 h-3.5 text-white/50" />
+              <div className="w-6 h-6 bg-foreground/8 rounded flex items-center justify-center group-hover:bg-foreground/12 transition-colors duration-150">
+                <BarChart3 className="w-3.5 h-3.5 text-foreground/50" />
               </div>
-              <span className="font-mono text-[15px] font-semibold tracking-tight text-white">
+              <span className="font-mono text-[15px] font-semibold tracking-tight text-foreground">
                 Capital <span className="text-[#8C8478]">Times</span>
               </span>
             </Link>
-            <p className="font-sans text-[13px] text-white/55 leading-relaxed mb-4">
+            <p className="font-sans text-[13px] text-foreground/55 leading-relaxed mb-4">
               Inteligência financeira automatizada — notícias curadas e analisadas por IA, 24h por dia.
             </p>
-            <div className="flex items-center gap-1.5 font-mono text-[10px] text-white/20">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] text-foreground/20">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
               Atualizado continuamente
             </div>
@@ -34,10 +34,10 @@ export default function Footer() {
 
           {LINKS.map((col) => (
             <div key={col.label}>
-              <h4 className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/20 mb-4">{col.label}</h4>
+              <h4 className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/20 mb-4">{col.label}</h4>
               <div className="space-y-2.5">
                 {col.items.map(([l, p]) => (
-                  <Link key={p} to={p} className="block font-sans text-[13px] text-white/60 hover:text-white/65 transition-colors duration-150">{l}</Link>
+                  <Link key={p} to={p} className="block font-sans text-[13px] text-foreground/60 hover:text-foreground/65 transition-colors duration-150">{l}</Link>
                 ))}
               </div>
             </div>
@@ -45,19 +45,19 @@ export default function Footer() {
         </div>
 
         {/* Disclaimer */}
-        <div className="border-t border-white/6 pt-6 space-y-4">
-          <div className="flex items-start gap-2.5 bg-white/3 border border-white/6 rounded-lg p-3">
-            <Shield className="w-3.5 h-3.5 text-white/20 flex-shrink-0 mt-0.5" />
-            <p className="font-sans text-[11px] text-white/50 leading-relaxed">
+        <div className="border-t border-foreground/6 pt-6 space-y-4">
+          <div className="flex items-start gap-2.5 bg-foreground/3 border border-foreground/6 rounded-lg p-3">
+            <Shield className="w-3.5 h-3.5 text-foreground/20 flex-shrink-0 mt-0.5" />
+            <p className="font-sans text-[11px] text-foreground/50 leading-relaxed">
               O conteúdo do Capital Times é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="font-mono text-[10px] text-white/15">© {new Date().getFullYear()} Capital Times</p>
+            <p className="font-mono text-[10px] text-foreground/15">© {new Date().getFullYear()} Capital Times</p>
             <div className="flex items-center gap-4">
-              <Link to="/metodologia" className="font-mono text-[10px] text-white/20 hover:text-white/65 transition-colors duration-150">Metodologia</Link>
-              <span className="text-white/10">·</span>
-              <span className="font-mono text-[10px] text-white/15">Dados com possível atraso</span>
+              <Link to="/metodologia" className="font-mono text-[10px] text-foreground/20 hover:text-foreground/65 transition-colors duration-150">Metodologia</Link>
+              <span className="text-foreground/10">·</span>
+              <span className="font-mono text-[10px] text-foreground/15">Dados com possível atraso</span>
             </div>
           </div>
         </div>

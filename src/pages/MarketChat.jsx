@@ -25,7 +25,7 @@ function ChatMessage({ msg }) {
     <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
         <div className="w-7 h-7 bg-foreground rounded flex items-center justify-center flex-shrink-0 mt-1">
-          <span className="font-mono text-[10px] text-white/60">⬡</span>
+          <span className="font-mono text-[10px] text-foreground/60">⬡</span>
         </div>
       )}
       <div className={`max-w-[85%] rounded-lg px-4 py-3 ${
@@ -104,7 +104,7 @@ Pergunta: "${q}"`,
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-foreground rounded flex items-center justify-center">
-            <span className="font-mono text-sm text-white/60">⬡</span>
+            <span className="font-mono text-sm text-foreground/60">⬡</span>
           </div>
           <div>
             <h1 className="font-mono text-base font-semibold">Market Chat</h1>
@@ -136,7 +136,7 @@ Pergunta: "${q}"`,
         {loading && (
           <div className="flex gap-3">
             <div className="w-7 h-7 bg-foreground rounded flex items-center justify-center flex-shrink-0 mt-1">
-              <span className="font-mono text-[10px] text-white/60">⬡</span>
+              <span className="font-mono text-[10px] text-foreground/60">⬡</span>
             </div>
             <div className="bg-ds-surface2 border border-ds-border rounded-lg px-4 py-3 flex items-center gap-2 text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" />

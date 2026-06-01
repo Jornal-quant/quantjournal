@@ -49,12 +49,12 @@ function SectionLabel({ label, href, count }) {
   return (
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-px h-4 rounded-full bg-white/15" />
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">{label}</span>
-        {count != null && <span className="font-mono text-[9px] text-white/15">{count}</span>}
+        <div className="w-px h-4 rounded-full bg-foreground/15" />
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">{label}</span>
+        {count != null && <span className="font-mono text-[9px] text-foreground/15">{count}</span>}
       </div>
       {href && (
-        <Link to={href} className="font-mono text-[10px] text-white/50 hover:text-white/60 transition-colors duration-150">
+        <Link to={href} className="font-mono text-[10px] text-foreground/50 hover:text-foreground/60 transition-colors duration-150">
           ver todas →
         </Link>
       )}
@@ -66,12 +66,12 @@ function SkeletonCards({ n = 4 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-white/6 overflow-hidden" style={{ backgroundColor: '#111110' }}>
-          <Skeleton className="h-40 w-full rounded-none bg-white/6" />
+        <div key={i} className="rounded-xl border border-foreground/6 overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
+          <Skeleton className="h-40 w-full rounded-none bg-foreground/6" />
           <div className="p-4 space-y-2">
-            <Skeleton className="h-3 w-20 bg-white/6" />
-            <Skeleton className="h-4 w-full bg-white/6" />
-            <Skeleton className="h-4 w-3/4 bg-white/6" />
+            <Skeleton className="h-3 w-20 bg-foreground/6" />
+            <Skeleton className="h-4 w-full bg-foreground/6" />
+            <Skeleton className="h-4 w-3/4 bg-foreground/6" />
           </div>
         </div>
       ))}
@@ -82,42 +82,42 @@ function SkeletonCards({ n = 4 }) {
 /* ─── HERO LANDING (empty state) ─── */
 function LandingHero() {
   return (
-    <section className="border-b border-white/6" style={{ background: 'linear-gradient(135deg, #0E0E0C 0%, #131311 60%, #161614 100%)' }}>
+    <section className="border-b border-foreground/6" style={{ background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--card)) 60%, hsl(var(--secondary)) 100%)' }}>
       <div className="max-w-screen-2xl mx-auto px-6 py-16 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-14 items-start">
           <div>
             <div className="flex items-center gap-2 mb-6">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/50">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/50">
                 Plataforma de inteligência financeira · IA
               </span>
             </div>
-            <h1 className="font-mono text-4xl md:text-6xl font-semibold leading-[1.08] tracking-tight text-white mb-5">
+            <h1 className="font-mono text-4xl md:text-6xl font-semibold leading-[1.08] tracking-tight text-foreground mb-5">
               Entenda o mercado<br />
               <span style={{ color: '#8C8478' }}>antes de todo mundo</span>
             </h1>
-            <p className="font-sans text-base text-white/65 leading-relaxed mb-2 max-w-lg">
+            <p className="font-sans text-base text-foreground/65 leading-relaxed mb-2 max-w-lg">
               O Capital Times monitora fontes financeiras globais, identifica eventos relevantes e transforma dados complexos em análises claras e rastreáveis.
             </p>
-            <p className="font-sans text-sm text-white/22 leading-relaxed mb-10 max-w-lg">
+            <p className="font-sans text-sm text-foreground/22 leading-relaxed mb-10 max-w-lg">
               Para investidores, analistas e profissionais que precisam de contexto e velocidade — sem ruído.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-5 py-2.5 rounded-lg hover:bg-white/90 transition-colors duration-150">
+              <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-5 py-2.5 rounded-lg hover:bg-foreground/90 transition-colors duration-150">
                 Explorar análises <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-white/15 text-white/60 px-5 py-2.5 rounded-lg hover:border-white/30 hover:text-white/90 transition-all duration-150">
+              <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-foreground/15 text-foreground/60 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
                 Ver ativos
               </Link>
-              <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-white/15 text-white/60 px-5 py-2.5 rounded-lg hover:border-white/30 hover:text-white/90 transition-all duration-150">
+              <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-foreground/15 text-foreground/60 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
                 <Zap className="w-3.5 h-3.5" /> IA Chat
               </Link>
             </div>
           </div>
 
           {/* Value prop card */}
-          <div className="border border-white/8 rounded-xl p-5 bg-white/3">
-            <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/20 mb-4">O que o Capital Times faz</p>
+          <div className="border border-foreground/8 rounded-xl p-5 bg-foreground/3">
+            <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/20 mb-4">O que o Capital Times faz</p>
             <div className="space-y-3">
               {[
                 'Monitora fontes financeiras globais continuamente',
@@ -129,14 +129,14 @@ function LandingHero() {
               ].map((v) => (
                 <div key={v} className="flex items-start gap-2.5">
                   <span className="w-1 h-1 bg-emerald-400 rounded-full flex-shrink-0 mt-2" />
-                  <p className="font-sans text-[13px] text-white/65 leading-snug">{v}</p>
+                  <p className="font-sans text-[13px] text-foreground/65 leading-snug">{v}</p>
                 </div>
               ))}
             </div>
-            <div className="pt-4 border-t border-white/6 mt-4">
-              <p className="font-sans text-[11px] text-white/18 leading-relaxed">
+            <div className="pt-4 border-t border-foreground/6 mt-4">
+              <p className="font-sans text-[11px] text-foreground/18 leading-relaxed">
                 Conteúdo informativo. Não constitui recomendação de investimento.{' '}
-                <Link to="/metodologia" className="underline hover:text-white/60 transition-colors duration-150">Metodologia</Link>
+                <Link to="/metodologia" className="underline hover:text-foreground/60 transition-colors duration-150">Metodologia</Link>
               </p>
             </div>
           </div>
@@ -149,15 +149,15 @@ function LandingHero() {
 /* ─── FEATURES GRID (empty state) ─── */
 function FeaturesGrid() {
   return (
-    <section className="border-b border-white/6" style={{ backgroundColor: '#111110' }}>
+    <section className="border-b border-foreground/6" style={{ backgroundColor: 'hsl(var(--card))' }}>
       <div className="max-w-screen-2xl mx-auto px-6 py-14">
         <SectionLabel label="Principais recursos" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {FEATURES.map((f) => (
-            <div key={f.title} className="border border-white/6 rounded-xl p-4 hover:bg-white/3 hover:border-white/10 transition-all duration-200">
-              <f.icon className="w-4 h-4 text-white/55 mb-3" />
-              <h3 className="font-mono text-[12px] font-semibold text-white/70 mb-1.5">{f.title}</h3>
-              <p className="font-sans text-[12px] text-white/55 leading-relaxed">{f.desc}</p>
+            <div key={f.title} className="border border-foreground/6 rounded-xl p-4 hover:bg-foreground/3 hover:border-foreground/10 transition-all duration-200">
+              <f.icon className="w-4 h-4 text-foreground/55 mb-3" />
+              <h3 className="font-mono text-[12px] font-semibold text-foreground/70 mb-1.5">{f.title}</h3>
+              <p className="font-sans text-[12px] text-foreground/55 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -172,16 +172,16 @@ function Sidebar({ trending }) {
     <aside className="space-y-4 min-w-0">
       {/* Trending */}
       {trending.length > 0 && (
-        <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
-          <div className="px-4 py-2.5 border-b border-white/6 bg-white/3">
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Mais lidas</span>
+        <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
+          <div className="px-4 py-2.5 border-b border-foreground/6 bg-foreground/3">
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">Mais lidas</span>
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-foreground/5">
             {trending.map((a, i) => (
               <Link key={a.id} to={`/artigo/${a.slug || a.id}`}
-                className="group flex items-start gap-3 px-4 py-3 hover:bg-white/4 transition-colors duration-150">
-                <span className="font-mono text-[18px] font-semibold text-white/8 leading-none mt-0.5 w-5 flex-shrink-0 tabular-nums">{i + 1}</span>
-                <p className="font-mono text-[13px] font-medium leading-snug text-white/55 group-hover:text-white/85 transition-colors duration-150 line-clamp-2">{a.title}</p>
+                className="group flex items-start gap-3 px-4 py-3 hover:bg-foreground/4 transition-colors duration-150">
+                <span className="font-mono text-[18px] font-semibold text-foreground/8 leading-none mt-0.5 w-5 flex-shrink-0 tabular-nums">{i + 1}</span>
+                <p className="font-mono text-[13px] font-medium leading-snug text-foreground/55 group-hover:text-foreground/85 transition-colors duration-150 line-clamp-2">{a.title}</p>
               </Link>
             ))}
           </div>
@@ -189,28 +189,28 @@ function Sidebar({ trending }) {
       )}
 
       {/* Chat CTA */}
-      <Link to="/chat" className="group block border border-white/8 rounded-xl p-4 hover:border-white/14 hover:bg-white/3 transition-all duration-200" style={{ backgroundColor: '#111110' }}>
+      <Link to="/chat" className="group block border border-foreground/8 rounded-xl p-4 hover:border-foreground/14 hover:bg-foreground/3 transition-all duration-200" style={{ backgroundColor: 'hsl(var(--card))' }}>
         <div className="flex items-center gap-2 mb-2.5">
-          <div className="w-7 h-7 bg-white/8 rounded-lg flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white/50" />
+          <div className="w-7 h-7 bg-foreground/8 rounded-lg flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-foreground/50" />
           </div>
           <div>
-            <p className="font-mono text-[12px] font-semibold text-white/75">Market Chat IA</p>
+            <p className="font-mono text-[12px] font-semibold text-foreground/75">Market Chat IA</p>
             <div className="flex items-center gap-1">
               <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
               <span className="font-mono text-[9px] text-emerald-400">ao vivo</span>
             </div>
           </div>
         </div>
-        <p className="font-sans text-[12px] text-white/28 leading-relaxed mb-2.5">Pergunte sobre qualquer ativo, empresa ou notícia.</p>
-        <span className="font-mono text-[11px] text-white/50 group-hover:text-white/55 transition-colors duration-150">Acessar chat →</span>
+        <p className="font-sans text-[12px] text-foreground/28 leading-relaxed mb-2.5">Pergunte sobre qualquer ativo, empresa ou notícia.</p>
+        <span className="font-mono text-[11px] text-foreground/50 group-hover:text-foreground/55 transition-colors duration-150">Acessar chat →</span>
       </Link>
 
       <CompaniesInFocus />
       <EconomicCalendar />
       <NewsletterForm />
 
-      <p className="font-mono text-[9px] text-white/15 leading-relaxed px-1">
+      <p className="font-mono text-[9px] text-foreground/15 leading-relaxed px-1">
         Conteúdo gerado por IA com fins informativos. Não constitui recomendação de investimento.
       </p>
     </aside>
@@ -282,7 +282,7 @@ export default function Home() {
   const hasContent = articles.length > 0;
 
   return (
-    <div style={{ backgroundColor: '#0C0C0A' }}>
+    <div style={{ backgroundColor: 'hsl(var(--background))' }}>
       <TickerBar />
 
       {/* Urgente bar */}
@@ -361,10 +361,10 @@ export default function Home() {
         <>
           <FeaturesGrid />
           <div className="max-w-screen-2xl mx-auto px-6 py-16 text-center space-y-4">
-            <div className="font-mono text-5xl text-white/6 mb-4">⬡</div>
-            <h2 className="font-mono text-[18px] font-semibold text-white/70">Nenhum conteúdo publicado ainda</h2>
-            <p className="font-sans text-[13px] text-white/55">Acesse o painel de administração para gerar artigos com IA.</p>
-            <Link to="/admin" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-6 py-2.5 rounded-lg hover:bg-white/90 transition-colors duration-150 mt-2">
+            <div className="font-mono text-5xl text-foreground/6 mb-4">⬡</div>
+            <h2 className="font-mono text-[18px] font-semibold text-foreground/70">Nenhum conteúdo publicado ainda</h2>
+            <p className="font-sans text-[13px] text-foreground/55">Acesse o painel de administração para gerar artigos com IA.</p>
+            <Link to="/admin" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-6 py-2.5 rounded-lg hover:bg-foreground/90 transition-colors duration-150 mt-2">
               Ir para o Admin <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -372,11 +372,11 @@ export default function Home() {
       )}
 
       {/* Global disclaimer */}
-      <div className="border-t border-white/5 mt-4" style={{ backgroundColor: '#0A0A08' }}>
+      <div className="border-t border-foreground/5 mt-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
         <div className="max-w-screen-2xl mx-auto px-6 py-5">
           <div className="flex items-start gap-2.5 max-w-4xl mx-auto">
-            <Shield className="w-3.5 h-3.5 text-white/15 flex-shrink-0 mt-0.5" />
-            <p className="font-sans text-[11px] text-white/20 leading-relaxed text-center">
+            <Shield className="w-3.5 h-3.5 text-foreground/15 flex-shrink-0 mt-0.5" />
+            <p className="font-sans text-[11px] text-foreground/20 leading-relaxed text-center">
               O conteúdo do Capital Times é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
             </p>
           </div>

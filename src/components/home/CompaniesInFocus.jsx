@@ -12,17 +12,17 @@ const COMPANIES = [
 
 export default function CompaniesInFocus() {
   return (
-    <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
-      <div className="px-4 py-2.5 border-b border-white/6 bg-white/3 flex items-center justify-between">
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">Empresas em foco</span>
-        <Link to="/ativos" className="font-mono text-[9px] text-white/20 hover:text-white/50 transition-colors duration-150">ver todas →</Link>
+    <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
+      <div className="px-4 py-2.5 border-b border-foreground/6 bg-foreground/3 flex items-center justify-between">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">Empresas em foco</span>
+        <Link to="/ativos" className="font-mono text-[9px] text-foreground/20 hover:text-foreground/50 transition-colors duration-150">ver todas →</Link>
       </div>
-      <div className="grid grid-cols-2 divide-x divide-y divide-white/5">
+      <div className="grid grid-cols-2 divide-x divide-y divide-foreground/5">
         {COMPANIES.map((c) => (
           <Link key={c.slug} to={`/ativo/${c.slug}`}
-            className="group flex flex-col px-3 py-2.5 hover:bg-white/4 transition-colors duration-150">
-            <span className="font-mono text-[11px] font-semibold text-white/60 group-hover:text-white/90 transition-colors duration-150 tabular-nums">{c.ticker}</span>
-            <span className="font-sans text-[11px] text-white/50 truncate">{c.name}</span>
+            className="group flex flex-col px-3 py-2.5 hover:bg-foreground/4 transition-colors duration-150">
+            <span className="font-mono text-[11px] font-semibold text-foreground/60 group-hover:text-foreground/90 transition-colors duration-150 tabular-nums">{c.ticker}</span>
+            <span className="font-sans text-[11px] text-foreground/50 truncate">{c.name}</span>
           </Link>
         ))}
       </div>

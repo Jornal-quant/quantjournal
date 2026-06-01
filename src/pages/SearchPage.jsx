@@ -145,7 +145,7 @@ export default function SearchPage() {
           }`}>
           <SlidersHorizontal className="w-4 h-4" />
           Filtros
-          {hasFilters && <span className="font-mono text-[9px] bg-white/20 rounded-full w-4 h-4 flex items-center justify-center">!</span>}
+          {hasFilters && <span className="font-mono text-[9px] bg-foreground/20 rounded-full w-4 h-4 flex items-center justify-center">!</span>}
         </button>
       </form>
 

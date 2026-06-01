@@ -47,7 +47,7 @@ export default function ArticleSidebar({ related = [] }) {
       {/* Market Now */}
       <div className="border border-ds-border rounded-lg overflow-hidden bg-ds-surface">
         <div className="px-4 py-2.5 border-b border-ds-border bg-ds-surface2 flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-ds-up animate-pulse' : 'bg-white/20'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-ds-up animate-pulse' : 'bg-foreground/20'}`} />
           <h3 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mercado agora</h3>
         </div>
         <div className="divide-y divide-ds-border">
