@@ -26,20 +26,30 @@ export default async function handler(req, res) {
       ? process.env.DEEPSEEK_QUALITY_MODEL || 'deepseek-reasoner'
       : process.env.DEEPSEEK_CHEAP_MODEL || 'deepseek-chat';
 
-    const response = await fetch(`${process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        response_format: schema ? { type: 'json_object' } : undefined,
-        temperature: 0.3,
-        max_tokens: schema ? 8000 : 3000,
-      }),
-    });
+    const timeoutMs = Number(process.env.DEEPSEEK_TIMEOUT_MS || 45000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response;
+    try {
+      response = await fetch(`${process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'}/chat/completions`, {
+        signal: controller.signal,
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          response_format: schema ? { type: 'json_object' } : undefined,
+          temperature: 0.3,
+          max_tokens: schema ? 8000 : 3000,
+        }),
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const text = await response.text();
@@ -59,6 +69,9 @@ export default async function handler(req, res) {
 
     return sendJson(res, 200, { result: content });
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      return sendJson(res, 504, { error: 'DeepSeek demorou demais para responder. Tente novamente.' });
+    }
     return sendJson(res, 500, { error: error.message });
   }
 }

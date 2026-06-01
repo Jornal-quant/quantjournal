@@ -13,12 +13,14 @@ export default function SocialPostGenerator({ article }) {
     : '';
 
   const generate = async () => {
+    if (loading) return;
     if (posts) { setOpen(true); return; }
     setLoading(true);
     setOpen(true);
-    const result = await base44.integrations.Core.InvokeLLM({
-      quality: true,
-      prompt: `Você é um editor financeiro sênior escrevendo para uma redação profissional. Com base no artigo abaixo, gere textos prontos para publicação em tom jornalístico, objetivo e sóbrio.
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        quality: true,
+        prompt: `Você é um editor financeiro sênior escrevendo para uma redação profissional. Com base no artigo abaixo, gere textos prontos para publicação em tom jornalístico, objetivo e sóbrio.
 
 Artigo:
 Título: ${article.title}
@@ -33,18 +35,22 @@ Gere:
 - key_takeaways: 3 insights principais do artigo (frases curtas, uma por linha)
 
 Não inclua URLs. Escreva em português do Brasil. O texto deve soar como redação de jornal econômico, sem vibe de rede social.`,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          instagram_caption: { type: 'string' },
-          x_post: { type: 'string' },
-          telegram_message: { type: 'string' },
-          key_takeaways: { type: 'string' },
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            instagram_caption: { type: 'string' },
+            x_post: { type: 'string' },
+            telegram_message: { type: 'string' },
+            key_takeaways: { type: 'string' },
+          },
         },
-      },
-    });
-    setPosts(result);
-    setLoading(false);
+      });
+      setPosts(result);
+    } catch (error) {
+      toast.error(error?.message || 'Não foi possível gerar os posts agora.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const buildXIntentUrl = (text) => {
@@ -67,7 +73,7 @@ Não inclua URLs. Escreva em português do Brasil. O texto deve soar como redaç
 
   return (
     <div>
-      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={generate}>
+      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={generate} disabled={loading}>
         <Share2 className="w-3 h-3" /> Post Social
       </Button>
 
