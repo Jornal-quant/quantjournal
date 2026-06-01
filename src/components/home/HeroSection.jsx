@@ -44,9 +44,14 @@ function HeroMain({ article }) {
           {article.title}
         </h2>
         {article.summary && (
-          <p className="font-sans text-[14px] text-white/88 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
+          <p
+            className="font-sans text-[14px] text-white/90 leading-relaxed line-clamp-2 mb-3"
+            style={{ textShadow: '0 1px 2px rgba(0,0,0,0.85)' }}
+          >
+            {article.summary}
+          </p>
         )}
-        <span className="font-mono text-[11px] text-white/65 tabular-nums">{ago}</span>
+        <span className="font-mono text-[11px] text-white/70 tabular-nums">{ago}</span>
       </div>
     </Link>
   );
