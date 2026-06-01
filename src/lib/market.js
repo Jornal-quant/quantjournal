@@ -23,3 +23,28 @@ export function triggerQuotesRefresh() {
     // falhar, a UI continua mostrando os dados que já tem.
   });
 }
+
+// Mesmo padrão das cotações, mas para NOTÍCIAS. O cron do GitHub Actions é
+// estrangulado no plano gratuito, então os visitantes mantêm o jornal vivo:
+// ao abrir o site, dispara no servidor uma coleta + geração de matéria SE a
+// última estiver velha (ver refreshNewsIfStale em api/functions/[name].js).
+// Throttle próprio (10 min por aba) porque gerar artigo é mais pesado que
+// atualizar cotação e não precisa ser tão frequente.
+let lastNewsTrigger = 0;
+const NEWS_BROWSER_THROTTLE_MS = 10 * 60 * 1000;
+
+export function triggerNewsRefresh() {
+  const now = Date.now();
+  if (now - lastNewsTrigger < NEWS_BROWSER_THROTTLE_MS) return;
+  lastNewsTrigger = now;
+
+  fetch('/api/functions/refreshNewsIfStale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+    keepalive: true,
+  }).catch(() => {
+    // Silencioso: o servidor só gera matéria se houver notícia velha; qualquer
+    // falha aqui não afeta a UI, que segue mostrando o conteúdo atual.
+  });
+}
