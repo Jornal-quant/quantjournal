@@ -24,11 +24,12 @@ function HeroMain({ article }) {
     <Link to={`/artigo/${article.slug || article.id}`}
       className="group relative block rounded-xl overflow-hidden border border-foreground/8 hover:border-foreground/14 transition-all duration-200 h-80 lg:h-auto" style={{ backgroundColor: 'hsl(var(--card))' }}>
       {article.image_url ? (
-        <img src={article.image_url} alt={article.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 transition-opacity duration-300" loading="lazy" />
+        <img src={article.image_url} alt={article.title} className="absolute inset-0 w-full h-full object-cover opacity-100 transition-transform duration-300 group-hover:scale-[1.01]" loading="lazy" />
       ) : (
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 30% 70%, ${accent}18 0%, transparent 70%)` }} />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/5" />
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 to-transparent" />
       <div className="absolute inset-0 flex flex-col justify-end p-5">
         <div className="flex items-center gap-2 mb-3">
           <span className="font-mono text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm text-white"
@@ -43,7 +44,7 @@ function HeroMain({ article }) {
           {article.title}
         </h2>
         {article.summary && (
-          <p className="font-sans text-[14px] text-white/78 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
+          <p className="font-sans text-[14px] text-white/88 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
         )}
         <span className="font-mono text-[11px] text-white/65 tabular-nums">{ago}</span>
       </div>
