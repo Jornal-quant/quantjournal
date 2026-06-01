@@ -8,6 +8,7 @@ export default function SocialPostGenerator({ article }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState(null);
+  const [error, setError] = useState('');
   const articleUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/artigo/${article.id}`
     : '';
@@ -15,11 +16,12 @@ export default function SocialPostGenerator({ article }) {
   const generate = async () => {
     if (loading) return;
     if (posts) { setOpen(true); return; }
+    setError('');
     setLoading(true);
     setOpen(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        quality: true,
+        quality: false,
         prompt: `Você é um editor financeiro sênior escrevendo para uma redação profissional. Com base no artigo abaixo, gere textos prontos para publicação em tom jornalístico, objetivo e sóbrio.
 
 Artigo:
@@ -47,7 +49,9 @@ Não inclua URLs. Escreva em português do Brasil. O texto deve soar como redaç
       });
       setPosts(result);
     } catch (error) {
-      toast.error(error?.message || 'Não foi possível gerar os posts agora.');
+      const message = error?.message || 'Não foi possível gerar os posts agora.';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -89,6 +93,19 @@ Não inclua URLs. Escreva em português do Brasil. O texto deve soar como redaç
               <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="text-sm">Gerando posts com DeepSeek...</span>
+              </div>
+            ) : error ? (
+              <div className="p-5">
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
+                  <p className="text-sm font-semibold text-destructive">Não foi possível gerar os posts.</p>
+                  <p className="mt-2 text-xs leading-relaxed text-foreground/75">{error}</p>
+                  <Button size="sm" variant="outline" className="mt-4 h-8 text-xs" onClick={() => {
+                    setPosts(null);
+                    generate();
+                  }}>
+                    Tentar novamente
+                  </Button>
+                </div>
               </div>
             ) : posts ? (
               <div className="p-5 space-y-5">
