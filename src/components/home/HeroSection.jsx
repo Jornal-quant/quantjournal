@@ -31,21 +31,21 @@ function HeroMain({ article }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
       <div className="absolute inset-0 flex flex-col justify-end p-5">
         <div className="flex items-center gap-2 mb-3">
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm text-white"
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm text-white"
             style={{ backgroundColor: `${accent}30`, border: `1px solid ${accent}40` }}>{cat}</span>
           {article.is_breaking && (
-            <span className="font-mono text-[9px] font-bold uppercase tracking-wider bg-red-500/80 text-white px-2 py-0.5 rounded-sm">Urgente</span>
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider bg-red-500/80 text-white px-2 py-0.5 rounded-sm">Urgente</span>
           )}
           {article.sentiment === 'positivo' && <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />}
           {article.sentiment === 'negativo' && <TrendingDown className="w-3.5 h-3.5 text-red-400" />}
         </div>
-        <h2 className="font-mono text-xl font-semibold text-white leading-snug mb-2 group-hover:text-foreground/90 transition-colors duration-150">
+        <h2 className="font-mono text-2xl font-semibold text-white leading-snug mb-2 group-hover:text-white/90 transition-colors duration-150">
           {article.title}
         </h2>
         {article.summary && (
-          <p className="font-sans text-[13px] text-foreground/70 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
+          <p className="font-sans text-[14px] text-white/78 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
         )}
-        <span className="font-mono text-[10px] text-foreground/55 tabular-nums">{ago}</span>
+        <span className="font-mono text-[11px] text-white/65 tabular-nums">{ago}</span>
       </div>
     </Link>
   );
@@ -67,10 +67,10 @@ function HeroSecondary({ article }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/50">{cat}</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">{cat}</span>
         </div>
-        <p className="font-mono text-[13px] font-semibold text-foreground/70 group-hover:text-foreground/90 leading-snug line-clamp-2 transition-colors duration-150">{article.title}</p>
-        <span className="font-mono text-[10px] text-foreground/22 mt-1 block tabular-nums">{ago}</span>
+        <p className="font-mono text-[15px] font-semibold text-foreground/88 group-hover:text-foreground leading-snug line-clamp-2 transition-colors duration-150">{article.title}</p>
+        <span className="font-mono text-[11px] text-foreground/55 mt-1 block tabular-nums">{ago}</span>
       </div>
     </Link>
   );

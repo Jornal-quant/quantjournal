@@ -37,9 +37,9 @@ export default function MarketRadar() {
       <div className="px-4 py-2.5 border-b border-foreground/6 flex items-center justify-between bg-foreground/3">
         <div className="flex items-center gap-2">
           <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-foreground/15'}`} />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/65">Mercados</span>
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">Mercados</span>
         </div>
-        <span className="font-mono text-[10px] text-foreground/55">
+        <span className="font-mono text-[11px] text-foreground/65">
           {isLive ? (lastUpdate ? `Atualizado ${timeAgo(lastUpdate)}` : 'Dados do sistema') : 'Aguardando dados'}
         </span>
       </div>
@@ -52,12 +52,12 @@ export default function MarketRadar() {
           const Icon = up ? TrendingUp : dn ? TrendingDown : null;
           return (
             <div key={s.symbol} className="px-3.5 py-3 hover:bg-foreground/4 transition-colors duration-150 group">
-              <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/65 mb-1.5">{s.symbol}</p>
-              <p className="font-mono text-[15px] font-semibold text-foreground/85 tabular-nums leading-none mb-1">{formatMarketPrice(s)}</p>
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/75 mb-1.5">{s.symbol}</p>
+              <p className="font-mono text-[16px] font-semibold text-foreground tabular-nums leading-none mb-1">{formatMarketPrice(s)}</p>
               <div className="flex items-center gap-1">
                 {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-400' : 'text-red-400'}`} />}
-                <p className={`font-mono text-[11px] font-medium tabular-nums ${
-                  dn ? 'text-red-400' : up ? 'text-emerald-400' : 'text-foreground/55'
+                <p className={`font-mono text-[12px] font-medium tabular-nums ${
+                  dn ? 'text-red-500' : up ? 'text-emerald-500' : 'text-foreground/65'
                 }`}>
                   {formatChangePercent(s.change_percent)}
                 </p>
