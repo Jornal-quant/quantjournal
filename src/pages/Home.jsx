@@ -50,11 +50,11 @@ function SectionLabel({ label, href, count }) {
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
         <div className="w-px h-4 rounded-full bg-foreground/15" />
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">{label}</span>
-        {count != null && <span className="font-mono text-[9px] text-foreground/15">{count}</span>}
+        <span className="font-mono text-[12px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">{label}</span>
+        {count != null && <span className="font-mono text-[10px] text-foreground/40">{count}</span>}
       </div>
       {href && (
-        <Link to={href} className="font-mono text-[10px] text-foreground/50 hover:text-foreground/60 transition-colors duration-150">
+        <Link to={href} className="font-mono text-[11px] text-foreground/65 hover:text-foreground transition-colors duration-150">
           ver todas →
         </Link>
       )}
@@ -88,28 +88,28 @@ function LandingHero() {
           <div>
             <div className="flex items-center gap-2 mb-6">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/50">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">
                 Plataforma de inteligência financeira · IA
               </span>
             </div>
-            <h1 className="font-mono text-4xl md:text-6xl font-semibold leading-[1.08] tracking-tight text-foreground mb-5">
+            <h1 className="font-mono text-5xl md:text-6xl font-semibold leading-[1.08] tracking-tight text-foreground mb-5">
               Entenda o mercado<br />
-              <span style={{ color: '#8C8478' }}>antes de todo mundo</span>
+              <span className="text-[var(--title-accent)]">antes de todo mundo</span>
             </h1>
-            <p className="font-sans text-base text-foreground/65 leading-relaxed mb-2 max-w-lg">
+            <p className="font-sans text-[17px] text-foreground/78 leading-relaxed mb-2 max-w-xl">
               O Capital Times monitora fontes financeiras globais, identifica eventos relevantes e transforma dados complexos em análises claras e rastreáveis.
             </p>
-            <p className="font-sans text-sm text-foreground/22 leading-relaxed mb-10 max-w-lg">
+            <p className="font-sans text-[15px] text-foreground/68 leading-relaxed mb-10 max-w-xl">
               Para investidores, analistas e profissionais que precisam de contexto e velocidade — sem ruído.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-[13px] font-semibold bg-white text-black px-5 py-2.5 rounded-lg hover:bg-foreground/90 transition-colors duration-150">
+              <Link to="/busca" className="inline-flex items-center gap-2 font-mono text-[14px] font-semibold bg-white text-black px-5 py-2.5 rounded-lg hover:bg-foreground/90 transition-colors duration-150">
                 Explorar análises <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-foreground/15 text-foreground/60 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
+              <Link to="/ativos" className="inline-flex items-center gap-2 font-mono text-[14px] font-medium border border-foreground/20 text-foreground/75 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
                 Ver ativos
               </Link>
-              <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-[13px] font-medium border border-foreground/15 text-foreground/60 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
+              <Link to="/chat" className="inline-flex items-center gap-2 font-mono text-[14px] font-medium border border-foreground/20 text-foreground/75 px-5 py-2.5 rounded-lg hover:border-foreground/30 hover:text-foreground/90 transition-all duration-150">
                 <Zap className="w-3.5 h-3.5" /> IA Chat
               </Link>
             </div>
@@ -117,7 +117,7 @@ function LandingHero() {
 
           {/* Value prop card */}
           <div className="border border-foreground/8 rounded-xl p-5 bg-foreground/3">
-            <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/20 mb-4">O que o Capital Times faz</p>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--title-accent)] mb-4">O que o Capital Times faz</p>
             <div className="space-y-3">
               {[
                 'Monitora fontes financeiras globais continuamente',
@@ -129,12 +129,12 @@ function LandingHero() {
               ].map((v) => (
                 <div key={v} className="flex items-start gap-2.5">
                   <span className="w-1 h-1 bg-emerald-400 rounded-full flex-shrink-0 mt-2" />
-                  <p className="font-sans text-[13px] text-foreground/65 leading-snug">{v}</p>
+                  <p className="font-sans text-[14px] text-foreground/75 leading-snug">{v}</p>
                 </div>
               ))}
             </div>
             <div className="pt-4 border-t border-foreground/6 mt-4">
-              <p className="font-sans text-[11px] text-foreground/18 leading-relaxed">
+              <p className="font-sans text-[12px] text-foreground/72 leading-relaxed">
                 Conteúdo informativo. Não constitui recomendação de investimento.{' '}
                 <Link to="/metodologia" className="underline hover:text-foreground/60 transition-colors duration-150">Metodologia</Link>
               </p>
@@ -156,8 +156,8 @@ function FeaturesGrid() {
           {FEATURES.map((f) => (
             <div key={f.title} className="border border-foreground/6 rounded-xl p-4 hover:bg-foreground/3 hover:border-foreground/10 transition-all duration-200">
               <f.icon className="w-4 h-4 text-foreground/55 mb-3" />
-              <h3 className="font-mono text-[12px] font-semibold text-foreground/70 mb-1.5">{f.title}</h3>
-              <p className="font-sans text-[12px] text-foreground/55 leading-relaxed">{f.desc}</p>
+              <h3 className="font-mono text-[14px] font-semibold text-[var(--title-accent)] mb-1.5">{f.title}</h3>
+              <p className="font-sans text-[13px] text-foreground/68 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -174,14 +174,14 @@ function Sidebar({ trending }) {
       {trending.length > 0 && (
         <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
           <div className="px-4 py-2.5 border-b border-foreground/6 bg-foreground/3">
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">Mais lidas</span>
+            <span className="font-mono text-[12px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">Mais lidas</span>
           </div>
           <div className="divide-y divide-foreground/5">
             {trending.map((a, i) => (
               <Link key={a.id} to={`/artigo/${a.slug || a.id}`}
                 className="group flex items-start gap-3 px-4 py-3 hover:bg-foreground/4 transition-colors duration-150">
                 <span className="font-mono text-[18px] font-semibold text-foreground/8 leading-none mt-0.5 w-5 flex-shrink-0 tabular-nums">{i + 1}</span>
-                <p className="font-mono text-[13px] font-medium leading-snug text-foreground/55 group-hover:text-foreground/85 transition-colors duration-150 line-clamp-2">{a.title}</p>
+                <p className="font-mono text-[14px] font-medium leading-snug text-foreground/78 group-hover:text-foreground transition-colors duration-150 line-clamp-2">{a.title}</p>
               </Link>
             ))}
           </div>
@@ -195,15 +195,15 @@ function Sidebar({ trending }) {
             <Zap className="w-3.5 h-3.5 text-foreground/50" />
           </div>
           <div>
-            <p className="font-mono text-[12px] font-semibold text-foreground/75">Market Chat IA</p>
+            <p className="font-mono text-[14px] font-semibold text-[var(--title-accent)]">Market Chat IA</p>
             <div className="flex items-center gap-1">
               <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="font-mono text-[9px] text-emerald-400">ao vivo</span>
+              <span className="font-mono text-[10px] text-emerald-500">ao vivo</span>
             </div>
           </div>
         </div>
-        <p className="font-sans text-[12px] text-foreground/28 leading-relaxed mb-2.5">Pergunte sobre qualquer ativo, empresa ou notícia.</p>
-        <span className="font-mono text-[11px] text-foreground/50 group-hover:text-foreground/55 transition-colors duration-150">Acessar chat →</span>
+        <p className="font-sans text-[14px] text-foreground/68 leading-relaxed mb-2.5">Pergunte sobre qualquer ativo, empresa ou notícia.</p>
+        <span className="font-mono text-[12px] text-foreground/65 group-hover:text-foreground transition-colors duration-150">Acessar chat →</span>
       </Link>
 
       <CompaniesInFocus />

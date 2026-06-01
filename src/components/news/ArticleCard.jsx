@@ -46,16 +46,16 @@ function CompactCard({ article }) {
       <CategoryDot category={article.category} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/55">{cat}</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">{cat}</span>
           {article.relevance === 'urgente' && (
-            <span className="font-mono text-[8px] font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-sm">Urgente</span>
+            <span className="font-mono text-[9px] font-bold uppercase tracking-wider bg-red-500/20 text-red-500 border border-red-500/20 px-1.5 py-0.5 rounded-sm">Urgente</span>
           )}
         </div>
-        <p className="font-mono text-[13px] font-medium leading-snug text-foreground/80 group-hover:text-foreground transition-colors duration-150 line-clamp-2">{article.title}</p>
+        <p className="font-mono text-[15px] font-medium leading-snug text-foreground/90 group-hover:text-foreground transition-colors duration-150 line-clamp-2">{article.title}</p>
         <div className="flex items-center gap-2 mt-1.5">
           {SentimentIcon && <SentimentIcon className={`w-3 h-3 ${sentiment.color}`} />}
-          <span className="font-mono text-[10px] text-foreground/50">{ago}</span>
-          {article.source && <span className="font-mono text-[10px] text-foreground/15 truncate max-w-[80px]">· {article.source}</span>}
+          <span className="font-mono text-[11px] text-foreground/60">{ago}</span>
+          {article.source && <span className="font-mono text-[11px] text-foreground/35 truncate max-w-[80px]">· {article.source}</span>}
         </div>
       </div>
     </Link>
@@ -83,7 +83,7 @@ function DefaultCard({ article }) {
           <div
             className="w-full h-full flex flex-col justify-between p-3.5"
             style={{ background: `radial-gradient(ellipse at 75% 20%, ${accent}30 0%, transparent 65%), linear-gradient(135deg, ${accent}12 0%, transparent 70%)` }}>
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: `${accent}` }}>{cat}</span>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-widest" style={{ color: `${accent}` }}>{cat}</span>
             <span className="font-mono text-[26px] font-bold leading-none text-foreground/10 self-end tabular-nums">
               {firstTicker || '⬡'}
             </span>
@@ -93,7 +93,7 @@ function DefaultCard({ article }) {
         {article.is_breaking && (
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-md">
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-            <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-white">Urgente</span>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-white">Urgente</span>
           </div>
         )}
       </div>
@@ -104,35 +104,35 @@ function DefaultCard({ article }) {
         <div className="flex items-center gap-2 mb-2.5">
           <div className="flex items-center gap-1.5">
             <CategoryDot category={article.category} />
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/55">{cat}</span>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">{cat}</span>
           </div>
           {SentimentIcon && (
-            <span className={`flex items-center gap-0.5 font-mono text-[9px] ${sentiment.color}`}>
+            <span className={`flex items-center gap-0.5 font-mono text-[10px] ${sentiment.color}`}>
               <SentimentIcon className="w-3 h-3" />
             </span>
           )}
           {impact && (
-            <span className={`font-mono text-[8px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 rounded-sm ml-auto ${impact.bg}`}>
+            <span className={`font-mono text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 rounded-sm ml-auto ${impact.bg}`}>
               {impact.label}
             </span>
           )}
         </div>
 
         {/* Title */}
-        <h3 className="font-mono text-[14px] font-semibold leading-snug text-foreground/85 group-hover:text-foreground transition-colors duration-150 line-clamp-2 flex-1 mb-2">
+        <h3 className="font-mono text-[17px] font-semibold leading-snug text-foreground group-hover:text-[var(--title-accent)] transition-colors duration-150 line-clamp-2 flex-1 mb-2">
           {article.title}
         </h3>
 
         {/* Summary */}
         {article.summary && (
-          <p className="font-sans text-[12px] text-foreground/60 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
+          <p className="font-sans text-[14px] text-foreground/72 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
         )}
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-3 border-t border-foreground/6 mt-auto">
-          <span className="font-mono text-[10px] text-foreground/50 tabular-nums">{ago}</span>
+          <span className="font-mono text-[11px] text-foreground/60 tabular-nums">{ago}</span>
           {article.source && (
-            <span className="font-mono text-[10px] text-foreground/20 truncate max-w-[100px]">{article.source}</span>
+            <span className="font-mono text-[11px] text-foreground/45 truncate max-w-[100px]">{article.source}</span>
           )}
         </div>
       </div>

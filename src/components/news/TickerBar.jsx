@@ -39,11 +39,11 @@ export default function TickerBar() {
 
   return (
     <div className="overflow-hidden border-b border-foreground/5" style={{ backgroundColor: 'hsl(var(--background))' }}>
-      <div className="flex h-8">
+      <div className="flex h-9">
         {/* Fixed label */}
         <div className="flex items-center gap-1.5 px-4 border-r border-foreground/6 flex-shrink-0 z-10" style={{ backgroundColor: 'hsl(var(--background))' }}>
           <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-foreground/12'}`} />
-          <span className="font-mono text-[9px] text-foreground/20 uppercase tracking-widest whitespace-nowrap">
+          <span className="font-mono text-[10px] text-foreground/45 uppercase tracking-widest whitespace-nowrap">
             {isLive ? 'Sistema' : 'Aguardando'}
           </span>
         </div>
@@ -51,10 +51,10 @@ export default function TickerBar() {
         <div className="flex animate-ticker">
           {doubled.map((t, i) => (
             <div key={i} className="flex items-center gap-2 px-4 border-r border-foreground/5 whitespace-nowrap flex-shrink-0 h-full">
-              <span className="font-mono text-[10px] font-semibold text-foreground/55 tracking-widest uppercase">{t.name}</span>
-              <span className="font-mono text-[11px] font-medium text-foreground/75 tabular-nums">{t.value}</span>
-              <span className={`font-mono text-[10px] font-semibold tabular-nums ${
-                t.up === true ? 'text-emerald-400' : t.up === false ? 'text-red-400' : 'text-foreground/20'
+              <span className="font-mono text-[11px] font-semibold text-foreground/70 tracking-widest uppercase">{t.name}</span>
+              <span className="font-mono text-[12px] font-medium text-foreground/85 tabular-nums">{t.value}</span>
+              <span className={`font-mono text-[11px] font-semibold tabular-nums ${
+                t.up === true ? 'text-emerald-500' : t.up === false ? 'text-red-500' : 'text-foreground/45'
               }`}>{t.change}</span>
             </div>
           ))}
