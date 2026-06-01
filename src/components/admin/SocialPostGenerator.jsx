@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Share2, Copy, Loader2, Instagram, Twitter, MessageCircle } from 'lucide-react';
+import { Share2, Copy, Loader2, Instagram, Twitter, MessageCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SocialPostGenerator({ article }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState(null);
+  const articleUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/artigo/${article.id}`
+    : '';
 
   const generate = async () => {
     if (posts) { setOpen(true); return; }
@@ -43,9 +46,22 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
     setLoading(false);
   };
 
+  const buildXIntentUrl = (text) => {
+    const params = new URLSearchParams({
+      text,
+      url: articleUrl,
+    });
+    return `https://twitter.com/intent/tweet?${params.toString()}`;
+  };
+
   const copy = (text, label) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copiado!`);
+  };
+
+  const openXComposer = () => {
+    if (!posts?.x_post) return;
+    window.open(buildXIntentUrl(posts.x_post), '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -92,13 +108,21 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
                       <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                         <Twitter className="w-3.5 h-3.5" /> X / Twitter
                       </div>
-                      <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => copy(posts.x_post, 'X/Twitter')}>
-                        <Copy className="w-3 h-3 mr-1" /> Copiar
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => copy(posts.x_post, 'X/Twitter')}>
+                          <Copy className="w-3 h-3 mr-1" /> Copiar
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={openXComposer}>
+                          <ExternalLink className="w-3 h-3 mr-1" /> Abrir no X
+                        </Button>
+                      </div>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-3 text-xs text-foreground/90 leading-relaxed border border-border/50">
                       {posts.x_post}
                       <p className="text-[10px] text-muted-foreground mt-1">{posts.x_post.length}/280 chars</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        O link do artigo será anexado automaticamente no composer.
+                      </p>
                     </div>
                   </div>
                 )}
