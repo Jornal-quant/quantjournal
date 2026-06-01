@@ -831,7 +831,50 @@ async function handleEnsureSchema(sql) {
   await sql.query(`alter table qj_market_snapshots add constraint qj_market_snapshots_market_type_check check (market_type in ('index', 'fx', 'crypto', 'commodity', 'rate', 'stock'))`);
   // Manchete fixada pelo editor.
   await sql.query(`alter table qj_articles add column if not exists is_headline boolean not null default false`);
-  return { success: true, message: "Schema OK: market_type aceita 'stock' e qj_articles tem is_headline." };
+  // Estado do site (ex.: resumo do dia gerado pelo cron).
+  await sql.query(`create table if not exists qj_app_state (key text primary key, value jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now())`);
+  return { success: true, message: "Schema OK: market_type 'stock', is_headline e qj_app_state." };
+}
+
+// Gera o "Resumo IA do dia" no servidor (cron) e guarda em qj_app_state — assim
+// não roda no navegador de cada visitante (caro/lento).
+async function handleGenerateDailySummary(sql) {
+  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY é necessária.');
+  const arts = await sql.query(`select title, tickers from qj_articles where status = 'publicado' order by created_date desc limit 10`);
+  if (arts.length < 3) return { success: true, skipped: true, message: 'Poucas matérias para resumir.' };
+
+  const context = arts.map((a) => `- ${a.title}${a.tickers ? ` [${a.tickers}]` : ''}`).join('\n');
+  const prompt = `Você é analista financeiro sênior. Analise as notícias e escreva exatamente 3 bullets executivos para investidores brasileiros.
+
+Bullet 1 — Principal movimento do mercado hoje (max 20 palavras)
+Bullet 2 — Ativos que merecem atenção e por quê (max 20 palavras, mencione tickers)
+Bullet 3 — Evento mais importante para monitorar nos próximos dias (max 20 palavras)
+
+Notícias:
+${context}
+
+Seja assertivo e concreto. Sem URLs. Retorne JSON com: bullets (array de 3 strings) e mood ("otimista", "cauteloso" ou "pessimista").`;
+
+  const result = await invokeDeepSeek(prompt, true, false);
+  const value = {
+    bullets: Array.isArray(result.bullets) ? result.bullets.slice(0, 3) : [],
+    mood: ['otimista', 'cauteloso', 'pessimista'].includes(result.mood) ? result.mood : 'cauteloso',
+    day: new Date().toISOString().slice(0, 10),
+  };
+  await sql.query(
+    `insert into qj_app_state (key, value, updated_at) values ('daily_summary', $1, now())
+     on conflict (key) do update set value = $1, updated_at = now()`,
+    [JSON.stringify(value)],
+  );
+  return { success: true, ...value };
+}
+
+// Leitura pública (sem IA): o front lê o resumo já gerado.
+async function handleGetDailySummary(sql) {
+  const rows = await sql.query(`select value from qj_app_state where key = 'daily_summary' limit 1`);
+  let value = rows[0]?.value || null;
+  if (typeof value === 'string') { try { value = JSON.parse(value); } catch { value = null; } }
+  return { success: true, summary: value };
 }
 
 // Fixa uma matéria como manchete (e desmarca as demais). Sem id, limpa a manchete.
@@ -1005,6 +1048,8 @@ const handlers = {
   ensureSchema: handleEnsureSchema,
   setHeadline: handleSetHeadline,
   pickHeadline: handlePickHeadline,
+  generateDailySummary: handleGenerateDailySummary,
+  getDailySummary: handleGetDailySummary,
 };
 
 export default async function handler(req, res) {
@@ -1018,7 +1063,7 @@ export default async function handler(req, res) {
   // Funções públicas (chamadas pelo front sem login): histórico do gráfico e o
   // próprio login. As demais (coleta, geração, snapshots, newsletter, etc.)
   // exigem token de admin — o GitHub Actions envia o token via header.
-  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin']);
+  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary']);
 
   try {
     const fn = handlers[name];

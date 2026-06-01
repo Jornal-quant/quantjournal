@@ -85,7 +85,7 @@ export default function ArticleSidebar({ related = [] }) {
           </div>
           <div className="divide-y divide-ds-border">
             {related.slice(0, 4).map((a) => (
-              <Link key={a.id} to={`/artigo/${a.id}`}
+              <Link key={a.id} to={`/artigo/${a.slug || a.id}`}
                 className="group flex gap-3 px-4 py-3 hover:bg-ds-surface2 transition-colors">
                 <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-ds-surface3">
                   {a.image_url

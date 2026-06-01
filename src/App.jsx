@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -18,11 +19,13 @@ import Home from './pages/Home';
 import ArticlePage from './pages/ArticlePage';
 import CategoryPage from './pages/CategoryPage';
 import SearchPage from './pages/SearchPage';
-import AdminDashboard from './pages/admin/AdminDashboard';
 import AssetPageView from './pages/AssetPageView';
 import AssetsIndex from './pages/AssetsIndex';
-import MarketChat from './pages/MarketChat';
 import Metodologia from './pages/Metodologia';
+
+// Carregados sob demanda (reduz o bundle inicial).
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const MarketChat = lazy(() => import('./pages/MarketChat'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -45,6 +48,11 @@ const AuthenticatedApp = () => {
   }
 
   return (
+    <Suspense fallback={(
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#0C0C0A' }}>
+        <div className="w-8 h-8 border-4 border-white/10 border-t-white/60 rounded-full animate-spin"></div>
+      </div>
+    )}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -68,6 +76,7 @@ const AuthenticatedApp = () => {
 
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

@@ -178,7 +178,7 @@ export default function AdminDashboard() {
                       {articles.filter((a) => a.status !== 'revisao').map((a) => (
                         <tr key={a.id} className="border-b border-border/50 hover:bg-muted/30">
                           <td className="p-3 max-w-xs">
-                            <Link to={`/artigo/${a.id}`} className="hover:text-primary font-medium line-clamp-1 text-sm">{a.title}</Link>
+                            <Link to={`/artigo/${a.slug || a.id}`} className="hover:text-primary font-medium line-clamp-1 text-sm">{a.title}</Link>
                           </td>
                           <td className="p-3"><Badge variant="outline" className="text-[10px]">{categoryLabels[a.category] || a.category}</Badge></td>
                           <td className="p-3"><Badge variant={a.status === 'publicado' ? 'default' : 'secondary'} className="text-[10px]">{a.status}</Badge></td>
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
                     {reviewArticles.map((a) => (
                       <tr key={a.id} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="p-3 max-w-xs">
-                          <Link to={`/artigo/${a.id}`} className="hover:text-primary font-medium line-clamp-2 text-sm">{a.title}</Link>
+                          <Link to={`/artigo/${a.slug || a.id}`} className="hover:text-primary font-medium line-clamp-2 text-sm">{a.title}</Link>
                         </td>
                         <td className="p-3">
                           <Badge variant={a.ai_confidence >= 65 ? 'default' : 'destructive'} className="text-[10px]">

@@ -68,6 +68,13 @@ jobs:
             "$SITE_URL/api/functions/pickHeadline" | head -c 500 || true
           echo
 
+      - name: Gerar resumo do dia (IA, no servidor)
+        run: |
+          curl --show-error --silent --location --max-time 60 \
+            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
+            "$SITE_URL/api/functions/generateDailySummary" | head -c 500 || true
+          echo
+
       - name: Atualizar cotações de mercado
         run: |
           curl --fail --show-error --silent --location \

@@ -24,47 +24,27 @@ function loadCache() {
   }
 }
 
-export default function DailySummaryBar({ articles = [] }) {
+export default function DailySummaryBar() {
   const [summary, setSummary] = useState(() => loadCache());
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!loadCache());
 
-  const generate = async () => {
-    if (articles.length === 0) return;
+  // Lê o resumo já gerado pelo servidor (cron). Barato, sem IA no navegador.
+  const load = async () => {
     setLoading(true);
-    const context = articles.slice(0, 10)
-      .map((a) => `- ${a.title}${a.tickers ? ` [${a.tickers}]` : ''}`)
-      .join('\n');
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é analista financeiro sênior. Analise as notícias e escreva exatamente 3 bullets executivos para investidores brasileiros.
-
-Bullet 1 — Principal movimento do mercado hoje (max 20 palavras)
-Bullet 2 — Ativos que merecem atenção e por quê (max 20 palavras, mencione tickers)
-Bullet 3 — Evento mais importante para monitorar nos próximos dias (max 20 palavras)
-
-Notícias:
-${context}
-
-Seja assertivo e concreto. Sem URLs.`,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          bullets: { type: 'array', items: { type: 'string' } },
-          mood: { type: 'string' },
-        },
-      },
-    });
-    setSummary(result);
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ day: todayKey(), summary: result }));
-    } catch { /* ignore quota / privacy mode */ }
+      const res = await base44.functions.invoke('getDailySummary', {});
+      const data = (res?.data || res)?.summary;
+      if (data?.bullets?.length) {
+        setSummary(data);
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify({ day: todayKey(), summary: data })); } catch { /* ignore */ }
+      }
+    } catch { /* mantém o cache, se houver */ }
     setLoading(false);
   };
 
   useEffect(() => {
-    // Só gera se ainda não houver resumo cacheado para hoje.
-    if (articles.length >= 3 && !summary && !loading) generate();
-  }, [articles.length]);
+    if (!summary) load();
+  }, []);
 
   const moodCfg = MOOD_CONFIG[summary?.mood] || null;
 
@@ -85,7 +65,7 @@ Seja assertivo e concreto. Sem URLs.`,
           )}
           {loading && <Loader2 className="w-3 h-3 animate-spin text-white/50" />}
           {!loading && summary && (
-            <button onClick={generate} className="text-white/20 hover:text-white/50 transition-colors duration-150" aria-label="Atualizar resumo">
+            <button onClick={load} className="text-white/20 hover:text-white/50 transition-colors duration-150" aria-label="Atualizar resumo">
               <RefreshCw className="w-3 h-3" />
             </button>
           )}
@@ -101,7 +81,7 @@ Seja assertivo e concreto. Sem URLs.`,
           </div>
         )}
 
-        {!loading && !summary && articles.length < 3 && (
+        {!loading && !summary && (
           <p className="font-sans text-[12px] text-white/50 py-1">Aguardando mais notícias para gerar o resumo.</p>
         )}
 
