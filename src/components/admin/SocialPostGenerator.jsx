@@ -17,7 +17,8 @@ export default function SocialPostGenerator({ article }) {
     setLoading(true);
     setOpen(true);
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é especialista em conteúdo financeiro para redes sociais. Com base no artigo abaixo, gere posts prontos para publicação.
+      quality: true,
+      prompt: `Você é um editor financeiro sênior escrevendo para uma redação profissional. Com base no artigo abaixo, gere textos prontos para publicação em tom jornalístico, objetivo e sóbrio.
 
 Artigo:
 Título: ${article.title}
@@ -26,12 +27,12 @@ Conclusão: ${article.conclusion || ''}
 Tickers: ${article.tickers || ''}
 
 Gere:
-- instagram_caption: legenda para Instagram (3-5 parágrafos, emojis relevantes, 5-8 hashtags no final, call-to-action)
-- x_post: post para X/Twitter (máx 280 chars, 2-3 hashtags, impactante)
-- telegram_message: mensagem para Telegram/WhatsApp (formato com negrito *assim*, emojis, bullet points com • )
+- instagram_caption: legenda para Instagram com linguagem editorial, sem emojis, sem exageros promocionais, 3-5 parágrafos curtos, final discreto e profissional
+- x_post: post para X/Twitter com no máximo 280 caracteres, sem emojis, sem hashtags, sem tom promocional, linguagem factual e jornalística
+- telegram_message: mensagem para Telegram/WhatsApp em tom informativo, sem emojis, sem chamadas sensacionalistas, com parágrafos curtos e leitura limpa
 - key_takeaways: 3 insights principais do artigo (frases curtas, uma por linha)
 
-Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessível.`,
+Não inclua URLs. Escreva em português do Brasil. O texto deve soar como redação de jornal econômico, sem vibe de rede social.`,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -81,7 +82,7 @@ Não inclua URLs. Escreva em português do Brasil. Tom profissional mas acessív
             {loading ? (
               <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm">Gerando posts com IA...</span>
+                <span className="text-sm">Gerando posts com DeepSeek...</span>
               </div>
             ) : posts ? (
               <div className="p-5 space-y-5">
