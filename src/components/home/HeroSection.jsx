@@ -22,7 +22,7 @@ function HeroMain({ article }) {
 
   return (
     <Link to={`/artigo/${article.slug || article.id}`}
-      className="group relative block rounded-xl overflow-hidden border border-white/8 hover:border-white/14 transition-all duration-200 h-80 lg:h-auto" style={{ backgroundColor: '#111110' }}>
+      className="group relative block rounded-xl overflow-hidden border border-foreground/8 hover:border-foreground/14 transition-all duration-200 h-80 lg:h-auto" style={{ backgroundColor: 'hsl(var(--card))' }}>
       {article.image_url ? (
         <img src={article.image_url} alt={article.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 transition-opacity duration-300" loading="lazy" />
       ) : (
@@ -39,13 +39,13 @@ function HeroMain({ article }) {
           {article.sentiment === 'positivo' && <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />}
           {article.sentiment === 'negativo' && <TrendingDown className="w-3.5 h-3.5 text-red-400" />}
         </div>
-        <h2 className="font-mono text-xl font-semibold text-white leading-snug mb-2 group-hover:text-white/90 transition-colors duration-150">
+        <h2 className="font-mono text-xl font-semibold text-white leading-snug mb-2 group-hover:text-foreground/90 transition-colors duration-150">
           {article.title}
         </h2>
         {article.summary && (
-          <p className="font-sans text-[13px] text-white/70 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
+          <p className="font-sans text-[13px] text-foreground/70 leading-relaxed line-clamp-2 mb-3">{article.summary}</p>
         )}
-        <span className="font-mono text-[10px] text-white/55 tabular-nums">{ago}</span>
+        <span className="font-mono text-[10px] text-foreground/55 tabular-nums">{ago}</span>
       </div>
     </Link>
   );
@@ -58,19 +58,19 @@ function HeroSecondary({ article }) {
 
   return (
     <Link to={`/artigo/${article.slug || article.id}`}
-      className="group flex gap-3 p-3.5 rounded-xl border border-white/6 hover:border-white/12 hover:bg-white/3 transition-all duration-200" style={{ backgroundColor: '#111110' }}>
+      className="group flex gap-3 p-3.5 rounded-xl border border-foreground/6 hover:border-foreground/12 hover:bg-foreground/3 transition-all duration-200" style={{ backgroundColor: 'hsl(var(--card))' }}>
       {article.image_url && (
-        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/6">
+        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-foreground/6">
           <img src={article.image_url} alt="" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-200" loading="lazy" />
         </div>
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/50">{cat}</span>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/50">{cat}</span>
         </div>
-        <p className="font-mono text-[13px] font-semibold text-white/70 group-hover:text-white/90 leading-snug line-clamp-2 transition-colors duration-150">{article.title}</p>
-        <span className="font-mono text-[10px] text-white/22 mt-1 block tabular-nums">{ago}</span>
+        <p className="font-mono text-[13px] font-semibold text-foreground/70 group-hover:text-foreground/90 leading-snug line-clamp-2 transition-colors duration-150">{article.title}</p>
+        <span className="font-mono text-[10px] text-foreground/22 mt-1 block tabular-nums">{ago}</span>
       </div>
     </Link>
   );

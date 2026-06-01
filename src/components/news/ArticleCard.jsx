@@ -42,20 +42,20 @@ function CompactCard({ article }) {
 
   return (
     <Link to={`/artigo/${article.slug || article.id}`}
-      className="group flex items-start gap-3 p-3 rounded-lg hover:bg-white/4 transition-colors duration-150 border border-transparent hover:border-white/8 cursor-pointer">
+      className="group flex items-start gap-3 p-3 rounded-lg hover:bg-foreground/4 transition-colors duration-150 border border-transparent hover:border-foreground/8 cursor-pointer">
       <CategoryDot category={article.category} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/55">{cat}</span>
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/55">{cat}</span>
           {article.relevance === 'urgente' && (
             <span className="font-mono text-[8px] font-bold uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-sm">Urgente</span>
           )}
         </div>
-        <p className="font-mono text-[13px] font-medium leading-snug text-white/80 group-hover:text-white transition-colors duration-150 line-clamp-2">{article.title}</p>
+        <p className="font-mono text-[13px] font-medium leading-snug text-foreground/80 group-hover:text-foreground transition-colors duration-150 line-clamp-2">{article.title}</p>
         <div className="flex items-center gap-2 mt-1.5">
           {SentimentIcon && <SentimentIcon className={`w-3 h-3 ${sentiment.color}`} />}
-          <span className="font-mono text-[10px] text-white/50">{ago}</span>
-          {article.source && <span className="font-mono text-[10px] text-white/15 truncate max-w-[80px]">· {article.source}</span>}
+          <span className="font-mono text-[10px] text-foreground/50">{ago}</span>
+          {article.source && <span className="font-mono text-[10px] text-foreground/15 truncate max-w-[80px]">· {article.source}</span>}
         </div>
       </div>
     </Link>
@@ -74,9 +74,9 @@ function DefaultCard({ article }) {
 
   return (
     <Link to={`/artigo/${article.slug || article.id}`}
-      className="group flex flex-col bg-white/3 hover:bg-white/6 border border-white/8 hover:border-white/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
+      className="group flex flex-col bg-foreground/3 hover:bg-foreground/6 border border-foreground/8 hover:border-foreground/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
       {/* Image or generated category cover */}
-      <div className="relative h-40 flex-shrink-0 overflow-hidden bg-white/4">
+      <div className="relative h-40 flex-shrink-0 overflow-hidden bg-foreground/4">
         {article.image_url ? (
           <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity duration-300" loading="lazy" />
         ) : (
@@ -84,7 +84,7 @@ function DefaultCard({ article }) {
             className="w-full h-full flex flex-col justify-between p-3.5"
             style={{ background: `radial-gradient(ellipse at 75% 20%, ${accent}30 0%, transparent 65%), linear-gradient(135deg, ${accent}12 0%, transparent 70%)` }}>
             <span className="font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: `${accent}` }}>{cat}</span>
-            <span className="font-mono text-[26px] font-bold leading-none text-white/10 self-end tabular-nums">
+            <span className="font-mono text-[26px] font-bold leading-none text-foreground/10 self-end tabular-nums">
               {firstTicker || '⬡'}
             </span>
           </div>
@@ -104,7 +104,7 @@ function DefaultCard({ article }) {
         <div className="flex items-center gap-2 mb-2.5">
           <div className="flex items-center gap-1.5">
             <CategoryDot category={article.category} />
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/55">{cat}</span>
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/55">{cat}</span>
           </div>
           {SentimentIcon && (
             <span className={`flex items-center gap-0.5 font-mono text-[9px] ${sentiment.color}`}>
@@ -119,20 +119,20 @@ function DefaultCard({ article }) {
         </div>
 
         {/* Title */}
-        <h3 className="font-mono text-[14px] font-semibold leading-snug text-white/85 group-hover:text-white transition-colors duration-150 line-clamp-2 flex-1 mb-2">
+        <h3 className="font-mono text-[14px] font-semibold leading-snug text-foreground/85 group-hover:text-foreground transition-colors duration-150 line-clamp-2 flex-1 mb-2">
           {article.title}
         </h3>
 
         {/* Summary */}
         {article.summary && (
-          <p className="font-sans text-[12px] text-white/60 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
+          <p className="font-sans text-[12px] text-foreground/60 line-clamp-2 leading-relaxed mb-3">{article.summary}</p>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/6 mt-auto">
-          <span className="font-mono text-[10px] text-white/50 tabular-nums">{ago}</span>
+        <div className="flex items-center justify-between pt-3 border-t border-foreground/6 mt-auto">
+          <span className="font-mono text-[10px] text-foreground/50 tabular-nums">{ago}</span>
           {article.source && (
-            <span className="font-mono text-[10px] text-white/20 truncate max-w-[100px]">{article.source}</span>
+            <span className="font-mono text-[10px] text-foreground/20 truncate max-w-[100px]">{article.source}</span>
           )}
         </div>
       </div>

@@ -49,12 +49,12 @@ export default function DailySummaryBar() {
   const moodCfg = MOOD_CONFIG[summary?.mood] || null;
 
   return (
-    <div className="border border-white/8 rounded-xl overflow-hidden" style={{ backgroundColor: '#111110' }}>
+    <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/6 bg-white/3">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-foreground/6 bg-foreground/3">
         <div className="flex items-center gap-2">
-          <Zap className="w-3 h-3 text-white/55" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/65">Resumo IA do dia</span>
+          <Zap className="w-3 h-3 text-foreground/55" />
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/65">Resumo IA do dia</span>
         </div>
         <div className="flex items-center gap-2">
           {moodCfg && (
@@ -63,9 +63,9 @@ export default function DailySummaryBar() {
               {summary.mood}
             </span>
           )}
-          {loading && <Loader2 className="w-3 h-3 animate-spin text-white/50" />}
+          {loading && <Loader2 className="w-3 h-3 animate-spin text-foreground/50" />}
           {!loading && summary && (
-            <button onClick={load} className="text-white/20 hover:text-white/50 transition-colors duration-150" aria-label="Atualizar resumo">
+            <button onClick={load} className="text-foreground/20 hover:text-foreground/50 transition-colors duration-150" aria-label="Atualizar resumo">
               <RefreshCw className="w-3 h-3" />
             </button>
           )}
@@ -76,21 +76,21 @@ export default function DailySummaryBar() {
       <div className="p-4">
         {loading && !summary && (
           <div className="flex items-center gap-2.5 py-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-white/50 flex-shrink-0" />
-            <span className="font-sans text-[12px] text-white/50">Analisando as principais notícias do dia…</span>
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground/50 flex-shrink-0" />
+            <span className="font-sans text-[12px] text-foreground/50">Analisando as principais notícias do dia…</span>
           </div>
         )}
 
         {!loading && !summary && (
-          <p className="font-sans text-[12px] text-white/50 py-1">Aguardando mais notícias para gerar o resumo.</p>
+          <p className="font-sans text-[12px] text-foreground/50 py-1">Aguardando mais notícias para gerar o resumo.</p>
         )}
 
         {summary?.bullets && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {summary.bullets.slice(0, 3).map((b, i) => (
-              <div key={i} className="bg-white/3 border border-white/6 rounded-lg p-3 flex flex-col gap-2">
-                <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/50">{LABELS[i]}</span>
-                <p className="font-sans text-[13px] text-white/65 leading-relaxed">{b}</p>
+              <div key={i} className="bg-foreground/3 border border-foreground/6 rounded-lg p-3 flex flex-col gap-2">
+                <span className="font-mono text-[9px] font-semibold uppercase tracking-widest text-foreground/50">{LABELS[i]}</span>
+                <p className="font-sans text-[13px] text-foreground/65 leading-relaxed">{b}</p>
               </div>
             ))}
           </div>

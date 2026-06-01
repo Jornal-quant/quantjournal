@@ -49,8 +49,8 @@ const AuthenticatedApp = () => {
 
   return (
     <Suspense fallback={(
-      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: '#0C0C0A' }}>
-        <div className="w-8 h-8 border-4 border-white/10 border-t-white/60 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: 'hsl(var(--background))' }}>
+        <div className="w-8 h-8 border-4 border-foreground/10 border-t-white/60 rounded-full animate-spin"></div>
       </div>
     )}>
     <Routes>
