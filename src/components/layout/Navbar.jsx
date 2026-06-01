@@ -14,6 +14,7 @@ const NAV = [
   { label: 'Economia',      path: '/categoria/economia' },
   { label: 'Renda Fixa',   path: '/categoria/renda_fixa' },
   { label: 'Ativos',        path: '/ativos' },
+  { label: 'Gráficos',      path: '/graficos' },
 ];
 
 export default function Navbar() {

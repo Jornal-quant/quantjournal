@@ -26,6 +26,7 @@ import Metodologia from './pages/Metodologia';
 // Carregados sob demanda (reduz o bundle inicial).
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MarketChat = lazy(() => import('./pages/MarketChat'));
+const ChartsPage = lazy(() => import('./pages/ChartsPage'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/ativos" element={<AssetsIndex />} />
         <Route path="/ativo/:slug" element={<AssetPageView />} />
         <Route path="/chat" element={<MarketChat />} />
+        <Route path="/graficos" element={<ChartsPage />} />
         <Route path="/metodologia" element={<Metodologia />} />
       </Route>
 
