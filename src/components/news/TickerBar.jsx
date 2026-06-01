@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { formatMarketPrice, formatChangePercent, isSaneSnapshot } from '@/lib/utils';
+import { triggerQuotesRefresh } from '@/lib/market';
 
 const FALLBACK = [
   { name: 'IBOV',    value: '137.248',   change: '+0,62%', up: true  },
@@ -17,7 +18,10 @@ const FALLBACK = [
 export default function TickerBar() {
   const { data: snaps = [] } = useQuery({
     queryKey: ['ticker-snapshots'],
-    queryFn: () => base44.entities.MarketSnapshot.list(),
+    queryFn: () => {
+      triggerQuotesRefresh(); // mantém as cotações frescas enquanto há visitantes
+      return base44.entities.MarketSnapshot.list();
+    },
     staleTime: 60 * 1000,
     refetchInterval: 60 * 1000, // cotações ao vivo
     refetchOnWindowFocus: true,

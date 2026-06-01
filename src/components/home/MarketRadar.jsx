@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { formatMarketPrice, formatChangePercent, isSaneSnapshot, timeAgo } from '@/lib/utils';
+import { triggerQuotesRefresh } from '@/lib/market';
 
 const FALLBACK = [
   { symbol: 'IBOV',    name: 'Ibovespa',     price: 137248, change_percent: 0.62,  market_type: 'index' },
@@ -16,7 +17,10 @@ const FALLBACK = [
 export default function MarketRadar() {
   const { data: snapshots = [] } = useQuery({
     queryKey: ['market-radar'],
-    queryFn: () => base44.entities.MarketSnapshot.list(),
+    queryFn: () => {
+      triggerQuotesRefresh(); // mantém as cotações frescas enquanto há visitantes
+      return base44.entities.MarketSnapshot.list();
+    },
     staleTime: 60 * 1000,
     refetchInterval: 60 * 1000, // cotações ao vivo
     refetchOnWindowFocus: true,
