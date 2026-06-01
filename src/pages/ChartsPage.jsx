@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { triggerQuotesRefresh } from '@/lib/market';
 import { 
   AreaChart, Area, LineChart, Line, XAxis, YAxis, 
   Tooltip, ResponsiveContainer, CartesianGrid, Legend 
@@ -95,8 +96,13 @@ export default function ChartsPage() {
   // Cotações ao vivo do sistema
   const { data: snapshots = [] } = useQuery({
     queryKey: ['snapshots-charts'],
-    queryFn: () => base44.entities.MarketSnapshot.list(),
+    queryFn: () => {
+      triggerQuotesRefresh(); // mantém as cotações frescas enquanto há visitantes
+      return base44.entities.MarketSnapshot.list();
+    },
     staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000, // atualizar a cada 60s
+    refetchOnWindowFocus: true,
   });
 
   // Query do ativo principal
