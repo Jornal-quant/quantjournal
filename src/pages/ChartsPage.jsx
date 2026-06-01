@@ -60,9 +60,9 @@ const RANGES = [
   { key: '1y', label: '1 Ano' },
 ];
 
-// Calcula Média Móvel Simples (SMA)
+// Calcula Média Móvel Simples (SMA) de forma segura
 function calculateSMA(series, period) {
-  if (!series || series.length < period) return [];
+  if (!Array.isArray(series) || series.length < period) return [];
   const result = [];
   for (let i = 0; i < series.length; i++) {
     if (i < period - 1) {
@@ -70,7 +70,7 @@ function calculateSMA(series, period) {
     } else {
       let sum = 0;
       for (let j = 0; j < period; j++) {
-        sum += series[i - j].close;
+        sum += (series[i - j]?.close || 0);
       }
       result.push(parseFloat((sum / period).toFixed(4)));
     }
@@ -115,13 +115,13 @@ export default function ChartsPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Encontra snapshots de cotação atuais
+  // Encontra snapshots de cotação atuais de forma segura
   const primarySnapshot = useMemo(() => {
-    return snapshots.find(s => s.symbol?.toUpperCase() === primaryAsset.ticker?.toUpperCase());
+    return Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === primaryAsset.ticker?.toUpperCase()) : null;
   }, [snapshots, primaryAsset]);
 
   const compareSnapshot = useMemo(() => {
-    return compareAsset ? snapshots.find(s => s.symbol?.toUpperCase() === compareAsset.ticker?.toUpperCase()) : null;
+    return compareAsset && Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === compareAsset.ticker?.toUpperCase()) : null;
   }, [snapshots, compareAsset]);
 
   // Lista filtrada de ativos por categoria
@@ -129,10 +129,10 @@ export default function ChartsPage() {
     return ASSETS.filter(a => a.type === selectedCat);
   }, [selectedCat]);
 
-  // Processamento e Alinhamento de dados históricos
+  // Processamento e Alinhamento de dados históricos de forma ultra-segura
   const chartData = useMemo(() => {
-    const pSeries = primaryData?.data?.series || [];
-    const cSeries = compareAsset && compareData?.data?.series || [];
+    const pSeries = Array.isArray(primaryData?.data?.series) ? primaryData.data.series : [];
+    const cSeries = compareAsset && Array.isArray(compareData?.data?.series) ? compareData.data.series : [];
 
     if (pSeries.length === 0) return [];
 
@@ -146,8 +146,8 @@ export default function ChartsPage() {
           date: d.date,
           close: d.close,
         };
-        if (showSma20 && sma20[i] !== null) item.sma20 = sma20[i];
-        if (showSma50 && sma50[i] !== null) item.sma50 = sma50[i];
+        if (showSma20 && sma20[i] !== null && sma20[i] !== undefined) item.sma20 = sma20[i];
+        if (showSma50 && sma50[i] !== null && sma50[i] !== undefined) item.sma50 = sma50[i];
         return item;
       });
     }
@@ -183,20 +183,27 @@ export default function ChartsPage() {
 
   // Variação total no período
   const periodStats = useMemo(() => {
-    const series = primaryData?.data?.series || [];
+    const series = Array.isArray(primaryData?.data?.series) ? primaryData.data.series : [];
     if (series.length < 2) return null;
     const first = series[0]?.close;
     const last = series[series.length - 1]?.close;
+    if (first === undefined || last === undefined) return null;
     const diff = last - first;
-    const pct = (diff / first) * 100;
+    const pct = first !== 0 ? (diff / first) * 100 : 0;
     return { first, last, diff, pct, up: pct >= 0 };
   }, [primaryData]);
 
-  // Formatação
-  const fmtPrice = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: Number(v) >= 1000 ? 0 : 2 });
+  // Formatação segura (nunca retorna undefined/null/NaN)
+  const fmtPrice = (v) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '—';
+    return n.toLocaleString('pt-BR', { maximumFractionDigits: n >= 1000 ? 0 : 2 });
+  };
+  
   const fmtDate = (d) => {
+    if (!d) return '';
     const p = String(d).slice(0, 10).split('-');
-    return p.length === 3 ? `${p[2]}/${p[1]}` : d;
+    return p.length === 3 ? `${p[2]}/${p[1]}` : String(d);
   };
 
   const handleSelectPrimary = (asset) => {
@@ -423,10 +430,10 @@ REGRAS CRÍTICAS:
                         <Tooltip
                           contentStyle={{ background: '#111110', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
                           labelStyle={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace' }}
-                          labelFormatter={(d) => String(d).slice(0, 10).split('-').reverse().join('/')}
+                          labelFormatter={(d) => d ? String(d).slice(0, 10).split('-').reverse().join('/') : ''}
                           formatter={(value, name, props) => {
                             const isP = name === primaryAsset.name;
-                            const abs = isP ? props.payload.pClose : props.payload.cClose;
+                            const abs = isP ? props?.payload?.pClose : props?.payload?.cClose;
                             return [
                               <span className="font-mono">
                                 <strong>{value}%</strong> <span className="text-muted-foreground text-[11px]">({fmtPrice(abs)})</span>
@@ -481,7 +488,7 @@ REGRAS CRÍTICAS:
                         <Tooltip
                           contentStyle={{ background: '#111110', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, fontSize: 12 }}
                           labelStyle={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace' }}
-                          labelFormatter={(d) => String(d).slice(0, 10).split('-').reverse().join('/')}
+                          labelFormatter={(d) => d ? String(d).slice(0, 10).split('-').reverse().join('/') : ''}
                           formatter={(v, name) => {
                             if (name === 'sma20') return [fmtPrice(v), 'Média Móvel (20)'];
                             if (name === 'sma50') return [fmtPrice(v), 'Média Móvel (50)'];
@@ -569,7 +576,7 @@ REGRAS CRÍTICAS:
                   <ReactMarkdown 
                     className="font-sans text-sm leading-relaxed text-foreground/85 space-y-3 [&>p]:leading-relaxed [&>ul]:list-disc [&>ul]:pl-5 [&>h3]:font-mono [&>h3]:text-[12px] [&>h3]:font-bold [&>h3]:uppercase [&>h3]:tracking-wider [&>h3]:text-[var(--title-accent)] [&>h3]:mt-4"
                   >
-                    {aiReport}
+                    {typeof aiReport === 'string' ? aiReport : JSON.stringify(aiReport)}
                   </ReactMarkdown>
                 </div>
               ) : (
@@ -622,7 +629,7 @@ REGRAS CRÍTICAS:
             
             <div className="divide-y divide-ds-border max-h-[380px] overflow-y-auto scrollbar-none">
               {filteredAssets.map((asset) => {
-                const snap = snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase());
+                const snap = Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase()) : null;
                 const isSelected = primaryAsset.slug === asset.slug;
                 const isComparing = compareAsset?.slug === asset.slug;
                 
@@ -706,7 +713,7 @@ REGRAS CRÍTICAS:
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {ASSETS.filter(a => ['ibovespa', 'dolar', 'bitcoin', 'petrobras'].includes(a.slug)).map((asset) => {
-            const snap = snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase());
+            const snap = Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase()) : null;
             const active = primaryAsset.slug === asset.slug;
 
             return (
