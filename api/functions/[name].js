@@ -891,9 +891,9 @@ async function handleSendDailyNewsletter(sql, body) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.NEWSLETTER_FROM || 'FinAI Pulse <news@example.com>',
+        from: process.env.NEWSLETTER_FROM || 'Capital Times <news@example.com>',
         to: subscriber.email,
-        subject: `FinAI Pulse: resumo ${type}`,
+        subject: `Capital Times: resumo ${type}`,
         html,
       }),
     });

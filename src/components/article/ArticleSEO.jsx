@@ -18,10 +18,10 @@ export default function ArticleSEO({ article }) {
       description: article.meta_description || article.summary || '',
       datePublished: article.created_date,
       dateModified: article.updated_date || article.created_date,
-      author: { '@type': 'Organization', name: 'FinAI Pulse' },
+      author: { '@type': 'Organization', name: 'Capital Times' },
       publisher: {
         '@type': 'Organization',
-        name: 'FinAI Pulse',
+        name: 'Capital Times',
         logo: { '@type': 'ImageObject', url: logoUrl },
       },
       image: ogImage,
@@ -51,7 +51,7 @@ export default function ArticleSEO({ article }) {
     canonicalEl.setAttribute('href', canonicalUrl);
 
     // Title
-    document.title = `${article.meta_title || article.title} | FinAI Pulse`;
+    document.title = `${article.meta_title || article.title} | Capital Times`;
 
     // Basic meta
     setMeta('description', article.meta_description || article.summary || '');
@@ -62,7 +62,7 @@ export default function ArticleSEO({ article }) {
     setMeta('og:description', article.meta_description || article.summary || '', true);
     setMeta('og:image', ogImage, true);
     setMeta('og:url', canonicalUrl, true);
-    setMeta('og:site_name', 'FinAI Pulse', true);
+    setMeta('og:site_name', 'Capital Times', true);
 
     // Twitter Card
     setMeta('twitter:card', 'summary_large_image');

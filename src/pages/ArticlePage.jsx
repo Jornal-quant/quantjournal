@@ -358,7 +358,7 @@ export default function ArticlePage() {
                 {/* Bottom disclaimer */}
                 <div className="bg-ds-surface2 border border-ds-border rounded-lg p-4">
                   <p className="font-sans text-[11px] text-muted-foreground leading-relaxed">
-                    <strong className="font-semibold text-foreground/60">Aviso importante:</strong> O conteúdo do FinAI Pulse é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
+                    <strong className="font-semibold text-foreground/60">Aviso importante:</strong> O conteúdo do Capital Times é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
                   </p>
                 </div>
               </div>
