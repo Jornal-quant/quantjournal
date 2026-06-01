@@ -74,11 +74,11 @@ function DefaultCard({ article }) {
 
   return (
     <Link to={`/artigo/${article.slug || article.id}`}
-      className="group flex flex-col bg-foreground/3 hover:bg-foreground/6 border border-foreground/8 hover:border-foreground/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
+      className="group flex flex-col bg-[hsl(var(--card))] hover:bg-secondary/50 border border-foreground/10 hover:border-foreground/20 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
       {/* Image or generated category cover */}
-      <div className="relative h-40 flex-shrink-0 overflow-hidden bg-foreground/4">
+      <div className="relative h-40 flex-shrink-0 overflow-hidden bg-secondary/40">
         {article.image_url ? (
-          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-85 transition-opacity duration-300" loading="lazy" />
+          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-95 group-hover:opacity-100 transition-opacity duration-300" loading="lazy" />
         ) : (
           <div
             className="w-full h-full flex flex-col justify-between p-3.5"
