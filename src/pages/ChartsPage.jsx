@@ -632,6 +632,7 @@ REGRAS CRÍTICAS:
             <div className="divide-y divide-ds-border max-h-[380px] overflow-y-auto scrollbar-none">
               {filteredAssets.map((asset) => {
                 const snap = Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase()) : null;
+                const snapChange = snap ? Number(snap.change_percent) : NaN;
                 const isSelected = primaryAsset.slug === asset.slug;
                 const isComparing = compareAsset?.slug === asset.slug;
                 
@@ -678,9 +679,9 @@ REGRAS CRÍTICAS:
                         <div className="text-right min-w-[64px]">
                           <p className="font-mono text-[11px] font-semibold">{formatMarketPrice(snap)}</p>
                           <p className={`font-mono text-[9px] font-semibold ${
-                            snap.change_percent >= 0 ? 'text-ds-up' : 'text-ds-dn'
+                            snapChange >= 0 ? 'text-ds-up' : 'text-ds-dn'
                           }`}>
-                            {snap.change_percent >= 0 ? '+' : ''}{snap.change_percent.toFixed(2)}%
+                            {Number.isFinite(snapChange) ? (snapChange >= 0 ? '+' : '') + snapChange.toFixed(2) + '%' : '—'}
                           </p>
                         </div>
                       )}
@@ -716,6 +717,7 @@ REGRAS CRÍTICAS:
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {ASSETS.filter(a => ['ibovespa', 'dolar', 'bitcoin', 'petrobras'].includes(a.slug)).map((asset) => {
             const snap = Array.isArray(snapshots) ? snapshots.find(s => s.symbol?.toUpperCase() === asset.ticker?.toUpperCase()) : null;
+            const snapChange = snap ? Number(snap.change_percent) : NaN;
             const active = primaryAsset.slug === asset.slug;
 
             return (
@@ -741,9 +743,9 @@ REGRAS CRÍTICAS:
                   <div className="flex items-baseline justify-between">
                     <span className="font-mono text-base font-semibold">{formatMarketPrice(snap)}</span>
                     <span className={`font-mono text-[11px] font-bold flex items-center gap-0.5 ${
-                      snap.change_percent >= 0 ? 'text-ds-up' : 'text-ds-dn'
+                      snapChange >= 0 ? 'text-ds-up' : 'text-ds-dn'
                     }`}>
-                      {snap.change_percent >= 0 ? '+' : ''}{snap.change_percent.toFixed(2)}%
+                      {Number.isFinite(snapChange) ? (snapChange >= 0 ? '+' : '') + snapChange.toFixed(2) + '%' : '—'}
                     </span>
                   </div>
                 )}
