@@ -32,30 +32,31 @@ export default function MarketRadar() {
     : null;
 
   return (
-    <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
-      {/* Header */}
-      <div className="px-4 py-2.5 border-b border-foreground/6 flex items-center justify-between bg-foreground/3">
-        <div className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-foreground/15'}`} />
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">Mercados</span>
+    <section className="border border-foreground/15 rounded-md overflow-hidden bg-[hsl(var(--card))]">
+      <div className="px-4 py-3 border-b border-foreground/15 flex items-center justify-between bg-secondary/40">
+        <div className="flex items-center gap-2.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-foreground/30'}`} />
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--title-accent)]">Mercados</span>
         </div>
-        <span className="font-mono text-[11px] text-foreground/65">
+        <span className="font-mono text-[11px] text-foreground/70 tabular-nums">
           {isLive ? (lastUpdate ? `Atualizado ${timeAgo(lastUpdate)}` : 'Dados do sistema') : 'Aguardando dados'}
         </span>
       </div>
 
-      {/* Asset grid */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-foreground/6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y lg:divide-y-0 divide-foreground/12">
         {data.map((s) => {
           const up = s.change_percent > 0;
           const dn = s.change_percent < 0;
           const Icon = up ? TrendingUp : dn ? TrendingDown : null;
           return (
-            <div key={s.symbol} className="px-3.5 py-3 hover:bg-foreground/4 transition-colors duration-150 group">
-              <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/75 mb-1.5">{s.symbol}</p>
-              <p className="font-mono text-[16px] font-semibold text-foreground tabular-nums leading-none mb-1">{formatMarketPrice(s)}</p>
-              <div className="flex items-center gap-1">
-                {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-400' : 'text-red-400'}`} />}
+            <div key={s.symbol} className="px-4 py-3.5 hover:bg-secondary/45 transition-colors duration-150">
+              <div className="flex items-baseline justify-between gap-2 mb-2">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/75">{s.symbol}</p>
+                <p className="font-sans text-[11px] text-foreground/45 truncate">{s.name}</p>
+              </div>
+              <p className="font-mono text-[18px] font-semibold text-foreground tabular-nums leading-none mb-1.5">{formatMarketPrice(s)}</p>
+              <div className="flex items-center gap-1.5">
+                {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-500' : 'text-red-500'}`} />}
                 <p className={`font-mono text-[12px] font-medium tabular-nums ${
                   dn ? 'text-red-500' : up ? 'text-emerald-500' : 'text-foreground/65'
                 }`}>
@@ -66,6 +67,6 @@ export default function MarketRadar() {
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

@@ -49,12 +49,11 @@ export default function DailySummaryBar() {
   const moodCfg = MOOD_CONFIG[summary?.mood] || null;
 
   return (
-    <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-foreground/6 bg-foreground/3">
-        <div className="flex items-center gap-2">
-          <Zap className="w-3 h-3 text-foreground/55" />
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">Resumo IA do dia</span>
+    <section className="border border-foreground/15 rounded-md overflow-hidden bg-[hsl(var(--card))]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/15 bg-secondary/40">
+        <div className="flex items-center gap-2.5">
+          <Zap className="w-3.5 h-3.5 text-[var(--title-accent)]" />
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--title-accent)]">Resumo IA do dia</span>
         </div>
         <div className="flex items-center gap-2">
           {moodCfg && (
@@ -65,30 +64,40 @@ export default function DailySummaryBar() {
           )}
           {loading && <Loader2 className="w-3 h-3 animate-spin text-foreground/50" />}
           {!loading && summary && (
-            <button onClick={load} className="text-foreground/20 hover:text-foreground/50 transition-colors duration-150" aria-label="Atualizar resumo">
+            <button onClick={load} className="text-foreground/45 hover:text-foreground transition-colors duration-150" aria-label="Atualizar resumo">
               <RefreshCw className="w-3 h-3" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Body */}
-      <div className="p-4">
+      <div className="px-4 py-4">
         {loading && !summary && (
-          <div className="flex items-center gap-2.5 py-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-foreground/50 flex-shrink-0" />
-            <span className="font-sans text-[14px] text-foreground/65">Analisando as principais notícias do dia…</span>
+          <div className="flex items-center justify-between gap-4 border-l-2 border-[var(--title-accent)] pl-3">
+            <div>
+              <p className="font-mono text-[13px] font-semibold text-foreground">Preparando leitura do mercado</p>
+              <p className="font-sans text-[13px] text-foreground/65 leading-relaxed">A IA está cruzando as notícias mais recentes antes de publicar o resumo.</p>
+            </div>
+            <Loader2 className="w-4 h-4 animate-spin text-[var(--title-accent)] flex-shrink-0" />
           </div>
         )}
 
         {!loading && !summary && (
-          <p className="font-sans text-[14px] text-foreground/65 py-1">Aguardando mais notícias para gerar o resumo.</p>
+          <div className="flex items-center justify-between gap-4 border-l-2 border-foreground/20 pl-3">
+            <div>
+              <p className="font-mono text-[13px] font-semibold text-foreground">Resumo ainda não disponível</p>
+              <p className="font-sans text-[13px] text-foreground/65 leading-relaxed">Aguardando volume suficiente de notícias relevantes para gerar uma leitura do dia.</p>
+            </div>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground/55 border border-foreground/15 px-2.5 py-1 rounded-sm whitespace-nowrap">
+              Aguardando
+            </span>
+          </div>
         )}
 
         {summary?.bullets && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-foreground/12">
             {summary.bullets.slice(0, 3).map((b, i) => (
-              <div key={i} className="bg-foreground/3 border border-foreground/6 rounded-lg p-3 flex flex-col gap-2">
+              <div key={i} className="py-1 sm:px-4 first:pl-0 last:pr-0 flex flex-col gap-2">
                 <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-[var(--title-accent)]">{LABELS[i]}</span>
                 <p className="font-sans text-[14px] text-foreground/78 leading-relaxed">{b}</p>
               </div>
@@ -96,6 +105,6 @@ export default function DailySummaryBar() {
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
