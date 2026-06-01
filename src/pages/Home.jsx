@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { triggerNewsRefresh } from '@/lib/market';
@@ -220,16 +220,24 @@ function Sidebar({ trending }) {
 
 /* ─── MAIN PAGE ─── */
 export default function Home() {
+  const queryClient = useQueryClient();
   const { data: raw = [], isLoading } = useQuery({
     queryKey: ['articles-home'],
-    queryFn: () => {
-      triggerNewsRefresh(); // mantém o jornal vivo enquanto há visitantes
-      return base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 120);
-    },
+    queryFn: () => base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 120),
     // Feed ao vivo: revalida a cada 60s e ao voltar o foco para a aba.
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    triggerNewsRefresh().then((result) => {
+      if (!cancelled && result?.refreshed) {
+        queryClient.invalidateQueries({ queryKey: ['articles-home'] });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [queryClient]);
 
   const articles = useMemo(() => dedupe(raw), [raw]);
 

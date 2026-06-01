@@ -35,16 +35,19 @@ const NEWS_BROWSER_THROTTLE_MS = 10 * 60 * 1000;
 
 export function triggerNewsRefresh() {
   const now = Date.now();
-  if (now - lastNewsTrigger < NEWS_BROWSER_THROTTLE_MS) return;
+  if (now - lastNewsTrigger < NEWS_BROWSER_THROTTLE_MS) return Promise.resolve(null);
   lastNewsTrigger = now;
 
-  fetch('/api/functions/refreshNewsIfStale', {
+  return fetch('/api/functions/refreshNewsIfStale', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{}',
     keepalive: true,
-  }).catch(() => {
+  })
+    .then((response) => response.json().catch(() => null))
+    .catch(() => {
     // Silencioso: o servidor só gera matéria se houver notícia velha; qualquer
     // falha aqui não afeta a UI, que segue mostrando o conteúdo atual.
-  });
+      return null;
+    });
 }
