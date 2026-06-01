@@ -97,7 +97,7 @@ function LandingHero() {
               <span style={{ color: '#8C8478' }}>antes de todo mundo</span>
             </h1>
             <p className="font-sans text-base text-white/65 leading-relaxed mb-2 max-w-lg">
-              O FinAI Pulse monitora fontes financeiras globais, identifica eventos relevantes e transforma dados complexos em análises claras e rastreáveis.
+              O Capital Times monitora fontes financeiras globais, identifica eventos relevantes e transforma dados complexos em análises claras e rastreáveis.
             </p>
             <p className="font-sans text-sm text-white/22 leading-relaxed mb-10 max-w-lg">
               Para investidores, analistas e profissionais que precisam de contexto e velocidade — sem ruído.
@@ -117,7 +117,7 @@ function LandingHero() {
 
           {/* Value prop card */}
           <div className="border border-white/8 rounded-xl p-5 bg-white/3">
-            <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/20 mb-4">O que o FinAI Pulse faz</p>
+            <p className="font-mono text-[9px] font-semibold uppercase tracking-widest text-white/20 mb-4">O que o Capital Times faz</p>
             <div className="space-y-3">
               {[
                 'Monitora fontes financeiras globais continuamente',
@@ -377,7 +377,7 @@ export default function Home() {
           <div className="flex items-start gap-2.5 max-w-4xl mx-auto">
             <Shield className="w-3.5 h-3.5 text-white/15 flex-shrink-0 mt-0.5" />
             <p className="font-sans text-[11px] text-white/20 leading-relaxed text-center">
-              O conteúdo do FinAI Pulse é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
+              O conteúdo do Capital Times é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
             </p>
           </div>
         </div>

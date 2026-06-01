@@ -16,7 +16,7 @@ const SUGGESTIONS = [
 
 const INITIAL_MSG = {
   role: 'assistant',
-  content: 'Olá. Sou o **Market Chat** do FinAI Pulse.\n\nRespondo com base nas notícias, artigos e dados disponíveis na plataforma. Faça perguntas sobre ativos, eventos de mercado, índices ou temas econômicos.\n\n**Importante:** as respostas são informativas e não constituem recomendação de investimento.',
+  content: 'Olá. Sou o **Market Chat** do Capital Times.\n\nRespondo com base nas notícias, artigos e dados disponíveis na plataforma. Faça perguntas sobre ativos, eventos de mercado, índices ou temas econômicos.\n\n**Importante:** as respostas são informativas e não constituem recomendação de investimento.',
 };
 
 function ChatMessage({ msg }) {
@@ -72,7 +72,7 @@ export default function MarketChat() {
     ).join('\n');
 
     const response = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é o Market Chat do FinAI Pulse, uma plataforma de análise financeira brasileira. Responda em português de forma clara, analítica e objetiva.
+      prompt: `Você é o Market Chat do Capital Times, uma plataforma de análise financeira brasileira. Responda em português de forma clara, analítica e objetiva.
 
 REGRAS IMPORTANTES:
 - Use linguagem analítica: "pode pressionar", "tende a favorecer", "o mercado interpreta", "investidores acompanham"
@@ -179,7 +179,7 @@ Pergunta: "${q}"`,
         </button>
       </form>
       <p className="font-mono text-[9px] text-muted-foreground/30 text-center mt-2">
-        O FinAI Pulse responde com base em notícias públicas e dados da plataforma. Não constitui recomendação de investimento.
+        O Capital Times responde com base em notícias públicas e dados da plataforma. Não constitui recomendação de investimento.
       </p>
     </div>
   );

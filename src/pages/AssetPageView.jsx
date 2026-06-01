@@ -209,7 +209,7 @@ export default function AssetPageView() {
     setLoadingAI(true);
     const context = allArticles.slice(0, 6).map((a) => `- ${a.title}: ${a.summary || ''}`).join('\n');
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Você é analista financeiro sênior do FinAI Pulse. Analise o ativo "${asset?.name || slug}" com base nas notícias recentes.
+      prompt: `Você é analista financeiro sênior do Capital Times. Analise o ativo "${asset?.name || slug}" com base nas notícias recentes.
 
 Notícias recentes:
 ${context || 'Sem notícias recentes sobre este ativo.'}
@@ -361,7 +361,7 @@ Use linguagem analítica. NUNCA use: "compre", "venda", "vai subir", "vai cair",
           {/* Disclaimer */}
           <div className="bg-ds-surface2 border border-ds-border rounded-lg p-3">
             <p className="font-sans text-[11px] text-muted-foreground leading-relaxed">
-              As informações e análises do FinAI Pulse são de caráter informativo e educacional. Não constituem recomendação de investimento, oferta de compra ou venda de ativos.
+              As informações e análises do Capital Times são de caráter informativo e educacional. Não constituem recomendação de investimento, oferta de compra ou venda de ativos.
             </p>
           </div>
         </aside>

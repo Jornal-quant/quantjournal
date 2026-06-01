@@ -6,7 +6,7 @@ const SECTIONS = [
   {
     icon: Globe,
     title: 'Como coletamos informações',
-    content: `O FinAI Pulse monitora fontes públicas e licenciadas do mercado financeiro, incluindo agências de notícias, sites de finanças, relatórios de bancos centrais, comunicados de empresas listadas e dados de mercado. A coleta é realizada de forma automatizada por crawlers e integrações com APIs de terceiros, com frequência configurável por fonte.
+    content: `O Capital Times monitora fontes públicas e licenciadas do mercado financeiro, incluindo agências de notícias, sites de finanças, relatórios de bancos centrais, comunicados de empresas listadas e dados de mercado. A coleta é realizada de forma automatizada por crawlers e integrações com APIs de terceiros, com frequência configurável por fonte.
 
 Cada notícia coletada é armazenada com metadados de origem: URL, data de publicação, fonte e um identificador único para controle de duplicidade.`,
   },
@@ -56,7 +56,7 @@ Ambas as classificações são estimativas e podem não refletir o impacto real 
   {
     icon: AlertTriangle,
     title: 'Limitações da IA',
-    content: `O FinAI Pulse utiliza inteligência artificial com capacidades e limitações conhecidas:
+    content: `O Capital Times utiliza inteligência artificial com capacidades e limitações conhecidas:
 
 - **Alucinação**: modelos de linguagem podem gerar informações incorretas ou inventadas. Todas as análises são baseadas em conteúdo coletado de fontes reais, mas erros podem ocorrer.
 - **Desatualização**: há um intervalo entre a ocorrência de um evento e sua indexação na plataforma.
@@ -83,10 +83,10 @@ export default function Metodologia() {
           <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Metodologia editorial</span>
         </div>
         <h1 className="font-mono text-3xl font-semibold mb-4 leading-tight">
-          Como o FinAI Pulse<br />coleta, analisa e publica
+          Como o Capital Times<br />coleta, analisa e publica
         </h1>
         <p className="font-sans text-base text-muted-foreground leading-relaxed max-w-2xl">
-          O FinAI Pulse coleta informações de fontes públicas e/ou licenciadas, organiza eventos relevantes de mercado e utiliza inteligência artificial para gerar resumos e análises informativas. O sistema busca identificar ativos relacionados, sentimento de mercado e possíveis impactos, sempre com foco em transparência e rastreabilidade.
+          O Capital Times coleta informações de fontes públicas e/ou licenciadas, organiza eventos relevantes de mercado e utiliza inteligência artificial para gerar resumos e análises informativas. O sistema busca identificar ativos relacionados, sentimento de mercado e possíveis impactos, sempre com foco em transparência e rastreabilidade.
         </p>
       </div>
 
@@ -137,10 +137,10 @@ export default function Metodologia() {
               <h2 className="font-mono text-sm font-semibold mb-3">Aviso de não recomendação de investimento</h2>
               <div className="bg-ds-surface2 border border-ds-border rounded-lg p-4">
                 <p className="font-sans text-sm text-muted-foreground leading-relaxed">
-                  O conteúdo do FinAI Pulse é meramente informativo e educacional. <strong className="text-foreground/60">Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados.</strong> Informações podem conter atrasos, erros ou imprecisões. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
+                  O conteúdo do Capital Times é meramente informativo e educacional. <strong className="text-foreground/60">Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados.</strong> Informações podem conter atrasos, erros ou imprecisões. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
                 </p>
                 <p className="font-sans text-xs text-muted-foreground/60 mt-3">
-                  A utilização dos serviços do FinAI Pulse implica na aceitação desta condição. O FinAI Pulse não se responsabiliza por decisões tomadas com base no conteúdo da plataforma.
+                  A utilização dos serviços do Capital Times implica na aceitação desta condição. O Capital Times não se responsabiliza por decisões tomadas com base no conteúdo da plataforma.
                 </p>
               </div>
             </div>

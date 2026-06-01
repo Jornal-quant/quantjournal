@@ -20,7 +20,7 @@ export default function Footer() {
                 <BarChart3 className="w-3.5 h-3.5 text-white/50" />
               </div>
               <span className="font-mono text-[15px] font-semibold tracking-tight text-white">
-                FinAI<span className="text-[#8C8478]">Pulse</span>
+                Capital <span className="text-[#8C8478]">Times</span>
               </span>
             </Link>
             <p className="font-sans text-[13px] text-white/55 leading-relaxed mb-4">
@@ -49,11 +49,11 @@ export default function Footer() {
           <div className="flex items-start gap-2.5 bg-white/3 border border-white/6 rounded-lg p-3">
             <Shield className="w-3.5 h-3.5 text-white/20 flex-shrink-0 mt-0.5" />
             <p className="font-sans text-[11px] text-white/50 leading-relaxed">
-              O conteúdo do FinAI Pulse é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
+              O conteúdo do Capital Times é meramente informativo e educacional. Não constitui recomendação de investimento, consultoria financeira, oferta de compra ou venda de ativos, nem garantia de resultados. Sempre consulte fontes oficiais e profissionais qualificados antes de tomar decisões financeiras.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="font-mono text-[10px] text-white/15">© {new Date().getFullYear()} FinAI Pulse</p>
+            <p className="font-mono text-[10px] text-white/15">© {new Date().getFullYear()} Capital Times</p>
             <div className="flex items-center gap-4">
               <Link to="/metodologia" className="font-mono text-[10px] text-white/20 hover:text-white/65 transition-colors duration-150">Metodologia</Link>
               <span className="text-white/10">·</span>

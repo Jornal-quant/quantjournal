@@ -47,7 +47,7 @@ export default function Navbar() {
             <BarChart3 className="w-3.5 h-3.5 text-white/60" />
           </div>
           <span className="font-mono text-[15px] font-semibold tracking-tight text-white">
-            FinAI<span className="text-[#8C8478]">Pulse</span>
+            Capital <span className="text-[#8C8478]">Times</span>
           </span>
         </Link>
 
