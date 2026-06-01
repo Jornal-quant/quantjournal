@@ -829,7 +829,20 @@ async function handleUpdateMarketSnapshots(sql) {
 async function handleEnsureSchema(sql) {
   await sql.query(`alter table qj_market_snapshots drop constraint if exists qj_market_snapshots_market_type_check`);
   await sql.query(`alter table qj_market_snapshots add constraint qj_market_snapshots_market_type_check check (market_type in ('index', 'fx', 'crypto', 'commodity', 'rate', 'stock'))`);
-  return { success: true, message: "market_type agora aceita 'stock'." };
+  // Manchete fixada pelo editor.
+  await sql.query(`alter table qj_articles add column if not exists is_headline boolean not null default false`);
+  return { success: true, message: "Schema OK: market_type aceita 'stock' e qj_articles tem is_headline." };
+}
+
+// Fixa uma matéria como manchete (e desmarca as demais). Sem id, limpa a manchete.
+async function handleSetHeadline(sql, body) {
+  const id = body.id ? String(body.id) : null;
+  if (id) {
+    await sql.query(`update qj_articles set is_headline = (id = $1)`, [id]);
+    return { success: true, headline_id: id };
+  }
+  await sql.query(`update qj_articles set is_headline = false where is_headline = true`);
+  return { success: true, headline_id: null };
 }
 
 async function handleSendDailyNewsletter(sql, body) {
@@ -962,6 +975,7 @@ const handlers = {
   autoPublishNews: handleAutoPublishNews,
   adminLogin: handleAdminLogin,
   ensureSchema: handleEnsureSchema,
+  setHeadline: handleSetHeadline,
 };
 
 export default async function handler(req, res) {

@@ -230,8 +230,15 @@ export default function Home() {
   const articles = useMemo(() => dedupe(raw), [raw]);
 
   const heroArticles = useMemo(() => {
+    // Manchete fixada pelo editor (is_headline) sempre vem primeiro e não troca
+    // sozinha; o resto preenche por relevância/recência.
+    const headline = articles.find((a) => a.is_headline);
     const priority = articles.filter((a) => a.is_featured || a.relevance === 'urgente' || a.relevance === 'alta');
-    return (priority.length >= 1 ? priority : articles).slice(0, 4);
+    const pool = priority.length >= 1 ? priority : articles;
+    if (headline) {
+      return [headline, ...pool.filter((a) => a.id !== headline.id)].slice(0, 4);
+    }
+    return pool.slice(0, 4);
   }, [articles]);
 
   const heroIds = useMemo(() => new Set(heroArticles.map((a) => a.id)), [heroArticles]);

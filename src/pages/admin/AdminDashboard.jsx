@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Zap, Loader2, Trash2, Star,
+import { BarChart3, Zap, Loader2, Trash2, Star, Megaphone,
   Plus, RefreshCw, Globe, Activity, CheckCircle, AlertCircle,
   Clock, TrendingUp
 } from 'lucide-react';
@@ -59,6 +59,10 @@ export default function AdminDashboard() {
   const toggleFeatured = useMutation({
     mutationFn: ({ id, is_featured }) => base44.entities.Article.update(id, { is_featured: !is_featured }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-articles'] }),
+  });
+  const setHeadline = useMutation({
+    mutationFn: ({ id }) => base44.functions.invoke('setHeadline', { id }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-articles'] }); toast.success('Manchete fixada'); },
   });
   const publishMutation = useMutation({
     mutationFn: (id) => base44.entities.Article.update(id, { status: 'publicado' }),
@@ -181,7 +185,11 @@ export default function AdminDashboard() {
                           <td className="p-3 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <SocialPostGenerator article={a} />
-                              <Button variant="ghost" size="icon" className="h-7 w-7"
+                              <Button variant="ghost" size="icon" className="h-7 w-7" title="Fixar como manchete"
+                                onClick={() => setHeadline.mutate({ id: a.is_headline ? null : a.id })}>
+                                <Megaphone className={`w-3.5 h-3.5 ${a.is_headline ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7" title="Destacar"
                                 onClick={() => toggleFeatured.mutate({ id: a.id, is_featured: a.is_featured })}>
                                 <Star className={`w-3.5 h-3.5 ${a.is_featured ? 'fill-accent text-accent' : 'text-muted-foreground'}`} />
                               </Button>
