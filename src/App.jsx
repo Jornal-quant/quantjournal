@@ -22,11 +22,11 @@ import SearchPage from './pages/SearchPage';
 import AssetPageView from './pages/AssetPageView';
 import AssetsIndex from './pages/AssetsIndex';
 import Metodologia from './pages/Metodologia';
+import ChartsPage from './pages/ChartsPage';
 
 // Carregados sob demanda (reduz o bundle inicial).
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const MarketChat = lazy(() => import('./pages/MarketChat'));
-const ChartsPage = lazy(() => import('./pages/ChartsPage'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();

@@ -407,9 +407,9 @@ REGRAS CRÍTICAS:
                     </div>
                   )}
 
-                  <ResponsiveContainer width="100%" height={320}>
-                    {compareAsset ? (
-                      // COMPARISON CHART: Plot relative variation (%)
+                  {compareAsset ? (
+                    // COMPARISON CHART: Plot relative variation (%) in a dedicated ResponsiveContainer
+                    <ResponsiveContainer width="100%" height={320}>
                       <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                         <CartesianGrid stroke="rgba(255,255,255,0.03)" vertical={false} />
                         <XAxis 
@@ -460,8 +460,10 @@ REGRAS CRÍTICAS:
                           dot={false} 
                         />
                       </LineChart>
-                    ) : (
-                      // ABSOLUTE SINGLE CHART: Area chart with optional SMA overlays
+                    </ResponsiveContainer>
+                  ) : (
+                    // ABSOLUTE SINGLE CHART: Area chart with optional SMA overlays in a dedicated ResponsiveContainer
+                    <ResponsiveContainer width="100%" height={320}>
                       <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
                         <defs>
                           <linearGradient id="primaryAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -523,8 +525,8 @@ REGRAS CRÍTICAS:
                           />
                         )}
                       </AreaChart>
-                    )}
-                  </ResponsiveContainer>
+                    </ResponsiveContainer>
+                  )}
                 </>
               ) : (
                 <div className="h-72 flex items-center justify-center text-center">
