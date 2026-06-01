@@ -151,9 +151,16 @@ function safeIso(value) {
   return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
-// Imagem ilustrativa por categoria via Pexels (fotos livres). Opcional — só roda
-// com PEXELS_API_KEY; sem ela, o artigo fica sem image_url e o front cai no
+// Imagem ilustrativa via Pexels (fotos livres). Opcional — só roda com
+// PEXELS_API_KEY; sem ela, o artigo fica sem image_url e o front cai no
 // gradiente de fallback que já existe.
+//
+// Em vez de uma única busca fixa por categoria, montamos uma lista ordenada de
+// consultas do mais específico (empresa/ticker da matéria) ao mais genérico
+// (palavra-chave do título → categoria), e tentamos uma a uma até achar foto.
+// Assim a imagem tende a "bater" com o conteúdo (ex.: matéria da Petrobras puxa
+// foto de plataforma de petróleo; matéria do dólar puxa foto de câmbio).
+
 const PEXELS_QUERY_BY_CATEGORY = {
   bolsa: 'stock market trading floor',
   renda_fixa: 'bonds finance documents',
@@ -165,6 +172,54 @@ const PEXELS_QUERY_BY_CATEGORY = {
   empresas: 'corporate office business',
   internacional: 'global economy stock exchange',
 };
+
+// Ticker da B3 → busca em inglês que reflete o setor/negócio da empresa.
+const PEXELS_QUERY_BY_TICKER = {
+  PETR4: 'oil platform petroleum industry',
+  PETR3: 'oil platform petroleum industry',
+  VALE3: 'iron ore mining trucks',
+  ITUB4: 'bank building finance',
+  BBDC4: 'bank building finance',
+  BBAS3: 'bank building finance',
+  B3SA3: 'stock exchange trading',
+  ABEV3: 'beer brewery production',
+  WEGE3: 'electric motors industrial factory',
+  MGLU3: 'retail store shopping',
+  ITSA4: 'corporate finance investment',
+  ELET3: 'power grid electricity transmission',
+  ELET6: 'power grid electricity transmission',
+  SUZB3: 'pulp paper factory forest',
+  GGBR4: 'steel mill industry',
+  RENT3: 'car rental fleet',
+  PRIO3: 'offshore oil rig',
+  RADL3: 'pharmacy drugstore',
+  RAIL3: 'freight railway cargo train',
+  EMBR3: 'commercial aircraft aviation',
+};
+
+// Palavra-chave (PT, no título) → busca em inglês. Ordem importa: a primeira
+// que casar com o título é usada antes do fallback de categoria.
+const PEXELS_TITLE_KEYWORDS = [
+  [/\bbitcoin|cripto|ethereum|criptomoeda/i, 'cryptocurrency bitcoin trading'],
+  [/\bd[óo]lar|c[âa]mbio|moeda/i, 'us dollar currency exchange'],
+  [/\beuro\b/i, 'euro currency money'],
+  [/\bselic|juros|copom/i, 'central bank interest rates'],
+  [/\binfla[çc][ãa]o|ipca|pre[çc]os/i, 'rising prices inflation supermarket'],
+  [/\bpetr[óo]leo|brent|barril/i, 'oil platform petroleum'],
+  [/\bg[áa]s natural/i, 'natural gas pipeline'],
+  [/\bouro\b/i, 'gold bars bullion'],
+  [/\bmin[ée]rio|minera[çc][ãa]o/i, 'iron ore mining'],
+  [/\bibovespa|bolsa|a[çc][õo]es|preg[ãa]o/i, 'stock market trading floor'],
+  [/\bfed\b|federal reserve|eua|estados unidos/i, 'wall street new york finance'],
+  [/\bchina|chin[êe]s/i, 'shanghai china economy'],
+  [/\beuropa|europeu|bce/i, 'european central bank finance'],
+  [/\bpib\b|recess[ãa]o|economia/i, 'economy city skyline business'],
+  [/\bd[íi]vida|fiscal|governo|or[çc]amento/i, 'government finance documents'],
+  [/\bsafra|agro|agroneg[óo]cio|soja|milho/i, 'agriculture farm harvest'],
+  [/\bim[óo]vel|imobili[áa]rio|constru[çc][ãa]o/i, 'real estate construction buildings'],
+  [/\btecnologia|intelig[êe]ncia artificial|\bia\b/i, 'technology artificial intelligence'],
+  [/\bbanco|banc[áa]rio/i, 'bank building finance'],
+];
 
 async function fetchPexelsImage(query) {
   const key = process.env.PEXELS_API_KEY;
@@ -183,13 +238,50 @@ async function fetchPexelsImage(query) {
   }
 }
 
-// Preenche image_url (se vazio) com uma foto da categoria. Mutações in-place no
-// articleRow antes do insert.
+// Extrai tickers de uma string "PETR4, VALE3" (campo tickers do articleRow).
+function pickTickers(raw) {
+  if (!raw) return [];
+  return String(raw)
+    .split(/[,;]/)
+    .map((t) => t.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+// Monta a lista ordenada de buscas (mais específica → mais genérica), sem
+// duplicatas. A ordem define a prioridade da imagem escolhida.
+function buildPexelsQueries(articleRow) {
+  const queries = [];
+  const push = (q) => { if (q && !queries.includes(q)) queries.push(q); };
+
+  // 1) Ticker conhecido da matéria (setor da empresa).
+  for (const ticker of pickTickers(articleRow.tickers)) {
+    if (PEXELS_QUERY_BY_TICKER[ticker]) push(PEXELS_QUERY_BY_TICKER[ticker]);
+  }
+
+  // 2) Palavra-chave do título (tema central da notícia).
+  const title = String(articleRow.title || '');
+  for (const [regex, query] of PEXELS_TITLE_KEYWORDS) {
+    if (regex.test(title)) { push(query); break; }
+  }
+
+  // 3) Fallback por categoria e, por fim, genérico.
+  push(PEXELS_QUERY_BY_CATEGORY[articleRow.category]);
+  push('finance stock market');
+
+  return queries;
+}
+
+// Preenche image_url (se vazio) com a primeira foto encontrada entre as buscas
+// candidatas. Mutações in-place no articleRow antes do insert. Limita a 3
+// tentativas para respeitar o limite gratuito do Pexels (200 req/h) — na prática
+// a primeira busca quase sempre retorna foto, então costuma ser 1 requisição.
 async function resolveArticleImage(articleRow) {
   if (articleRow.image_url && String(articleRow.image_url).trim()) return articleRow;
-  const query = PEXELS_QUERY_BY_CATEGORY[articleRow.category] || 'finance stock market';
-  const url = await fetchPexelsImage(query);
-  if (url) articleRow.image_url = url;
+  const queries = buildPexelsQueries(articleRow).slice(0, 3);
+  for (const query of queries) {
+    const url = await fetchPexelsImage(query);
+    if (url) { articleRow.image_url = url; break; }
+  }
   return articleRow;
 }
 
