@@ -102,7 +102,9 @@ export default function ArticlePage() {
   const { data: article, isLoading } = useQuery({
     queryKey: ['article', id],
     queryFn: async () => {
-      const arr = await base44.entities.Article.filter({ id });
+      // O parâmetro pode ser o slug (URLs novas) ou o id (links antigos).
+      let arr = await base44.entities.Article.filter({ slug: id });
+      if (!arr || arr.length === 0) arr = await base44.entities.Article.filter({ id });
       return arr[0];
     },
   });

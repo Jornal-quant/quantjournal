@@ -178,7 +178,7 @@ function Sidebar({ trending }) {
           </div>
           <div className="divide-y divide-white/5">
             {trending.map((a, i) => (
-              <Link key={a.id} to={`/artigo/${a.id}`}
+              <Link key={a.id} to={`/artigo/${a.slug || a.id}`}
                 className="group flex items-start gap-3 px-4 py-3 hover:bg-white/4 transition-colors duration-150">
                 <span className="font-mono text-[18px] font-semibold text-white/8 leading-none mt-0.5 w-5 flex-shrink-0 tabular-nums">{i + 1}</span>
                 <p className="font-mono text-[13px] font-medium leading-snug text-white/55 group-hover:text-white/85 transition-colors duration-150 line-clamp-2">{a.title}</p>
@@ -292,7 +292,7 @@ export default function Home() {
             <span className="font-mono text-[9px] font-bold uppercase tracking-wider bg-red-500/80 text-white px-2 py-0.5 rounded-sm flex-shrink-0">Urgente</span>
             <div className="flex gap-6 overflow-x-auto scrollbar-none">
               {urgent.map((a) => (
-                <Link key={a.id} to={`/artigo/${a.id}`}
+                <Link key={a.id} to={`/artigo/${a.slug || a.id}`}
                   className="font-sans text-[12px] text-red-400/70 whitespace-nowrap hover:text-red-300 transition-colors duration-150 flex-shrink-0">
                   {a.title}
                 </Link>
@@ -317,7 +317,7 @@ export default function Home() {
           {/* Market data */}
           <div className="space-y-3">
             <MarketRadar />
-            <DailySummaryBar articles={articles} />
+            <DailySummaryBar />
           </div>
 
           {/* Hero section */}

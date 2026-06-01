@@ -21,7 +21,7 @@ function HeroMain({ article }) {
   const accent = CAT_ACCENT[article.category] || '#6B7280';
 
   return (
-    <Link to={`/artigo/${article.id}`}
+    <Link to={`/artigo/${article.slug || article.id}`}
       className="group relative block rounded-xl overflow-hidden border border-white/8 hover:border-white/14 transition-all duration-200 h-80 lg:h-auto" style={{ backgroundColor: '#111110' }}>
       {article.image_url ? (
         <img src={article.image_url} alt={article.title} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 transition-opacity duration-300" loading="lazy" />
@@ -57,7 +57,7 @@ function HeroSecondary({ article }) {
   const accent = CAT_ACCENT[article.category] || '#6B7280';
 
   return (
-    <Link to={`/artigo/${article.id}`}
+    <Link to={`/artigo/${article.slug || article.id}`}
       className="group flex gap-3 p-3.5 rounded-xl border border-white/6 hover:border-white/12 hover:bg-white/3 transition-all duration-200" style={{ backgroundColor: '#111110' }}>
       {article.image_url && (
         <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/6">

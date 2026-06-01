@@ -83,3 +83,17 @@ export function isAdminRequest(req) {
   const provided = headers['x-admin-token'] || String(headers.authorization || '').replace(/^Bearer\s+/i, '');
   return provided === token;
 }
+
+// Requisição vinda do próprio site (browser): Origin/Referer com o mesmo host.
+// Bloqueia abuso direto (curl/scripts sem Origin) de endpoints caros como a IA.
+export function isSameOriginRequest(req) {
+  const headers = req.headers || {};
+  const host = headers['x-forwarded-host'] || headers.host || '';
+  const ref = headers.origin || headers.referer || '';
+  if (!ref || !host) return false;
+  try {
+    return new URL(ref).host === host;
+  } catch {
+    return false;
+  }
+}

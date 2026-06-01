@@ -1,8 +1,14 @@
-import { sendJson } from '../_db.js';
+import { isAdminRequest, isSameOriginRequest, sendJson } from '../_db.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return sendJson(res, 405, { error: 'Method not allowed' });
+  }
+
+  // Endpoint custoso (DeepSeek): só do próprio site (browser) ou admin.
+  // Bloqueia chamadas diretas (curl/bots) que torrariam créditos.
+  if (!isSameOriginRequest(req) && !isAdminRequest(req)) {
+    return sendJson(res, 403, { error: 'Origem não autorizada.' });
   }
 
   try {

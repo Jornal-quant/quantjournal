@@ -41,7 +41,7 @@ function CompactCard({ article }) {
   const SentimentIcon = sentiment?.icon;
 
   return (
-    <Link to={`/artigo/${article.id}`}
+    <Link to={`/artigo/${article.slug || article.id}`}
       className="group flex items-start gap-3 p-3 rounded-lg hover:bg-white/4 transition-colors duration-150 border border-transparent hover:border-white/8 cursor-pointer">
       <CategoryDot category={article.category} />
       <div className="flex-1 min-w-0">
@@ -73,7 +73,7 @@ function DefaultCard({ article }) {
   const firstTicker = article.tickers ? article.tickers.split(',')[0].trim() : '';
 
   return (
-    <Link to={`/artigo/${article.id}`}
+    <Link to={`/artigo/${article.slug || article.id}`}
       className="group flex flex-col bg-white/3 hover:bg-white/6 border border-white/8 hover:border-white/14 rounded-xl overflow-hidden transition-all duration-200 cursor-pointer h-full">
       {/* Image or generated category cover */}
       <div className="relative h-40 flex-shrink-0 overflow-hidden bg-white/4">
