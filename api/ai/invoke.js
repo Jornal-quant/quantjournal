@@ -25,6 +25,15 @@ export default async function handler(req, res) {
     const model = quality
       ? process.env.DEEPSEEK_QUALITY_MODEL || 'deepseek-reasoner'
       : process.env.DEEPSEEK_CHEAP_MODEL || 'deepseek-chat';
+    const messages = schema
+      ? [
+          {
+            role: 'system',
+            content: 'Responda apenas com JSON valido. Nao use markdown, comentarios, texto antes ou depois do JSON.',
+          },
+          { role: 'user', content: `${prompt}\n\nA resposta deve ser um objeto JSON valido.` },
+        ]
+      : [{ role: 'user', content: prompt }];
 
     const timeoutMs = Number(process.env.DEEPSEEK_TIMEOUT_MS || 45000);
     const controller = new AbortController();
@@ -41,7 +50,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model,
-          messages: [{ role: 'user', content: prompt }],
+          messages,
           response_format: schema ? { type: 'json_object' } : undefined,
           temperature: 0.3,
           max_tokens: schema ? 8000 : 3000,
@@ -57,7 +66,10 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const content = (data.choices?.[0]?.message?.content || '')
+      .trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '');
 
     if (schema) {
       try {
