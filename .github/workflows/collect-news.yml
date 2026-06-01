@@ -61,6 +61,13 @@ jobs:
             sleep 2
           done
 
+      - name: Escolher manchete (IA por relevância e impacto)
+        run: |
+          curl --show-error --silent --location --max-time 40 \
+            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
+            "$SITE_URL/api/functions/pickHeadline" | head -c 500 || true
+          echo
+
       - name: Atualizar cotações de mercado
         run: |
           curl --fail --show-error --silent --location \
