@@ -70,7 +70,12 @@ export function parseOrder(order) {
 
 export function sendJson(res, status, data) {
   res.statusCode = status;
+  // CORS: permitir chamadas do front-end (mesmo host) e de origens externas quando necessário
+  // Usamos '*' para simplificar, ajustar se quiser restringir origens.
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.end(JSON.stringify(data));
 }
 

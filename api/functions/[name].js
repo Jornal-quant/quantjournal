@@ -1303,6 +1303,15 @@ const CRON_FUNCTIONS = {
 
 export default async function handler(req, res) {
   const name = req.query.name;
+  // Support CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
 
   // Vercel Cron triggers functions with a GET (no body), so accept both verbs.
   if (req.method !== 'POST' && req.method !== 'GET') {
