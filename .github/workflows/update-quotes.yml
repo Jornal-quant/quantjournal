@@ -1,0 +1,40 @@
+name: Atualizar cotações de mercado
+
+# Workflow dedicado APENAS às cotações — roda a cada 5 minutos.
+# Separado do collect-news.yml para garantir que cotações fiquem frescas
+# mesmo quando a geração de artigos (que é mais pesada) atrasar.
+#
+# GitHub Actions:
+# - O menor intervalo suportado é */5 (5 minutos).
+# - O agendamento é desativado após 60 dias sem atividade no repositório.
+#   Para evitar isso, qualquer push ao repo "reseta" o contador.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # a cada 5 minutos (UTC)
+  workflow_dispatch: {}     # permite disparo manual pela aba Actions
+
+concurrency:
+  group: update-quotes
+  cancel-in-progress: true  # cancela a anterior se uma nova já chegou
+
+jobs:
+  quotes:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+
+    steps:
+      - name: Atualizar cotações de mercado
+        run: |
+          echo "⏱ $(date -u '+%H:%M:%S UTC') — atualizando cotações..."
+          curl --fail --show-error --silent --location \
+            --retry 2 --max-time 70 \
+            -X POST \
+            -H 'Content-Type: application/json' \
+            -H "x-admin-token: $ADMIN_TOKEN" \
+            -d '{}' \
+            "$SITE_URL/api/functions/updateMarketSnapshots" | head -c 2000
+          echo
+          echo "✅ Cotações atualizadas."

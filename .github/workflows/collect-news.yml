@@ -1,4 +1,4 @@
-name: Coleta de notícias e cotações
+name: Coleta de notícias
 
 # Plano Hobby da Vercel limita cron a 1x/dia e funções a 60s, então a frequência
 # real e o processamento vêm daqui. As funções aceitam GET/POST (ver
@@ -8,7 +8,9 @@ name: Coleta de notícias e cotações
 #   1. collectLatestNews com auto_process=false  -> só coleta os feeds (rápido).
 #   2. processRawNews chamado N vezes             -> gera 1 artigo por chamada,
 #      cada uma no seu próprio orçamento de 60s.
-#   3. updateMarketSnapshots                      -> atualiza cotações (sem IA).
+#
+# As cotações de mercado são atualizadas pelo workflow separado update-quotes.yml
+# (a cada 5 minutos) — não são mais responsabilidade deste workflow.
 #
 # Ajuste PROCESS_BATCH para gerar mais/menos artigos por execução (cada um
 # consome créditos do DeepSeek).
@@ -75,10 +77,4 @@ jobs:
             "$SITE_URL/api/functions/generateDailySummary" | head -c 500 || true
           echo
 
-      - name: Atualizar cotações de mercado
-        run: |
-          curl --fail --show-error --silent --location \
-            --retry 2 --max-time 70 \
-            -X POST -H 'Content-Type: application/json' -H "x-admin-token: $ADMIN_TOKEN" -d '{}' \
-            "$SITE_URL/api/functions/updateMarketSnapshots" | head -c 2000
-          echo
+      # Cotações são gerenciadas pelo update-quotes.yml (a cada 5 min).
