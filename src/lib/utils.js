@@ -70,9 +70,10 @@ export function formatMarketPrice(s) {
     case "index":
       return p.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
     case "stock": {
-      // Ações da B3 (ex.: WEGE3, PETR4 — 4 letras + 1-2 dígitos) cotam em BRL.
-      // Ações americanas (ex.: AAPL, MSFT — só letras) cotam em USD.
-      const isB3 = /^[A-Z]{4}\d{1,2}$/.test(String(s?.symbol || ""));
+      // Ações da B3: 4 caracteres (letras/números) + 1-2 dígitos no fim.
+      // Cobre PETR4, WEGE3 e também códigos com número no meio como B3SA3.
+      // Ações americanas (ex.: AAPL, MSFT — só letras, sem dígito final) → USD.
+      const isB3 = /^[A-Z0-9]{4}\d{1,2}$/.test(String(s?.symbol || "").toUpperCase());
       const cur = isB3 ? "R$" : "US$";
       return `${cur} ${p.toLocaleString("pt-BR", dec2)}`;
     }
