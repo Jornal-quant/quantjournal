@@ -18,3 +18,15 @@ test('vercel cron schedules are compatible with Hobby daily limit', async () => 
     assert.ok(runsAtMostDaily(cron.schedule), `${cron.path} uses ${cron.schedule}`);
   }
 });
+
+test('vercel config rewrites all client routes to the SPA entrypoint', async () => {
+  const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+
+  assert.ok(Array.isArray(config.rewrites), 'rewrites must be configured');
+  assert.ok(
+    config.rewrites.some(
+      (rule) => rule.source === '/(.*)' && rule.destination === '/index.html'
+    ),
+    'SPA routes must fall back to /index.html'
+  );
+});
