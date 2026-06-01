@@ -828,6 +828,44 @@ async function handleUpdateMarketSnapshots(sql) {
   return { success: true, updated, created, failed, skipped: quotes.length - saneQuotes.length, symbols: saneQuotes.map((quote) => quote.symbol) };
 }
 
+// "Atualizar ao ler": função PÚBLICA que o front dispara enquanto há visitantes
+// no site. Só busca cotações novas se as atuais estiverem velhas (> STALE), e um
+// lock curto evita estouro de chamadas simultâneas (vários visitantes ao mesmo
+// tempo). Como só lê cotações públicas e é auto-limitada, é segura sem token.
+const QUOTES_STALE_MS = 5 * 60 * 1000; // considera velho após 5 min
+const QUOTES_LOCK_MS = 60 * 1000;      // no máx. 1 atualização real por minuto
+
+async function handleRefreshQuotesIfStale(sql) {
+  await ensureAppStateTable(sql);
+
+  // 1. Quão antiga é a cotação mais recente?
+  const rows = await sql.query(`select max(updated_at) as last from qj_market_snapshots`);
+  const last = rows[0]?.last ? new Date(rows[0].last).getTime() : 0;
+  const ageMs = last ? Date.now() - last : Infinity;
+  if (ageMs < QUOTES_STALE_MS) {
+    return { success: true, refreshed: false, reason: 'fresh', age_seconds: Math.round(ageMs / 1000) };
+  }
+
+  // 2. Lock anti-estouro: se outra requisição já iniciou há < QUOTES_LOCK_MS, sai.
+  const lockRows = await sql.query(`select value from qj_app_state where key = 'quotes_refresh_lock' limit 1`);
+  let lockVal = lockRows[0]?.value;
+  if (typeof lockVal === 'string') { try { lockVal = JSON.parse(lockVal); } catch { lockVal = null; } }
+  const lockAt = lockVal?.at ? new Date(lockVal.at).getTime() : 0;
+  if (lockAt && Date.now() - lockAt < QUOTES_LOCK_MS) {
+    return { success: true, refreshed: false, reason: 'locked' };
+  }
+
+  // 3. Pega o lock e atualiza de fato.
+  await sql.query(
+    `insert into qj_app_state (key, value, updated_at) values ('quotes_refresh_lock', $1, now())
+     on conflict (key) do update set value = $1, updated_at = now()`,
+    [JSON.stringify({ at: new Date().toISOString() })],
+  );
+
+  const result = await handleUpdateMarketSnapshots(sql);
+  return { success: true, refreshed: true, ...result };
+}
+
 // Ajuste de schema idempotente: garante que market_type aceite 'stock' (a
 // constraint original não previa ações da B3). Admin-only, rodar uma vez.
 async function handleEnsureSchema(sql) {
@@ -1046,6 +1084,7 @@ const handlers = {
   backfillNews: handleBackfillNews,
   backfillImages: handleBackfillImages,
   updateMarketSnapshots: handleUpdateMarketSnapshots,
+  refreshQuotesIfStale: handleRefreshQuotesIfStale,
   assetHistory: handleAssetHistory,
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
@@ -1103,7 +1142,7 @@ export default async function handler(req, res) {
   }
 
   // Funções públicas (chamadas pelo front sem login).
-  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary']);
+  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary', 'refreshQuotesIfStale']);
 
   try {
     const fn = handlers[name];
