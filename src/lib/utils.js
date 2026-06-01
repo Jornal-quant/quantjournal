@@ -69,6 +69,13 @@ export function formatMarketPrice(s) {
       return `R$ ${p.toLocaleString("pt-BR", dec2)}`;
     case "index":
       return p.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    case "stock": {
+      // Ações da B3 (ex.: WEGE3, PETR4 — 4 letras + 1-2 dígitos) cotam em BRL.
+      // Ações americanas (ex.: AAPL, MSFT — só letras) cotam em USD.
+      const isB3 = /^[A-Z]{4}\d{1,2}$/.test(String(s?.symbol || ""));
+      const cur = isB3 ? "R$" : "US$";
+      return `${cur} ${p.toLocaleString("pt-BR", dec2)}`;
+    }
     default: {
       // crypto / commodity em USD
       if (p >= 50000) return `US$ ${(p / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}k`;
