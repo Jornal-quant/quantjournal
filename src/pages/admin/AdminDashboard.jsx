@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, Zap, Loader2, Trash2, Star, Megaphone,
+import { BarChart3, Zap, Loader2, Trash2, Star, Megaphone, PenLine,
   Plus, RefreshCw, Globe, Activity, CheckCircle, AlertCircle,
   Clock, TrendingUp
 } from 'lucide-react';
@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { format, subHours, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import GenerateNewsDialog from '../../components/admin/GenerateNewsDialog';
+import CreateArticleDialog from '../../components/admin/CreateArticleDialog';
 import AdminQueueTab from '../../components/admin/AdminQueueTab';
 import AdminSourcesTab from '../../components/admin/AdminSourcesTab';
 import AdminMarketTab from '../../components/admin/AdminMarketTab';
@@ -29,6 +30,7 @@ const categoryLabels = {
 
 export default function AdminDashboard() {
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: articles = [], isLoading: loadingArticles } = useQuery({
@@ -111,6 +113,9 @@ export default function AdminDashboard() {
               <RefreshCw className="w-4 h-4 mr-1" /> Coletar Fontes
             </Button>
             <Link to="/"><Button variant="outline" size="sm">Ver Site</Button></Link>
+            <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
+              <PenLine className="w-4 h-4 mr-1" /> Nova Matéria
+            </Button>
             <Button size="sm" onClick={() => setGenerateOpen(true)}>
               <Plus className="w-4 h-4 mr-1" /> Gerar Notícia IA
             </Button>
@@ -301,6 +306,7 @@ export default function AdminDashboard() {
       </div>
 
       <GenerateNewsDialog open={generateOpen} onOpenChange={setGenerateOpen} />
+      <CreateArticleDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }
