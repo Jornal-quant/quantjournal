@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { triggerNewsRefresh } from '@/lib/market';
 import { ArrowRight, Zap, BarChart3, Shield, Globe, Search, MessageSquare } from 'lucide-react';
 
 import ArticleCard from '../components/news/ArticleCard';
@@ -221,7 +222,10 @@ function Sidebar({ trending }) {
 export default function Home() {
   const { data: raw = [], isLoading } = useQuery({
     queryKey: ['articles-home'],
-    queryFn: () => base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 120),
+    queryFn: () => {
+      triggerNewsRefresh(); // mantém o jornal vivo enquanto há visitantes
+      return base44.entities.Article.filter({ status: 'publicado' }, '-created_date', 120);
+    },
     // Feed ao vivo: revalida a cada 60s e ao voltar o foco para a aba.
     refetchInterval: 60_000,
     refetchOnWindowFocus: true,

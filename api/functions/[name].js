@@ -958,6 +958,55 @@ async function handleRefreshQuotesIfStale(sql) {
   return { success: true, refreshed: true, ...result };
 }
 
+// "Atualiza ao ser lido" para NOTÍCIAS — mesmo padrão das cotações. O cron do
+// GitHub Actions é estrangulado no plano gratuito (buracos de horas), então
+// dependemos dos visitantes para manter o jornal vivo: quando alguém abre o site
+// e a matéria mais recente está há mais de NEWS_STALE_MS, o servidor coleta os
+// feeds e gera UMA matéria, dentro do orçamento de 60s da Vercel. Como é pública
+// e sem token, um lock curto evita estouro com vários visitantes simultâneos e o
+// rate limit horário global continua valendo.
+const NEWS_STALE_MS = 45 * 60 * 1000; // jornal considerado "parado" após 45 min
+const NEWS_LOCK_MS = 3 * 60 * 1000;   // no máx. 1 disparo real a cada 3 min
+
+async function handleRefreshNewsIfStale(sql) {
+  await ensureAppStateTable(sql);
+
+  // 1. Quão antiga é a matéria publicada mais recente?
+  const rows = await sql.query(
+    `select max(created_date) as last from qj_articles where status = 'publicado'`,
+  );
+  const last = rows[0]?.last ? new Date(rows[0].last).getTime() : 0;
+  const ageMs = last ? Date.now() - last : Infinity;
+  if (ageMs < NEWS_STALE_MS) {
+    return { success: true, refreshed: false, reason: 'fresh', age_seconds: Math.round(ageMs / 1000) };
+  }
+
+  // 2. Lock anti-estouro: se outra requisição já iniciou há < NEWS_LOCK_MS, sai.
+  const lockRows = await sql.query(`select value from qj_app_state where key = 'news_refresh_lock' limit 1`);
+  let lockVal = lockRows[0]?.value;
+  if (typeof lockVal === 'string') { try { lockVal = JSON.parse(lockVal); } catch { lockVal = null; } }
+  const lockAt = lockVal?.at ? new Date(lockVal.at).getTime() : 0;
+  if (lockAt && Date.now() - lockAt < NEWS_LOCK_MS) {
+    return { success: true, refreshed: false, reason: 'locked' };
+  }
+
+  // 3. Pega o lock e dispara coleta + geração de 1 matéria.
+  await sql.query(
+    `insert into qj_app_state (key, value, updated_at) values ('news_refresh_lock', $1, now())
+     on conflict (key) do update set value = $1, updated_at = now()`,
+    [JSON.stringify({ at: new Date().toISOString() })],
+  );
+
+  // Coleta os feeds (rápido, sem IA) e gera UMA matéria da fila. Se o DeepSeek
+  // não estiver configurado, a coleta ainda enche a fila para o cron processar.
+  await handleCollectLatestNews(sql, { auto_process: false }).catch(() => {});
+  let processed = null;
+  if (process.env.DEEPSEEK_API_KEY) {
+    processed = await handleProcessRawNews(sql, {}).catch(() => null);
+  }
+  return { success: true, refreshed: true, processed };
+}
+
 // Ajuste de schema idempotente: garante que market_type aceite 'stock' (a
 // constraint original não previa ações da B3). Admin-only, rodar uma vez.
 async function handleEnsureSchema(sql) {
@@ -1177,6 +1226,7 @@ const handlers = {
   backfillImages: handleBackfillImages,
   updateMarketSnapshots: handleUpdateMarketSnapshots,
   refreshQuotesIfStale: handleRefreshQuotesIfStale,
+  refreshNewsIfStale: handleRefreshNewsIfStale,
   assetHistory: handleAssetHistory,
   sendDailyNewsletter: handleSendDailyNewsletter,
   ingestNews: handleIngestNews,
@@ -1234,7 +1284,7 @@ export default async function handler(req, res) {
   }
 
   // Funções públicas (chamadas pelo front sem login).
-  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary', 'refreshQuotesIfStale']);
+  const PUBLIC_FUNCTIONS = new Set(['assetHistory', 'adminLogin', 'getDailySummary', 'refreshQuotesIfStale', 'refreshNewsIfStale']);
 
   try {
     const fn = handlers[name];
