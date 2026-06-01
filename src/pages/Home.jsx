@@ -37,6 +37,8 @@ const CATEGORY_SECTIONS = [
   { key: 'dolar',         label: 'Câmbio' },
 ];
 
+const PINNED_HEADLINE_MAX_AGE_MS = 90 * 60 * 1000;
+
 const FEATURES = [
   { icon: BarChart3,     title: 'Radar de mercado',       desc: 'Acompanhe múltiplos ativos com dados atualizados continuamente.' },
   { icon: Zap,           title: 'Análise por IA',          desc: 'Resumos estruturados gerados automaticamente com contexto e impactos.' },
@@ -242,9 +244,13 @@ export default function Home() {
   const articles = useMemo(() => dedupe(raw), [raw]);
 
   const heroArticles = useMemo(() => {
-    // Manchete fixada pelo editor (is_headline) sempre vem primeiro e não troca
-    // sozinha; o resto preenche por relevância/recência.
-    const headline = articles.find((a) => a.is_headline);
+    // Manchete fixada ainda tem prioridade, mas não pode travar a capa quando
+    // a coleta já trouxe notícias mais recentes.
+    const headline = articles.find((a) => {
+      if (!a.is_headline) return false;
+      const createdAt = new Date(a.created_date).getTime();
+      return Number.isFinite(createdAt) && Date.now() - createdAt < PINNED_HEADLINE_MAX_AGE_MS;
+    });
     const priority = articles.filter((a) => a.is_featured || a.relevance === 'urgente' || a.relevance === 'alta');
     const pool = priority.length >= 1 ? priority : articles;
     if (headline) {
