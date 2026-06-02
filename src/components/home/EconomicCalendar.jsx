@@ -32,7 +32,7 @@ export default function EconomicCalendar() {
     <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
       <div className="px-4 py-2.5 border-b border-foreground/6 bg-foreground/3 flex items-center justify-between">
         <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-foreground/60">Calendário econômico</span>
-        <span className="font-mono text-[9px] text-foreground/20">referência</span>
+        <span className="font-mono text-[9px] text-foreground/20" title="Agenda ilustrativa de referência — não reflete dados ao vivo">agenda de referência</span>
       </div>
       <div className="divide-y divide-foreground/5">
         {EVENTS.map((e, i) => (

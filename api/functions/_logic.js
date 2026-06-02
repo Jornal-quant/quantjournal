@@ -15,6 +15,14 @@ export const DEFAULT_RSS_SOURCES = [
   { name: 'Brazil Journal', url: 'https://braziljournal.com/feed/', category: 'empresas', priority: 2 },
   { name: 'CNN Brasil · Economia', url: 'https://www.cnnbrasil.com.br/economia/feed/', category: 'economia', priority: 2 },
   { name: 'Agencia Brasil Economia', url: 'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml', category: 'economia', priority: 2 },
+  // Commodities (petróleo, ouro, agronegócio)
+  { name: 'Google News · Commodities', url: 'https://news.google.com/rss/search?q=petr%C3%B3leo+OR+ouro+OR+commodities+OR+min%C3%A9rio+when:1d&hl=pt-BR&gl=BR&ceid=BR:pt-419', category: 'commodities', priority: 1 },
+  { name: 'Notícias Agrícolas', url: 'https://www.noticiasagricolas.com.br/rss/noticias.xml', category: 'commodities', priority: 2 },
+  { name: 'Google News · Agronegócio', url: 'https://news.google.com/rss/search?q=agroneg%C3%B3cio+OR+soja+OR+milho+OR+safra+when:1d&hl=pt-BR&gl=BR&ceid=BR:pt-419', category: 'commodities', priority: 2 },
+  // Renda fixa (Tesouro Direto, juros, títulos)
+  { name: 'Google News · Renda Fixa', url: 'https://news.google.com/rss/search?q=%22renda+fixa%22+OR+%22tesouro+direto%22+OR+CDB+OR+deb%C3%AAntures+when:1d&hl=pt-BR&gl=BR&ceid=BR:pt-419', category: 'renda_fixa', priority: 1 },
+  { name: 'InfoMoney · Onde Investir', url: 'https://www.infomoney.com.br/onde-investir/feed/', category: 'renda_fixa', priority: 2 },
+  { name: 'Google News · Tesouro e Juros', url: 'https://news.google.com/rss/search?q=%22tesouro+nacional%22+OR+%22curva+de+juros%22+OR+t%C3%ADtulos+p%C3%BAblicos+when:1d&hl=pt-BR&gl=BR&ceid=BR:pt-419', category: 'renda_fixa', priority: 2 },
 ];
 
 export const BACKFILL_TOPICS = [

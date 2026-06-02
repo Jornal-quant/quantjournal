@@ -224,6 +224,7 @@ export default function AdminDashboard() {
               {reviewArticles.length === 0 ? (
                 <p className="p-8 text-center text-muted-foreground">Nenhum artigo aguardando revisão.</p>
               ) : (
+                <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
@@ -260,6 +261,7 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
           </TabsContent>

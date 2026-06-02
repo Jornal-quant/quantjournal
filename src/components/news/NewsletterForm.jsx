@@ -5,17 +5,24 @@ export default function NewsletterForm() {
   const [email, setEmail] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    const exists = await base44.entities.NewsletterSubscriber.filter({ email });
-    if (!exists.length) {
-      await base44.entities.NewsletterSubscriber.create({ email, confirmed: false, plan: 'free', is_active: true });
+    setError('');
+    try {
+      const exists = await base44.entities.NewsletterSubscriber.filter({ email });
+      if (!exists.length) {
+        await base44.entities.NewsletterSubscriber.create({ email, confirmed: false, plan: 'free', is_active: true });
+      }
+      setDone(true);
+    } catch {
+      setError('Não foi possível concluir a inscrição. Tente novamente em instantes.');
+    } finally {
+      setLoading(false);
     }
-    setDone(true);
-    setLoading(false);
   };
 
   if (done) {
@@ -48,6 +55,9 @@ export default function NewsletterForm() {
           className="w-full font-mono text-[11px] font-semibold uppercase tracking-wider bg-white text-black py-2.5 rounded-lg hover:bg-foreground/90 transition-colors duration-150 disabled:opacity-40 cursor-pointer">
           {loading ? 'Aguarde…' : 'Inscrever-se →'}
         </button>
+        {error && (
+          <p className="font-sans text-[11px] text-ds-dn leading-relaxed" role="alert">{error}</p>
+        )}
       </form>
     </div>
   );

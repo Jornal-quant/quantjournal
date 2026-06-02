@@ -26,12 +26,11 @@ const ASSETS = [
   { slug: 'euro',           name: 'Euro (EUR/BRL)',    ticker: 'EUR/BRL', type: 'moeda',     sector: 'Câmbio',           country: '🌐' },
   // Juros
   { slug: 'selic',          name: 'Taxa Selic',        ticker: 'SELIC',   type: 'juros',     sector: 'Política Monetária', country: '🇧🇷' },
-  { slug: 'fed',            name: 'Federal Reserve',   ticker: 'FED',     type: 'juros',     sector: 'Política Monetária', country: '🇺🇸' },
   // Cripto
   { slug: 'bitcoin',        name: 'Bitcoin',           ticker: 'BTC',     type: 'cripto',    sector: 'Criptomoedas',     country: '🌐' },
   { slug: 'ethereum',       name: 'Ethereum',          ticker: 'ETH',     type: 'cripto',    sector: 'Criptomoedas',     country: '🌐' },
   // Commodities
-  { slug: 'petroleo',       name: 'Petróleo (Brent)',  ticker: 'BRENT',   type: 'commodity', sector: 'Energia',          country: '🌐' },
+  { slug: 'petroleo',       name: 'Petróleo (WTI)',    ticker: 'OIL',     type: 'commodity', sector: 'Energia',          country: '🌐' },
   { slug: 'ouro',           name: 'Ouro',              ticker: 'GOLD',    type: 'commodity', sector: 'Metais',           country: '🌐' },
 ];
 

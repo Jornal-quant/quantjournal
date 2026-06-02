@@ -1,5 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { formatMarketPrice, formatChangePercent, isSaneSnapshot } from '@/lib/utils';
 
 const COMPANIES = [
   { name: 'Petrobras',  ticker: 'PETR4',  slug: 'petrobras',  sector: 'Energia' },
@@ -11,6 +14,20 @@ const COMPANIES = [
 ];
 
 export default function CompaniesInFocus() {
+  const { data: snapshots = [], isLoading } = useQuery({
+    queryKey: ['companies-in-focus'],
+    queryFn: () => base44.entities.MarketSnapshot.list(),
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
+  // Indexa as cotações sãs por símbolo (case-insensitive) para enriquecer os tickers.
+  const bySymbol = {};
+  for (const s of snapshots.filter(isSaneSnapshot)) {
+    bySymbol[String(s.symbol || '').toUpperCase()] = s;
+  }
+
   return (
     <div className="border border-foreground/8 rounded-xl overflow-hidden" style={{ backgroundColor: 'hsl(var(--card))' }}>
       <div className="px-4 py-2.5 border-b border-foreground/6 bg-foreground/3 flex items-center justify-between">
@@ -18,13 +35,31 @@ export default function CompaniesInFocus() {
         <Link to="/ativos" className="font-mono text-[9px] text-foreground/20 hover:text-foreground/50 transition-colors duration-150">ver todas →</Link>
       </div>
       <div className="grid grid-cols-2 divide-x divide-y divide-foreground/5">
-        {COMPANIES.map((c) => (
-          <Link key={c.slug} to={`/ativo/${c.slug}`}
-            className="group flex flex-col px-3 py-2.5 hover:bg-foreground/4 transition-colors duration-150">
-            <span className="font-mono text-[11px] font-semibold text-foreground/60 group-hover:text-foreground/90 transition-colors duration-150 tabular-nums">{c.ticker}</span>
-            <span className="font-sans text-[11px] text-foreground/50 truncate">{c.name}</span>
-          </Link>
-        ))}
+        {COMPANIES.map((c) => {
+          const snap = bySymbol[c.ticker.toUpperCase()];
+          const cp = snap ? Number(snap.change_percent) : null;
+          const up = Number.isFinite(cp) && cp > 0;
+          const dn = Number.isFinite(cp) && cp < 0;
+          return (
+            <Link key={c.slug} to={`/ativo/${c.slug}`}
+              className="group flex flex-col px-3 py-2.5 hover:bg-foreground/4 transition-colors duration-150">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="font-mono text-[11px] font-semibold text-foreground/60 group-hover:text-foreground/90 transition-colors duration-150 tabular-nums">{c.ticker}</span>
+                {snap ? (
+                  <span className={`font-mono text-[10px] tabular-nums ${dn ? 'text-red-500' : up ? 'text-emerald-500' : 'text-foreground/45'}`}>
+                    {formatChangePercent(cp)}
+                  </span>
+                ) : isLoading ? (
+                  <span className="font-mono text-[10px] text-foreground/20">…</span>
+                ) : null}
+              </div>
+              <span className="font-sans text-[11px] text-foreground/50 truncate">{c.name}</span>
+              {snap && (
+                <span className="font-mono text-[10px] text-foreground/40 tabular-nums">{formatMarketPrice(snap)}</span>
+              )}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

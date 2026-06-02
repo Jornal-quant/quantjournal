@@ -787,6 +787,8 @@ const B3_STOCKS = [
   { ticker: 'BBAS3', name: 'Banco do Brasil' },
   { ticker: 'MGLU3', name: 'Magazine Luiza' },
   { ticker: 'ITSA4', name: 'Itaúsa' },
+  { ticker: 'NUBR33', name: 'Nubank' },
+  { ticker: 'INBR32', name: 'Banco Inter' },
 ];
 
 async function fetchBrapiQuotes() {

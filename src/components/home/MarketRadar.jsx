@@ -47,7 +47,7 @@ export default function MarketRadar() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y lg:divide-y-0 divide-foreground/12">
+      <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y lg:divide-y-0 divide-foreground/12">
         {data.map((s) => {
           const up = s.change_percent > 0;
           const dn = s.change_percent < 0;
@@ -58,7 +58,7 @@ export default function MarketRadar() {
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/75">{s.symbol}</p>
                 <p className="font-sans text-[11px] text-foreground/45 truncate">{s.name}</p>
               </div>
-              <p className="font-mono text-[18px] font-semibold text-foreground tabular-nums leading-none mb-1.5">{formatMarketPrice(s)}</p>
+              <p className="font-mono text-[16px] sm:text-[18px] font-semibold text-foreground tabular-nums leading-none mb-1.5 truncate">{formatMarketPrice(s)}</p>
               <div className="flex items-center gap-1.5">
                 {Icon && <Icon className={`w-3 h-3 ${up ? 'text-emerald-500' : 'text-red-500'}`} />}
                 <p className={`font-mono text-[12px] font-medium tabular-nums ${
