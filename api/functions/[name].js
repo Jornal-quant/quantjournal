@@ -1332,6 +1332,8 @@ async function handlePostArticlesToX(sql) {
   if (!hasXCredentials()) {
     return { success: true, skipped: true, reason: 'Credenciais do X não configuradas.' };
   }
+  // Garante a coluna (idempotente) — funciona mesmo sem rodar ensureSchema antes.
+  await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
   const siteUrl = process.env.SITE_URL || 'https://quantjournal-omega.vercel.app';
   const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
   const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 6);
