@@ -3,5 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://quantjournal-omega.vercel.app/sitemap.xml
-Sitemap: https://quantjournal-omega.vercel.app/news-sitemap.xml
+Sitemap: https://capitaltimes.com.br/sitemap.xml
+Sitemap: https://capitaltimes.com.br/news-sitemap.xml

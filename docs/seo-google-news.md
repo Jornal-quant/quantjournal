@@ -16,7 +16,7 @@ de longo prazo para um portal de notícias.
   chars), data de publicação/modificação, autor, publisher + logo, imagem,
   `inLanguage: pt-BR`, `isAccessibleForFree`. Também Open Graph e Twitter Card.
 
-> Troque `<seu-dominio>` por `quantjournal-omega.vercel.app` (ou o domínio oficial
+> Troque `<seu-dominio>` por `capitaltimes.com.br` (ou o domínio oficial
 > quando existir). Os sitemaps usam o host da requisição, então funcionam em
 > qualquer domínio sem mudar código.
 

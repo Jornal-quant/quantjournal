@@ -34,7 +34,7 @@ jobs:
     env:
       # Sobrescreva criando a variável de repositório SITE_URL (Settings →
       # Secrets and variables → Actions → Variables) se o domínio mudar.
-      SITE_URL: ${{ vars.SITE_URL || 'https://quantjournal-omega.vercel.app' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://capitaltimes.com.br' }}
       PROCESS_BATCH: '4' # quantos artigos gerar por execução
     steps:
       - name: Coletar feeds (sem IA)
