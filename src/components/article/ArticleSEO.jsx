@@ -14,11 +14,14 @@ export default function ArticleSEO({ article }) {
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'NewsArticle',
-      headline: article.title,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+      headline: String(article.title || '').slice(0, 110), // Google News: ≤110 chars
       description: article.meta_description || article.summary || '',
       datePublished: article.created_date,
       dateModified: article.updated_date || article.created_date,
-      author: { '@type': 'Organization', name: 'Capital Times' },
+      inLanguage: 'pt-BR',
+      isAccessibleForFree: true,
+      author: { '@type': 'Organization', name: 'Capital Times', url: origin },
       publisher: {
         '@type': 'Organization',
         name: 'Capital Times',
