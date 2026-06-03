@@ -12,6 +12,7 @@ import {
   simpleHash,
   toArticleRow,
 } from './_logic.js';
+import { postTweet, hasXCredentials } from '../_x.js';
 
 const MIN_ARTICLE_WORDS = 1200;
 const EXPANSION_ATTEMPTS = 2;
@@ -1056,7 +1057,9 @@ async function handleEnsureSchema(sql) {
     created_date timestamptz not null default now(),
     updated_date timestamptz not null default now()
   )`);
-  return { success: true, message: "Schema OK: market_type 'stock', is_headline, qj_app_state e qj_users." };
+  // Marca quando o artigo foi postado no X (Twitter) — evita repostar.
+  await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
+  return { success: true, message: "Schema OK: market_type 'stock', is_headline, qj_app_state, qj_users e tweeted_at." };
 }
 
 // Gera o "Resumo IA do dia" no servidor (cron) e guarda em qj_app_state — assim
@@ -1258,6 +1261,141 @@ async function handleAdminLogin(sql, body) {
   return { success: false, error: 'E-mail ou senha inválidos.' };
 }
 
+// ---- Postagem automática no X (Twitter) ----
+
+// Emoji + rótulo por categoria, no estilo dos portais de notícia.
+const X_CATEGORY = {
+  bolsa: { emoji: '📈', label: 'Bolsa' },
+  dolar: { emoji: '💵', label: 'Câmbio' },
+  juros: { emoji: '🏦', label: 'Juros' },
+  criptomoedas: { emoji: '🪙', label: 'Cripto' },
+  commodities: { emoji: '🛢️', label: 'Commodities' },
+  empresas: { emoji: '🏢', label: 'Empresas' },
+  internacional: { emoji: '🌎', label: 'Internacional' },
+  economia: { emoji: '📊', label: 'Economia' },
+  renda_fixa: { emoji: '💰', label: 'Renda Fixa' },
+};
+
+const TWEET_MAX = 280;
+const URL_WEIGHT = 23; // o X conta qualquer link como 23 chars (t.co)
+// Margem de segurança: o X usa "weighted length" (emoji conta 2). Ficamos abaixo
+// de 280 para nunca estourar.
+const TWEET_BUDGET = 270;
+
+function codepointLen(str) {
+  return [...String(str)].length;
+}
+
+// Cashtags a partir do campo tickers ("PETR4, VALE3" → ["$PETR4","$VALE3"]).
+export function cashtagsFromTickers(tickers) {
+  return String(tickers || '')
+    .split(/[,;]/)
+    .map((t) => t.trim().toUpperCase())
+    .filter((t) => /^[A-Z][A-Z0-9]{1,9}$/.test(t))
+    .slice(0, 3)
+    .map((t) => `$${t}`);
+}
+
+// Monta o texto do tweet respeitando o limite de caracteres. Estilo portal:
+// cabeçalho (emoji+categoria) + título + resumo + cashtags.
+//
+// Por padrão NÃO inclui o link da matéria: no pay-per-use do X, um post COM URL
+// custa US$ 0,20, enquanto texto puro custa ~US$ 0,015 (13× mais barato). O link
+// fica fixado na bio do perfil. Passe { includeLink: true } (env X_INCLUDE_LINK)
+// para voltar a embutir o link, ciente do custo maior.
+// Exportado p/ teste unitário.
+export function buildTweet(article, siteUrl, opts = {}) {
+  const includeLink = opts.includeLink === true;
+  const cat = X_CATEGORY[article.category] || { emoji: '📰', label: 'Mercado' };
+  const breaking = article.is_breaking || article.relevance === 'urgente';
+  const prefix = `${breaking ? '🚨 ' : ''}${cat.emoji} ${cat.label} · `;
+  const url = includeLink ? `${String(siteUrl).replace(/\/$/, '')}/artigo/${article.id}` : '';
+  const cashtags = cashtagsFromTickers(article.tickers);
+  const tagsLine = cashtags.length ? cashtags.join(' ') : '';
+
+  const title = String(article.title || 'Análise de mercado').trim();
+  const summary = String(article.summary || '').replace(/\s+/g, ' ').trim();
+
+  // Custo fixo: prefixo + título + (cashtags) + (link, se houver).
+  const fixed =
+    codepointLen(prefix) +
+    codepointLen(title) +
+    (tagsLine ? codepointLen(tagsLine) + 2 : 0) + // "\n\n" + cashtags
+    (includeLink ? URL_WEIGHT + 2 : 0); // "\n\n" + url
+
+  let summaryOut = '';
+  const room = TWEET_BUDGET - fixed - 2; // -2 p/ "\n\n" antes do resumo
+  if (summary && room > 20) {
+    summaryOut = codepointLen(summary) <= room
+      ? summary
+      : `${[...summary].slice(0, room - 1).join('').trimEnd()}…`;
+  }
+
+  let text = `${prefix}${title}`;
+  if (summaryOut) text += `\n\n${summaryOut}`;
+  if (tagsLine) text += `\n\n${tagsLine}`;
+  if (includeLink) text += `\n\n${url}`;
+  return text;
+}
+
+// Posta no X os artigos publicados ainda não tuitados (janela recente, para não
+// despejar o backlog no primeiro deploy). Limite por execução via X_MAX_PER_RUN.
+async function handlePostArticlesToX(sql) {
+  if (!hasXCredentials()) {
+    return { success: true, skipped: true, reason: 'Credenciais do X não configuradas.' };
+  }
+  // Garante a coluna (idempotente) — funciona mesmo sem rodar ensureSchema antes.
+  await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
+  const siteUrl = process.env.SITE_URL || 'https://quantjournal-omega.vercel.app';
+  const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
+  const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 6);
+  // Padrão: SEM link (texto puro ~US$ 0,015/post). X_INCLUDE_LINK=true volta a
+  // embutir o link da matéria (US$ 0,20/post no pay-per-use do X).
+  const includeLink = process.env.X_INCLUDE_LINK === 'true';
+
+  // Prioriza o que tende a engajar mais: maior relevância e maior impacto
+  // primeiro (urgente/alta + crítico/alto), e em empate o mais recente. Assim,
+  // dentro do teto por execução, postamos as matérias mais fortes — não só as
+  // mais antigas da fila.
+  const rows = await sql.query(
+    `select id, title, summary, category, tickers, is_breaking, relevance
+       from qj_articles
+      where status = 'publicado'
+        and tweeted_at is null
+        and created_date > now() - ($1 || ' hours')::interval
+      order by
+        (case relevance when 'urgente' then 3 when 'alta' then 2 when 'media' then 1 else 0 end) desc,
+        (case impact_level when 'critico' then 3 when 'alto' then 2 when 'medio' then 1 else 0 end) desc,
+        created_date desc
+      limit $2`,
+    [String(windowHours), maxPerRun],
+  );
+
+  const results = [];
+  for (const article of rows) {
+    const text = buildTweet(article, siteUrl, { includeLink });
+    const res = await postTweet(text);
+    if (res.ok) {
+      await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
+      results.push({ id: article.id, tweet_id: res.id, ok: true });
+      await logSystem(sql, `Postado no X: ${article.title}`, `tweet ${res.id}`, 'success', 'postArticlesToX');
+    } else if (/duplicate/i.test(String(res.error))) {
+      // Só conteúdo DUPLICADO é marcado como tuitado p/ não travar a fila.
+      await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
+      results.push({ id: article.id, ok: false, skipped: true, error: res.error });
+      await logSystem(sql, `X: duplicado (marcado): ${article.title}`, String(res.error), 'warning', 'postArticlesToX');
+    } else {
+      // Qualquer outro erro (permissão do app, pagamento/crédito, rate limit,
+      // rede): NÃO marca — para e tenta no próximo ciclo, sem queimar a fila.
+      results.push({ id: article.id, ok: false, error: res.error, status: res.status });
+      await logSystem(sql, `Falha ao postar no X: ${article.title}`, `${res.status}: ${res.error}`, 'error', 'postArticlesToX');
+      break;
+    }
+  }
+
+  return { success: true, posted: results.filter((r) => r.ok).length, results };
+}
+
 const handlers = {
   processRawNews: handleProcessRawNews,
   collectLatestNews: handleCollectLatestNews,
@@ -1277,6 +1415,7 @@ const handlers = {
   pickHeadline: handlePickHeadline,
   generateDailySummary: handleGenerateDailySummary,
   getDailySummary: handleGetDailySummary,
+  postArticlesToX: handlePostArticlesToX,
 };
 
 // Limite de chamadas por hora (anti-abuso/custo) para as funções do cron, que
@@ -1313,6 +1452,7 @@ const CRON_FUNCTIONS = {
   updateMarketSnapshots: 20,
   pickHeadline: 10,
   generateDailySummary: 6,
+  postArticlesToX: 10,
 };
 
 export default async function handler(req, res) {
