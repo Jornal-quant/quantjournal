@@ -18,7 +18,7 @@ function xmlEscape(s) {
 }
 
 export default async function handler(req, res) {
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'capitaltimes.com.br';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'www.capitaltimes.com.br';
   const base = `https://${host}`;
 
   let articles = [];
