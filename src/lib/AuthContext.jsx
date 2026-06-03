@@ -20,12 +20,20 @@ export const AuthProvider = ({ children }) => {
 
   const checkAppState = async () => {
     if (dataBackend === 'neon') {
-      setUser({ id: 'local-admin', role: 'admin', email: 'admin@quantjournal.local' });
-      setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-      setIsLoadingPublicSettings(false);
-      setAuthChecked(true);
+      // Site é público: auth não é obrigatória. Carregamos o usuário se houver
+      // sessão; caso contrário seguimos sem usuário (sem erro de auth).
       setAppPublicSettings({ public_settings: { auth_required: false } });
+      setIsLoadingPublicSettings(false);
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        setIsAuthenticated(true);
+      } catch {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
       return;
     }
 
