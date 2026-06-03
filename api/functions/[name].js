@@ -1341,13 +1341,20 @@ async function handlePostArticlesToX(sql) {
   // embutir o link da matéria (US$ 0,20/post no pay-per-use do X).
   const includeLink = process.env.X_INCLUDE_LINK === 'true';
 
+  // Prioriza o que tende a engajar mais: maior relevância e maior impacto
+  // primeiro (urgente/alta + crítico/alto), e em empate o mais recente. Assim,
+  // dentro do teto por execução, postamos as matérias mais fortes — não só as
+  // mais antigas da fila.
   const rows = await sql.query(
     `select id, title, summary, category, tickers, is_breaking, relevance
        from qj_articles
       where status = 'publicado'
         and tweeted_at is null
         and created_date > now() - ($1 || ' hours')::interval
-      order by created_date asc
+      order by
+        (case relevance when 'urgente' then 3 when 'alta' then 2 when 'media' then 1 else 0 end) desc,
+        (case impact_level when 'critico' then 3 when 'alto' then 2 when 'medio' then 1 else 0 end) desc,
+        created_date desc
       limit $2`,
     [String(windowHours), maxPerRun],
   );
@@ -1360,13 +1367,14 @@ async function handlePostArticlesToX(sql) {
       await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
       results.push({ id: article.id, tweet_id: res.id, ok: true });
       await logSystem(sql, `Postado no X: ${article.title}`, `tweet ${res.id}`, 'success', 'postArticlesToX');
-    } else if (res.status === 403) {
-      // Conteúdo duplicado/recusado: marca como tuitado p/ não travar a fila.
+    } else if (/duplicate/i.test(String(res.error))) {
+      // Só conteúdo DUPLICADO é marcado como tuitado p/ não travar a fila.
       await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
       results.push({ id: article.id, ok: false, skipped: true, error: res.error });
-      await logSystem(sql, `X recusou (marcado): ${article.title}`, String(res.error), 'warning', 'postArticlesToX');
+      await logSystem(sql, `X: duplicado (marcado): ${article.title}`, String(res.error), 'warning', 'postArticlesToX');
     } else {
-      // Erro transitório (rate limit/rede): para por aqui e tenta no próximo ciclo.
+      // Qualquer outro erro (permissão do app, pagamento/crédito, rate limit,
+      // rede): NÃO marca — para e tenta no próximo ciclo, sem queimar a fila.
       results.push({ id: article.id, ok: false, error: res.error, status: res.status });
       await logSystem(sql, `Falha ao postar no X: ${article.title}`, `${res.status}: ${res.error}`, 'error', 'postArticlesToX');
       break;
