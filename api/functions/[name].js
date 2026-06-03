@@ -1284,45 +1284,45 @@ export function cashtagsFromTickers(tickers) {
     .map((t) => `$${t}`);
 }
 
-// Monta o texto do tweet respeitando o limite de caracteres. Prioridade:
-// cabeçalho (emoji+categoria) + título + link + cashtags; o resumo preenche o
-// que sobrar e é cortado com reticências.
+// Monta o texto do tweet respeitando o limite de caracteres. Estilo portal:
+// cabeçalho (emoji+categoria) + título + resumo + cashtags.
+//
+// Por padrão NÃO inclui o link da matéria: no pay-per-use do X, um post COM URL
+// custa US$ 0,20, enquanto texto puro custa ~US$ 0,015 (13× mais barato). O link
+// fica fixado na bio do perfil. Passe { includeLink: true } (env X_INCLUDE_LINK)
+// para voltar a embutir o link, ciente do custo maior.
 // Exportado p/ teste unitário.
-export function buildTweet(article, siteUrl) {
+export function buildTweet(article, siteUrl, opts = {}) {
+  const includeLink = opts.includeLink === true;
   const cat = X_CATEGORY[article.category] || { emoji: '📰', label: 'Mercado' };
   const breaking = article.is_breaking || article.relevance === 'urgente';
   const prefix = `${breaking ? '🚨 ' : ''}${cat.emoji} ${cat.label} · `;
-  const url = `${String(siteUrl).replace(/\/$/, '')}/artigo/${article.id}`;
+  const url = includeLink ? `${String(siteUrl).replace(/\/$/, '')}/artigo/${article.id}` : '';
   const cashtags = cashtagsFromTickers(article.tickers);
   const tagsLine = cashtags.length ? cashtags.join(' ') : '';
 
   const title = String(article.title || 'Análise de mercado').trim();
   const summary = String(article.summary || '').replace(/\s+/g, ' ').trim();
 
-  // Custo fixo: prefixo + título + "\n\n" + (cashtags + "\n") + url
+  // Custo fixo: prefixo + título + (cashtags) + (link, se houver).
   const fixed =
     codepointLen(prefix) +
     codepointLen(title) +
-    2 + // \n\n entre cabeçalho e resumo
-    (tagsLine ? codepointLen(tagsLine) + 1 : 0) + // cashtags + \n
-    1 + // \n antes do link
-    URL_WEIGHT;
+    (tagsLine ? codepointLen(tagsLine) + 2 : 0) + // "\n\n" + cashtags
+    (includeLink ? URL_WEIGHT + 2 : 0); // "\n\n" + url
 
   let summaryOut = '';
   const room = TWEET_BUDGET - fixed - 2; // -2 p/ "\n\n" antes do resumo
   if (summary && room > 20) {
-    if (codepointLen(summary) <= room) {
-      summaryOut = summary;
-    } else {
-      summaryOut = `${[...summary].slice(0, room - 1).join('').trimEnd()}…`;
-    }
+    summaryOut = codepointLen(summary) <= room
+      ? summary
+      : `${[...summary].slice(0, room - 1).join('').trimEnd()}…`;
   }
 
   let text = `${prefix}${title}`;
   if (summaryOut) text += `\n\n${summaryOut}`;
-  text += '\n\n';
-  if (tagsLine) text += `${tagsLine}\n`;
-  text += url;
+  if (tagsLine) text += `\n\n${tagsLine}`;
+  if (includeLink) text += `\n\n${url}`;
   return text;
 }
 
@@ -1337,6 +1337,9 @@ async function handlePostArticlesToX(sql) {
   const siteUrl = process.env.SITE_URL || 'https://quantjournal-omega.vercel.app';
   const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
   const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 6);
+  // Padrão: SEM link (texto puro ~US$ 0,015/post). X_INCLUDE_LINK=true volta a
+  // embutir o link da matéria (US$ 0,20/post no pay-per-use do X).
+  const includeLink = process.env.X_INCLUDE_LINK === 'true';
 
   const rows = await sql.query(
     `select id, title, summary, category, tickers, is_breaking, relevance
@@ -1351,7 +1354,7 @@ async function handlePostArticlesToX(sql) {
 
   const results = [];
   for (const article of rows) {
-    const text = buildTweet(article, siteUrl);
+    const text = buildTweet(article, siteUrl, { includeLink });
     const res = await postTweet(text);
     if (res.ok) {
       await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
