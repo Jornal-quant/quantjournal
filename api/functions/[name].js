@@ -1044,7 +1044,19 @@ async function handleEnsureSchema(sql) {
   await sql.query(`alter table qj_articles add column if not exists is_headline boolean not null default false`);
   // Estado do site (ex.: resumo do dia gerado pelo cron).
   await sql.query(`create table if not exists qj_app_state (key text primary key, value jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now())`);
-  return { success: true, message: "Schema OK: market_type 'stock', is_headline e qj_app_state." };
+  // Contas de usuário (auth real — ver api/auth/[action].js).
+  await sql.query(`create table if not exists qj_users (
+    id text primary key,
+    email text unique not null,
+    password_hash text not null,
+    full_name text,
+    role text not null default 'user',
+    reset_token_hash text,
+    reset_expires timestamptz,
+    created_date timestamptz not null default now(),
+    updated_date timestamptz not null default now()
+  )`);
+  return { success: true, message: "Schema OK: market_type 'stock', is_headline, qj_app_state e qj_users." };
 }
 
 // Gera o "Resumo IA do dia" no servidor (cron) e guarda em qj_app_state — assim

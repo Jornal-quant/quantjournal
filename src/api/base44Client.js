@@ -95,19 +95,64 @@ function createNeonClient() {
         },
       },
     },
-    auth: {
-      me: async () => ({ id: 'local-admin', role: 'admin', email: 'admin@quantjournal.local' }),
-      loginViaEmailPassword: async () => ({ success: true }),
-      loginWithProvider: () => { window.location.href = '/'; },
-      register: async () => ({ success: true }),
-      verifyOtp: async () => ({ access_token: 'local-admin' }),
-      setToken: () => {},
-      resendOtp: async () => ({ success: true }),
-      resetPasswordRequest: async () => ({ success: true }),
-      resetPassword: async () => ({ success: true }),
-      logout: () => {},
-      redirectToLogin: () => { window.location.href = '/login'; },
+    auth: createNeonAuth(),
+  };
+}
+
+// Auth real de usuários: fala com /api/auth/* (sessão em cookie HttpOnly).
+// `credentials: 'include'` garante o envio do cookie de sessão.
+async function authRequest(action, options = {}) {
+  const response = await fetch(`/api/auth/${action}`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed: ${response.status}`);
+  }
+  return data;
+}
+
+function createNeonAuth() {
+  return {
+    // Retorna o usuário logado; lança se não houver sessão (contrato do SDK).
+    me: async () => {
+      const data = await authRequest('me', { method: 'GET' });
+      if (!data.user) {
+        const err = new Error('Not authenticated');
+        err.status = 401;
+        throw err;
+      }
+      return data.user;
     },
+    loginViaEmailPassword: async (email, password) => {
+      const data = await authRequest('login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      return data.user;
+    },
+    register: async ({ email, password, full_name } = {}) => {
+      const data = await authRequest('signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, full_name }),
+      });
+      return data.user;
+    },
+    resetPasswordRequest: async (email) => authRequest('requestPasswordReset', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+    resetPassword: async ({ resetToken, newPassword } = {}) => authRequest('resetPassword', {
+      method: 'POST',
+      body: JSON.stringify({ token: resetToken, password: newPassword }),
+    }),
+    logout: async () => {
+      try { await authRequest('logout', { method: 'POST' }); } catch { /* ignore */ }
+      window.location.href = '/';
+    },
+    redirectToLogin: () => { window.location.href = '/login'; },
   };
 }
 

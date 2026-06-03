@@ -1,7 +1,63 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, BarChart3, Zap } from 'lucide-react';
+import { Search, Menu, X, BarChart3, Zap, LogOut, LogIn } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
+import { useAuth } from '@/lib/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+
+// Controle de conta no header: "Entrar" quando deslogado; menu com nome/e-mail
+// e "Sair" quando logado.
+function AccountMenu() {
+  const { isAuthenticated, user, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <Link to="/login"
+        className="flex items-center gap-1.5 font-mono text-[12px] text-foreground/70 hover:text-foreground px-2.5 py-1.5 rounded hover:bg-foreground/6 transition-colors duration-150">
+        <LogIn className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Entrar</span>
+      </Link>
+    );
+  }
+
+  const label = user?.full_name || user?.email || 'Conta';
+  const initial = String(label).trim().charAt(0).toUpperCase() || 'U';
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="flex items-center gap-1.5 font-mono text-[12px] text-foreground/70 hover:text-foreground px-1.5 py-1 rounded hover:bg-foreground/6 transition-colors duration-150"
+          aria-label="Conta">
+          <span className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-[11px] font-semibold text-foreground/70">
+            {initial}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-mono text-[11px] truncate">{label}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {user?.role === 'admin' && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin" className="font-mono text-[12px] cursor-pointer">Admin</Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          onClick={() => logout()}
+          className="font-mono text-[12px] cursor-pointer text-destructive focus:text-destructive">
+          <LogOut className="w-3.5 h-3.5 mr-2" /> Sair
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const NAV = [
   { label: 'Bolsa',         path: '/categoria/bolsa' },
@@ -20,6 +76,7 @@ const NAV = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { isAuthenticated, logout } = useAuth();
   const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
@@ -82,6 +139,7 @@ export default function Navbar() {
             <Search className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Buscar</span>
           </Link>
+          <AccountMenu />
           <ThemeToggle />
           <button className="lg:hidden text-foreground/65 hover:text-foreground/80 p-1.5 transition-colors duration-150" onClick={() => setOpen(!open)} aria-label="Menu">
             {open ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
@@ -114,6 +172,17 @@ export default function Navbar() {
               className="flex items-center justify-center gap-1.5 font-mono text-[12px] border border-foreground/12 rounded py-2 text-foreground/70 hover:text-foreground/85 hover:bg-foreground/6 transition-colors duration-150">
               <Search className="w-3.5 h-3.5" /> Buscar
             </Link>
+            {isAuthenticated ? (
+              <button onClick={() => { setOpen(false); logout(); }}
+                className="flex items-center justify-center gap-1.5 font-mono text-[12px] border border-foreground/12 rounded py-2 text-destructive hover:bg-foreground/6 transition-colors duration-150">
+                <LogOut className="w-3.5 h-3.5" /> Sair
+              </button>
+            ) : (
+              <Link to="/login" onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-1.5 font-mono text-[12px] border border-foreground/12 rounded py-2 text-foreground/70 hover:text-foreground/85 hover:bg-foreground/6 transition-colors duration-150">
+                <LogIn className="w-3.5 h-3.5" /> Entrar
+              </Link>
+            )}
           </div>
         </div>
       )}
