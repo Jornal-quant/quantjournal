@@ -1277,13 +1277,36 @@ const X_CATEGORY = {
 };
 
 const URL_WEIGHT = 23; // o X conta qualquer link como 23 chars (t.co)
-// Conta com X Premium permite posts longos (até 25k chars). Para notícia, um
-// resumo de 3–4 frases (~maior "tempo de leitura" = mais engajamento) é o ponto
-// ótimo — sem virar muro de texto. Ajustável via env X_MAX_CHARS.
-const TWEET_BUDGET_DEFAULT = 480;
+// Conta com X Premium permite posts longos (até 25k chars). Damos espaço
+// suficiente para o resumo da matéria caber INTEIRO na maioria dos casos.
+// Ajustável via env X_MAX_CHARS.
+const TWEET_BUDGET_DEFAULT = 1000;
 
 function codepointLen(str) {
   return [...String(str)].length;
+}
+
+// Corta o texto sem deixar palavra picada. Preferência: terminar no fim de uma
+// frase (. ! ?) — aí nem precisa de reticências, fica natural. Se não der, corta
+// na última palavra inteira e adiciona "…".
+function smartTruncate(text, max) {
+  const chars = [...String(text)];
+  if (chars.length <= max) return text;
+  const slice = chars.slice(0, max).join('');
+  // Fim de frase mais distante dentro do limite (exige ter passado da metade
+  // para não cortar curto demais).
+  const sentenceEnd = Math.max(
+    slice.lastIndexOf('. '),
+    slice.lastIndexOf('! '),
+    slice.lastIndexOf('? '),
+    slice.lastIndexOf('.\n'),
+  );
+  if (sentenceEnd >= max * 0.5) {
+    return slice.slice(0, sentenceEnd + 1).trim();
+  }
+  const lastSpace = slice.lastIndexOf(' ');
+  const cut = lastSpace > max * 0.4 ? slice.slice(0, lastSpace) : slice;
+  return `${cut.trimEnd()}…`;
 }
 
 // Cashtags a partir do campo tickers ("PETR4, VALE3" → ["$PETR4","$VALE3"]).
@@ -1327,9 +1350,7 @@ export function buildTweet(article, siteUrl, opts = {}) {
   let summaryOut = '';
   const room = budget - fixed - 2; // -2 p/ "\n\n" antes do resumo
   if (summary && room > 20) {
-    summaryOut = codepointLen(summary) <= room
-      ? summary
-      : `${[...summary].slice(0, room - 1).join('').trimEnd()}…`;
+    summaryOut = codepointLen(summary) <= room ? summary : smartTruncate(summary, room);
   }
 
   let text = `${prefix}${title}`;
