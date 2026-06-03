@@ -1379,7 +1379,7 @@ async function handlePostArticlesToX(sql) {
 
   // Garante a coluna (idempotente) — funciona mesmo sem rodar ensureSchema antes.
   await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
-  const siteUrl = process.env.SITE_URL || 'https://capitaltimes.com.br';
+  const siteUrl = process.env.SITE_URL || 'https://www.capitaltimes.com.br';
   const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
   // Janela maior (padrão 16h) para que matérias da madrugada ainda sejam postadas
   // de manhã, quando a janela de horário reabre.

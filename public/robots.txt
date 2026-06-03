@@ -3,5 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://capitaltimes.com.br/sitemap.xml
-Sitemap: https://capitaltimes.com.br/news-sitemap.xml
+Sitemap: https://www.capitaltimes.com.br/sitemap.xml
+Sitemap: https://www.capitaltimes.com.br/news-sitemap.xml

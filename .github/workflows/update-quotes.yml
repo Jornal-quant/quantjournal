@@ -22,7 +22,7 @@ jobs:
   quotes:
     runs-on: ubuntu-latest
     env:
-      SITE_URL: ${{ vars.SITE_URL || 'https://capitaltimes.com.br' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://www.capitaltimes.com.br' }}
 
     steps:
       - name: Atualizar cotações de mercado
