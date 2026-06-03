@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Menu, X, BarChart3, Zap, LogOut, LogIn } from 'lucide-react';
+import { Search, Menu, X, Zap, LogOut, LogIn } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
+import BrandMark from '@/components/BrandMark';
 import { useAuth } from '@/lib/AuthContext';
 import {
   DropdownMenu,
@@ -102,9 +103,7 @@ export default function Navbar() {
       <div className="max-w-screen-2xl mx-auto px-6 h-12 flex items-center gap-6">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 flex-shrink-0 group">
-          <div className="w-6 h-6 bg-foreground/10 rounded flex items-center justify-center group-hover:bg-foreground/15 transition-colors duration-150">
-            <BarChart3 className="w-3.5 h-3.5 text-foreground/60" />
-          </div>
+          <BrandMark className="h-6 w-auto text-foreground group-hover:opacity-80 transition-opacity duration-150" />
           <span className="font-mono text-[16px] font-semibold tracking-tight text-foreground">
             Capital <span className="text-[var(--title-accent)]">Times</span>
           </span>
