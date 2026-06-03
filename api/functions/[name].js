@@ -1276,11 +1276,11 @@ const X_CATEGORY = {
   renda_fixa: { emoji: '💰', label: 'Renda Fixa' },
 };
 
-const TWEET_MAX = 280;
 const URL_WEIGHT = 23; // o X conta qualquer link como 23 chars (t.co)
-// Margem de segurança: o X usa "weighted length" (emoji conta 2). Ficamos abaixo
-// de 280 para nunca estourar.
-const TWEET_BUDGET = 270;
+// Conta com X Premium permite posts longos (até 25k chars). Para notícia, um
+// resumo de 3–4 frases (~maior "tempo de leitura" = mais engajamento) é o ponto
+// ótimo — sem virar muro de texto. Ajustável via env X_MAX_CHARS.
+const TWEET_BUDGET_DEFAULT = 480;
 
 function codepointLen(str) {
   return [...String(str)].length;
@@ -1306,6 +1306,7 @@ export function cashtagsFromTickers(tickers) {
 // Exportado p/ teste unitário.
 export function buildTweet(article, siteUrl, opts = {}) {
   const includeLink = opts.includeLink === true;
+  const budget = Math.max(120, Number(opts.maxChars) || TWEET_BUDGET_DEFAULT);
   const cat = X_CATEGORY[article.category] || { emoji: '📰', label: 'Mercado' };
   const breaking = article.is_breaking || article.relevance === 'urgente';
   const prefix = `${breaking ? '🚨 ' : ''}${cat.emoji} ${cat.label} · `;
@@ -1324,7 +1325,7 @@ export function buildTweet(article, siteUrl, opts = {}) {
     (includeLink ? URL_WEIGHT + 2 : 0); // "\n\n" + url
 
   let summaryOut = '';
-  const room = TWEET_BUDGET - fixed - 2; // -2 p/ "\n\n" antes do resumo
+  const room = budget - fixed - 2; // -2 p/ "\n\n" antes do resumo
   if (summary && room > 20) {
     summaryOut = codepointLen(summary) <= room
       ? summary
@@ -1344,14 +1345,28 @@ async function handlePostArticlesToX(sql) {
   if (!hasXCredentials()) {
     return { success: true, skipped: true, reason: 'Credenciais do X não configuradas.' };
   }
+  // Janela de horário (BRT, UTC-3): só posta nas horas de pico/acordado para
+  // maximizar engajamento e não desperdiçar matérias na madrugada. Padrão 8h–23h.
+  // Ajustável via X_ACTIVE_START / X_ACTIVE_END (hora cheia, 0–24). Para postar
+  // 24h, use X_ACTIVE_START=0 e X_ACTIVE_END=24.
+  const startH = Math.max(0, Math.min(24, Number(process.env.X_ACTIVE_START ?? 8)));
+  const endH = Math.max(0, Math.min(24, Number(process.env.X_ACTIVE_END ?? 23)));
+  const hourBRT = (new Date().getUTCHours() - 3 + 24) % 24;
+  if (hourBRT < startH || hourBRT >= endH) {
+    return { success: true, skipped: true, reason: `Fora da janela de postagem (${startH}h–${endH}h BRT). Agora: ${hourBRT}h BRT.` };
+  }
+
   // Garante a coluna (idempotente) — funciona mesmo sem rodar ensureSchema antes.
   await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
   const siteUrl = process.env.SITE_URL || 'https://quantjournal-omega.vercel.app';
   const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
-  const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 6);
+  // Janela maior (padrão 16h) para que matérias da madrugada ainda sejam postadas
+  // de manhã, quando a janela de horário reabre.
+  const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 16);
   // Padrão: SEM link (texto puro ~US$ 0,015/post). X_INCLUDE_LINK=true volta a
   // embutir o link da matéria (US$ 0,20/post no pay-per-use do X).
   const includeLink = process.env.X_INCLUDE_LINK === 'true';
+  const maxChars = Number(process.env.X_MAX_CHARS) || undefined;
 
   // Prioriza o que tende a engajar mais: maior relevância e maior impacto
   // primeiro (urgente/alta + crítico/alto), e em empate o mais recente. Assim,
@@ -1373,7 +1388,7 @@ async function handlePostArticlesToX(sql) {
 
   const results = [];
   for (const article of rows) {
-    const text = buildTweet(article, siteUrl, { includeLink });
+    const text = buildTweet(article, siteUrl, { includeLink, maxChars });
     const res = await postTweet(text);
     if (res.ok) {
       await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });

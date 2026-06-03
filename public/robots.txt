@@ -3,4 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://quantjournal-omega.vercel.app/api/sitemap
+Sitemap: https://quantjournal-omega.vercel.app/sitemap.xml
+Sitemap: https://quantjournal-omega.vercel.app/news-sitemap.xml

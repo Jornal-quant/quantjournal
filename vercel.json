@@ -3,6 +3,8 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/news-sitemap.xml", "destination": "/api/news-sitemap" },
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
