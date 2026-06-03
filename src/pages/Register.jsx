@@ -18,6 +18,10 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!fullName.trim()) {
+      setError("Informe seu nome.");
+      return;
+    }
     if (password.length < 8) {
       setError("A senha precisa ter pelo menos 8 caracteres.");
       return;
@@ -72,6 +76,7 @@ export default function Register() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="pl-10 h-12"
+              required
             />
           </div>
         </div>

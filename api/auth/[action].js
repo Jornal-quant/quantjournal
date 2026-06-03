@@ -49,8 +49,9 @@ async function findByEmail(sql, email) {
 async function handleSignup(sql, body, res) {
   const email = String(body.email || '').trim().toLowerCase();
   const password = String(body.password || '');
-  const fullName = String(body.full_name || '').trim() || null;
+  const fullName = String(body.full_name || '').trim();
 
+  if (!fullName) return send(res, 400, { error: 'Informe seu nome.' });
   if (!EMAIL_RE.test(email)) return send(res, 400, { error: 'E-mail inválido.' });
   if (password.length < MIN_PASSWORD) {
     return send(res, 400, { error: `A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.` });
