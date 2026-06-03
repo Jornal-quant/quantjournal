@@ -74,4 +74,14 @@ jobs:
             "$SITE_URL/api/functions/generateDailySummary" | head -c 500 || true
           echo
 
+      # Posta no X (Twitter) os artigos publicados ainda não tuitados (no-op se
+      # as credenciais X_* não estiverem configuradas na Vercel). Limite por
+      # execução via env X_MAX_PER_RUN (padrão 2).
+      - name: Postar novos artigos no X (Twitter)
+        run: |
+          curl --show-error --silent --location --max-time 40 \
+            -X POST -H 'Content-Type: application/json' -d '{}' \
+            "$SITE_URL/api/functions/postArticlesToX" | head -c 500 || true
+          echo
+
       # Cotações são gerenciadas pelo update-quotes.yml (a cada 5 min).

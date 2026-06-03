@@ -12,6 +12,7 @@ import {
   simpleHash,
   toArticleRow,
 } from './_logic.js';
+import { postTweet, hasXCredentials } from '../_x.js';
 
 const MIN_ARTICLE_WORDS = 1200;
 const EXPANSION_ATTEMPTS = 2;
@@ -1044,7 +1045,9 @@ async function handleEnsureSchema(sql) {
   await sql.query(`alter table qj_articles add column if not exists is_headline boolean not null default false`);
   // Estado do site (ex.: resumo do dia gerado pelo cron).
   await sql.query(`create table if not exists qj_app_state (key text primary key, value jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now())`);
-  return { success: true, message: "Schema OK: market_type 'stock', is_headline e qj_app_state." };
+  // Marca quando o artigo foi postado no X (Twitter) — evita repostar.
+  await sql.query(`alter table qj_articles add column if not exists tweeted_at timestamptz`);
+  return { success: true, message: "Schema OK: market_type 'stock', is_headline, qj_app_state e tweeted_at." };
 }
 
 // Gera o "Resumo IA do dia" no servidor (cron) e guarda em qj_app_state — assim
@@ -1246,6 +1249,128 @@ async function handleAdminLogin(sql, body) {
   return { success: false, error: 'E-mail ou senha inválidos.' };
 }
 
+// ---- Postagem automática no X (Twitter) ----
+
+// Emoji + rótulo por categoria, no estilo dos portais de notícia.
+const X_CATEGORY = {
+  bolsa: { emoji: '📈', label: 'Bolsa' },
+  dolar: { emoji: '💵', label: 'Câmbio' },
+  juros: { emoji: '🏦', label: 'Juros' },
+  criptomoedas: { emoji: '🪙', label: 'Cripto' },
+  commodities: { emoji: '🛢️', label: 'Commodities' },
+  empresas: { emoji: '🏢', label: 'Empresas' },
+  internacional: { emoji: '🌎', label: 'Internacional' },
+  economia: { emoji: '📊', label: 'Economia' },
+  renda_fixa: { emoji: '💰', label: 'Renda Fixa' },
+};
+
+const TWEET_MAX = 280;
+const URL_WEIGHT = 23; // o X conta qualquer link como 23 chars (t.co)
+// Margem de segurança: o X usa "weighted length" (emoji conta 2). Ficamos abaixo
+// de 280 para nunca estourar.
+const TWEET_BUDGET = 270;
+
+function codepointLen(str) {
+  return [...String(str)].length;
+}
+
+// Cashtags a partir do campo tickers ("PETR4, VALE3" → ["$PETR4","$VALE3"]).
+export function cashtagsFromTickers(tickers) {
+  return String(tickers || '')
+    .split(/[,;]/)
+    .map((t) => t.trim().toUpperCase())
+    .filter((t) => /^[A-Z][A-Z0-9]{1,9}$/.test(t))
+    .slice(0, 3)
+    .map((t) => `$${t}`);
+}
+
+// Monta o texto do tweet respeitando o limite de caracteres. Prioridade:
+// cabeçalho (emoji+categoria) + título + link + cashtags; o resumo preenche o
+// que sobrar e é cortado com reticências.
+// Exportado p/ teste unitário.
+export function buildTweet(article, siteUrl) {
+  const cat = X_CATEGORY[article.category] || { emoji: '📰', label: 'Mercado' };
+  const breaking = article.is_breaking || article.relevance === 'urgente';
+  const prefix = `${breaking ? '🚨 ' : ''}${cat.emoji} ${cat.label} · `;
+  const url = `${String(siteUrl).replace(/\/$/, '')}/artigo/${article.id}`;
+  const cashtags = cashtagsFromTickers(article.tickers);
+  const tagsLine = cashtags.length ? cashtags.join(' ') : '';
+
+  const title = String(article.title || 'Análise de mercado').trim();
+  const summary = String(article.summary || '').replace(/\s+/g, ' ').trim();
+
+  // Custo fixo: prefixo + título + "\n\n" + (cashtags + "\n") + url
+  const fixed =
+    codepointLen(prefix) +
+    codepointLen(title) +
+    2 + // \n\n entre cabeçalho e resumo
+    (tagsLine ? codepointLen(tagsLine) + 1 : 0) + // cashtags + \n
+    1 + // \n antes do link
+    URL_WEIGHT;
+
+  let summaryOut = '';
+  const room = TWEET_BUDGET - fixed - 2; // -2 p/ "\n\n" antes do resumo
+  if (summary && room > 20) {
+    if (codepointLen(summary) <= room) {
+      summaryOut = summary;
+    } else {
+      summaryOut = `${[...summary].slice(0, room - 1).join('').trimEnd()}…`;
+    }
+  }
+
+  let text = `${prefix}${title}`;
+  if (summaryOut) text += `\n\n${summaryOut}`;
+  text += '\n\n';
+  if (tagsLine) text += `${tagsLine}\n`;
+  text += url;
+  return text;
+}
+
+// Posta no X os artigos publicados ainda não tuitados (janela recente, para não
+// despejar o backlog no primeiro deploy). Limite por execução via X_MAX_PER_RUN.
+async function handlePostArticlesToX(sql) {
+  if (!hasXCredentials()) {
+    return { success: true, skipped: true, reason: 'Credenciais do X não configuradas.' };
+  }
+  const siteUrl = process.env.SITE_URL || 'https://quantjournal-omega.vercel.app';
+  const maxPerRun = Math.max(1, Math.min(5, Number(process.env.X_MAX_PER_RUN) || 2));
+  const windowHours = Math.max(1, Number(process.env.X_WINDOW_HOURS) || 6);
+
+  const rows = await sql.query(
+    `select id, title, summary, category, tickers, is_breaking, relevance
+       from qj_articles
+      where status = 'publicado'
+        and tweeted_at is null
+        and created_date > now() - ($1 || ' hours')::interval
+      order by created_date asc
+      limit $2`,
+    [String(windowHours), maxPerRun],
+  );
+
+  const results = [];
+  for (const article of rows) {
+    const text = buildTweet(article, siteUrl);
+    const res = await postTweet(text);
+    if (res.ok) {
+      await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
+      results.push({ id: article.id, tweet_id: res.id, ok: true });
+      await logSystem(sql, `Postado no X: ${article.title}`, `tweet ${res.id}`, 'success', 'postArticlesToX');
+    } else if (res.status === 403) {
+      // Conteúdo duplicado/recusado: marca como tuitado p/ não travar a fila.
+      await updateRow(sql, 'qj_articles', article.id, { tweeted_at: new Date().toISOString() });
+      results.push({ id: article.id, ok: false, skipped: true, error: res.error });
+      await logSystem(sql, `X recusou (marcado): ${article.title}`, String(res.error), 'warning', 'postArticlesToX');
+    } else {
+      // Erro transitório (rate limit/rede): para por aqui e tenta no próximo ciclo.
+      results.push({ id: article.id, ok: false, error: res.error, status: res.status });
+      await logSystem(sql, `Falha ao postar no X: ${article.title}`, `${res.status}: ${res.error}`, 'error', 'postArticlesToX');
+      break;
+    }
+  }
+
+  return { success: true, posted: results.filter((r) => r.ok).length, results };
+}
+
 const handlers = {
   processRawNews: handleProcessRawNews,
   collectLatestNews: handleCollectLatestNews,
@@ -1265,6 +1390,7 @@ const handlers = {
   pickHeadline: handlePickHeadline,
   generateDailySummary: handleGenerateDailySummary,
   getDailySummary: handleGetDailySummary,
+  postArticlesToX: handlePostArticlesToX,
 };
 
 // Limite de chamadas por hora (anti-abuso/custo) para as funções do cron, que
@@ -1301,6 +1427,7 @@ const CRON_FUNCTIONS = {
   updateMarketSnapshots: 20,
   pickHeadline: 10,
   generateDailySummary: 6,
+  postArticlesToX: 10,
 };
 
 export default async function handler(req, res) {
