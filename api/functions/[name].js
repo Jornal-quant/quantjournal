@@ -434,8 +434,63 @@ async function invokeDeepSeek(prompt, schema = true, quality = false) {
   return schema ? JSON.parse(content) : content;
 }
 
-async function generateLongArticle(rawItem, forcedCategory) {
-  let generated = await invokeDeepSeek(buildArticlePrompt(rawItem), true, false);
+// Resumo compacto das cotações atuais (números reais que o portal coleta), para
+// ancorar a análise da IA em dados verdadeiros em vez de valores inventados.
+async function fetchMarketContext(sql) {
+  try {
+    const rows = await sql.query(`select symbol, name, price, change_percent from qj_market_snapshots`);
+    if (!rows.length) return '';
+    const order = ['IBOV', 'USD/BRL', 'EUR/BRL', 'SELIC', 'SPX', 'BTC', 'ETH', 'GOLD', 'OIL'];
+    const bySym = new Map(rows.map((r) => [r.symbol, r]));
+    const picked = order.map((s) => bySym.get(s)).filter(Boolean);
+    if (picked.length === 0) return '';
+    const fmt = (r) => {
+      const price = Number(r.price);
+      const chg = Number(r.change_percent);
+      const chgStr = Number.isFinite(chg) ? ` (${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%)` : '';
+      const priceStr = Number.isFinite(price) ? price.toLocaleString('pt-BR') : String(r.price);
+      return `${r.name || r.symbol}: ${priceStr}${chgStr}`;
+    };
+    return picked.map(fmt).join('; ');
+  } catch {
+    return '';
+  }
+}
+
+// Encontra outras notícias pendentes sobre o MESMO tema (alta sobreposição de
+// palavras-chave do título), para a IA sintetizar várias fontes numa matéria só
+// — apuração própria, não reescrita de um único texto. Fail-safe: retorna [].
+async function findRelatedRawItems(sql, primary, max = 2) {
+  try {
+    const kw = titleKeywords(primary.raw_title);
+    if (kw.size < 3) return [];
+    const cands = await sql.query(
+      `select id, raw_title, raw_content, source_name
+         from qj_raw_news_feed
+        where processed = false and status = 'pending' and id <> $1
+          and fetched_at > now() - interval '24 hours'
+        order by fetched_at desc limit 40`,
+      [primary.id],
+    );
+    const out = [];
+    for (const c of cands) {
+      const ckw = titleKeywords(c.raw_title);
+      if (ckw.size === 0) continue;
+      let inter = 0;
+      for (const w of kw) if (ckw.has(w)) inter += 1;
+      if (inter / Math.min(kw.size, ckw.size) >= 0.5) {
+        out.push(c);
+        if (out.length >= max) break;
+      }
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+async function generateLongArticle(rawItem, forcedCategory, context = {}) {
+  let generated = await invokeDeepSeek(buildArticlePrompt(rawItem, context), true, false);
   if (forcedCategory) generated.category = forcedCategory;
 
   for (let attempt = 0; attempt < EXPANSION_ATTEMPTS; attempt += 1) {
@@ -463,7 +518,11 @@ async function processRawNewsItem(sql, rawItem) {
     return { processed: 0, duplicate: true };
   }
 
-  const generated = await generateLongArticle(rawItem, rawItem.category_hint);
+  // Ancoragem em dados reais + síntese de várias fontes do mesmo tema.
+  const marketContext = await fetchMarketContext(sql);
+  const additionalSources = await findRelatedRawItems(sql, rawItem);
+
+  const generated = await generateLongArticle(rawItem, rawItem.category_hint, { marketContext, additionalSources });
   const articleRow = toArticleRow(generated, rawItem);
   await resolveArticleImage(articleRow);
   const article = await insertArticle(sql, articleRow, rawItem.source_url || rawItem.id);
@@ -474,15 +533,25 @@ async function processRawNewsItem(sql, rawItem) {
     article_id: article.id,
   });
 
+  // As fontes sintetizadas viram parte desta matéria: marca como 'merged' para
+  // não gerarem artigos separados (evita duplicatas do mesmo tema).
+  for (const src of additionalSources) {
+    await updateRow(sql, 'qj_raw_news_feed', src.id, {
+      status: 'merged',
+      processed: true,
+      article_id: article.id,
+    }).catch(() => {});
+  }
+
   await logSystem(
     sql,
     `Processado: ${article.title}`,
-    `IA: ${article.ai_confidence}% | Status: ${article.status} | Categoria: ${article.category}`,
+    `IA: ${article.ai_confidence}% | Status: ${article.status} | Categoria: ${article.category} | Fontes sintetizadas: ${1 + additionalSources.length} | Dados de mercado: ${marketContext ? 'sim' : 'não'}`,
     'success',
     'processRawNews',
   );
 
-  return { processed: 1, article_id: article.id, title: article.title, status: article.status };
+  return { processed: 1, article_id: article.id, title: article.title, status: article.status, merged_sources: additionalSources.length };
 }
 
 async function handleProcessRawNews(sql, body) {
@@ -654,7 +723,7 @@ async function handleBackfillNews(sql, body) {
       source_url: '',
       category_hint: topic.category,
     };
-    const generated = await generateLongArticle(raw, topic.category);
+    const generated = await generateLongArticle(raw, topic.category, { marketContext: await fetchMarketContext(sql) });
     const articleRow = await resolveArticleImage(toArticleRow(generated, raw));
     const article = await insertArticle(sql, articleRow, topic.topic);
     created.push(article);
@@ -1202,7 +1271,7 @@ async function handleAutoPublishNews(sql) {
     source_url: '',
     category_hint: topic.category,
   };
-  const generated = await generateLongArticle(raw, topic.category);
+  const generated = await generateLongArticle(raw, topic.category, { marketContext: await fetchMarketContext(sql) });
   const articleRow = await resolveArticleImage(toArticleRow(generated, raw));
   const article = await insertArticle(sql, articleRow, topic.topic);
   await logSystem(sql, `Auto-publicado: ${article.title}`, `Categoria: ${article.category}`, 'success', 'autoPublishNews');
