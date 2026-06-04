@@ -91,7 +91,7 @@ function Disclaimer() {
   return (
     <div className="flex items-start gap-2.5 px-4 py-3 bg-ds-surface2 border border-ds-border rounded font-sans text-[11px] text-muted-foreground leading-relaxed">
       <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-muted-foreground/50" />
-      <span>Conteúdo gerado por inteligência artificial com base em fontes públicas. As informações são de caráter informativo e educacional. <strong className="text-foreground/60">Não constitui recomendação de investimento.</strong> Verifique as fontes antes de tomar qualquer decisão financeira.</span>
+      <span>Conteúdo gerado por inteligência artificial com base em fontes públicas e dados de mercado em tempo real. As informações são de caráter informativo e educacional. <strong className="text-foreground/60">Não constitui recomendação de investimento.</strong> Verifique as fontes antes de tomar qualquer decisão financeira. <Link to="/metodologia" className="underline hover:text-foreground/70">Entenda nossa metodologia</Link>.</span>
     </div>
   );
 }

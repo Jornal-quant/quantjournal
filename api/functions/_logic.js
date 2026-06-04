@@ -281,7 +281,16 @@ export function toArticleRow(generatedArticle = {}, rawItem = {}) {
   };
 }
 
-export function buildArticlePrompt(rawItem = {}) {
+export function buildArticlePrompt(rawItem = {}, context = {}) {
+  const marketBlock = context.marketContext
+    ? `\nCONTEXTO DE MERCADO ATUAL (números reais coletados pelo nosso portal — use quando relevantes para a análise; NÃO invente outros valores):\n${context.marketContext}\n`
+    : '';
+  const sources = Array.isArray(context.additionalSources) ? context.additionalSources : [];
+  const sourcesBlock = sources.length
+    ? `\nFONTES ADICIONAIS sobre o MESMO tema (apure e SINTETIZE todas em UMA matéria única e original; não reproduza a redação de nenhuma):\n${sources
+        .map((s, i) => `Fonte ${i + 2} (${s.source_name || 'não identificada'}): "${s.raw_title}" — ${String(s.raw_content || '').replace(/\s+/g, ' ').slice(0, 700)}`)
+        .join('\n')}\n`
+    : '';
   return `Você é editor-chefe de um portal financeiro profissional. Escreva em português brasileiro, com precisão jornalística e foco no investidor.
 
 REGRAS:
@@ -297,6 +306,7 @@ ORIGINALIDADE (evitar direitos autorais):
 - Crie um título original e diferente do título da fonte.
 - Reorganize a ordem das informações e a estrutura; não siga a sequência da matéria original.
 - Acrescente análise, contexto e interpretação próprios que vão além do texto de origem, para que o resultado seja claramente uma obra transformadora, não uma cópia.
+- Quando houver "CONTEXTO DE MERCADO ATUAL" e/ou "FONTES ADICIONAIS" abaixo, incorpore esses dados reais e sintetize as fontes numa apuração própria — isso torna a matéria genuinamente original e ancorada em dados, em vez de derivada de um único texto.
 - Não escreva texto curto. Se a notícia original for simples, amplie com contexto setorial, histórico recente, impactos prováveis, riscos e próximos indicadores a observar.
 - Use parágrafos completos, com análise objetiva e linguagem de portal financeiro profissional.
 
@@ -311,7 +321,8 @@ TAMANHO MÍNIMO DOS CAMPOS:
 - affected_companies e tickers: listas separadas por vírgula, nunca objetos JSON.
 - Antes de retornar, confira mentalmente: se a soma de summary + what_happened + why_it_matters + conclusion tiver menos de 1.200 palavras, expanda a análise.
 
-Notícia original:
+${marketBlock}${sourcesBlock}
+Notícia original (fonte principal):
 Título: "${rawItem.raw_title}"
 Conteúdo: ${rawItem.raw_content || '(use o título e contexto público para complementar)'}
 Fonte: ${rawItem.source_name || 'Não identificada'}
