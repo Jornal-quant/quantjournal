@@ -5,13 +5,16 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import { formatMarketPrice, formatChangePercent, isSaneSnapshot, timeAgo } from '@/lib/utils';
 import { triggerQuotesRefresh } from '@/lib/market';
 
+// Placeholder neutro enquanto as cotações reais não chegam. NÃO traz números
+// inventados — um jornal não pode exibir cotação falsa, nem por um instante.
+// Sem price/change_percent, a formatação cai em "—" automaticamente.
 const FALLBACK = [
-  { symbol: 'IBOV',    name: 'Ibovespa',     price: 137248, change_percent: 0.62,  market_type: 'index' },
-  { symbol: 'USD/BRL', name: 'Dólar',        price: 5.68,   change_percent: 0.41,  market_type: 'fx' },
-  { symbol: 'SELIC',   name: 'SELIC a.a.',   price: 13.25,  change_percent: 0,     market_type: 'rate' },
-  { symbol: 'BTC',     name: 'Bitcoin',      price: 108200, change_percent: 1.92,  market_type: 'crypto' },
-  { symbol: 'OIL',     name: 'Petróleo WTI', price: 64.8,   change_percent: -1.1,  market_type: 'commodity' },
-  { symbol: 'GOLD',    name: 'Ouro',         price: 3290,   change_percent: 0.52,  market_type: 'commodity' },
+  { symbol: 'IBOV',    name: 'Ibovespa',     market_type: 'index' },
+  { symbol: 'USD/BRL', name: 'Dólar',        market_type: 'fx' },
+  { symbol: 'SELIC',   name: 'SELIC a.a.',   market_type: 'rate' },
+  { symbol: 'BTC',     name: 'Bitcoin',      market_type: 'crypto' },
+  { symbol: 'OIL',     name: 'Petróleo WTI', market_type: 'commodity' },
+  { symbol: 'GOLD',    name: 'Ouro',         market_type: 'commodity' },
 ];
 
 export default function MarketRadar() {

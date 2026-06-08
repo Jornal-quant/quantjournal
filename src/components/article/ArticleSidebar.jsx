@@ -19,12 +19,14 @@ const ECON_EVENTS = [
   { day: 'Seg', event: 'IPCA-15 — Prévia da inflação brasileira',      country: '🇧🇷', impact: 'alto' },
 ];
 
+// Placeholder neutro: sem números inventados (ver MarketRadar). Sem price/
+// change_percent, a formatação exibe "—" até o dado real chegar.
 const FALLBACK_QUOTES = [
-  { symbol: 'IBOV',    name: 'Ibovespa', price: 137248, change_percent: 0.62, market_type: 'index' },
-  { symbol: 'USD/BRL', name: 'Dólar',    price: 5.68,   change_percent: 0.41, market_type: 'fx' },
-  { symbol: 'BTC',     name: 'Bitcoin',  price: 108200, change_percent: 1.92, market_type: 'crypto' },
-  { symbol: 'SELIC',   name: 'SELIC',    price: 13.25,  change_percent: 0,    market_type: 'rate' },
-  { symbol: 'GOLD',    name: 'Ouro',     price: 3290,   change_percent: 0.52, market_type: 'commodity' },
+  { symbol: 'IBOV',    name: 'Ibovespa', market_type: 'index' },
+  { symbol: 'USD/BRL', name: 'Dólar',    market_type: 'fx' },
+  { symbol: 'BTC',     name: 'Bitcoin',  market_type: 'crypto' },
+  { symbol: 'SELIC',   name: 'SELIC',    market_type: 'rate' },
+  { symbol: 'GOLD',    name: 'Ouro',     market_type: 'commodity' },
 ];
 
 const impactDot = { critico: 'bg-ds-dn', alto: 'bg-amber-500', medio: 'bg-ds-up', baixo: 'bg-ds-border' };

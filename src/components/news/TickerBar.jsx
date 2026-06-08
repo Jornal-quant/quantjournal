@@ -4,15 +4,17 @@ import { base44 } from '@/api/base44Client';
 import { formatMarketPrice, formatChangePercent, isSaneSnapshot } from '@/lib/utils';
 import { triggerQuotesRefresh } from '@/lib/market';
 
+// Placeholder neutro enquanto as cotações reais não chegam. NÃO traz números
+// inventados — um jornal não pode exibir cotação falsa, nem por um instante.
 const FALLBACK = [
-  { name: 'IBOV',    value: '137.248',   change: '+0,62%', up: true  },
-  { name: 'USD/BRL', value: 'R$ 5,68',   change: '+0,41%', up: false },
-  { name: 'BTC',     value: 'US$ 108k',  change: '+1,92%', up: true  },
-  { name: 'SELIC',   value: '13,25%',    change: '—',      up: null  },
-  { name: 'OURO',    value: 'US$ 3.290', change: '+0,52%', up: true  },
-  { name: 'S&P500',  value: '5.912',     change: '+0,31%', up: true  },
-  { name: 'PETR',    value: 'US$ 64,80', change: '-1,10%', up: false },
-  { name: 'EUR/USD', value: '1,0842',    change: '-0,18%', up: false },
+  { name: 'IBOV',    value: '—', change: '—', up: null },
+  { name: 'USD/BRL', value: '—', change: '—', up: null },
+  { name: 'BTC',     value: '—', change: '—', up: null },
+  { name: 'SELIC',   value: '—', change: '—', up: null },
+  { name: 'OURO',    value: '—', change: '—', up: null },
+  { name: 'S&P500',  value: '—', change: '—', up: null },
+  { name: 'PETR',    value: '—', change: '—', up: null },
+  { name: 'EUR/USD', value: '—', change: '—', up: null },
 ];
 
 export default function TickerBar() {
