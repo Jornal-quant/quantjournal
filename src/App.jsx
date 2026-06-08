@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
+import { lazyWithReload } from '@/lib/lazyWithReload';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
@@ -24,9 +25,10 @@ import AssetsIndex from './pages/AssetsIndex';
 import Metodologia from './pages/Metodologia';
 import ChartsPage from './pages/ChartsPage';
 
-// Carregados sob demanda (reduz o bundle inicial).
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const MarketChat = lazy(() => import('./pages/MarketChat'));
+// Carregados sob demanda (reduz o bundle inicial). lazyWithReload recarrega a
+// página se o chunk sumir após um deploy, evitando o "page not found".
+const AdminDashboard = lazyWithReload(() => import('./pages/admin/AdminDashboard'));
+const MarketChat = lazyWithReload(() => import('./pages/MarketChat'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
